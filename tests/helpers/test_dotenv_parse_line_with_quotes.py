@@ -86,6 +86,12 @@ class test_dotenv_parse_line_with_quotes( unittest.TestCase ):
         # anything outside of the quotes and before a comment results in a syntax error
         self.assertRaises( DotEnvSyntaxError, self.dotenv.parse_line, "name = 'test' sup ; hey", ';' )
 
+    def test_allow_ending_semicolon( self ):
+
+        # anything outside of the quotes and before a comment results in a syntax error
+        # except allow to end the line with a semi-colon.
+        self.assertEquals( [ 'name', 'test' ], self.dotenv.parse_line( "name = 'test';", '#' ) )
+
     def test_escaped_single_quote( self ):
 
         # quotes can be escaped inside quotes

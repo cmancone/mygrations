@@ -1,4 +1,4 @@
-__ver__ = '0.1'
+__ver__ = '1.0'
 
 import io
 import os
@@ -175,8 +175,8 @@ class dotenv( object ):
             if value.count( comment, index ):
                 value = value[:value.index( comment, index )].strip()
 
-            # our string should end at the closing quote
-            if len( value ) > index + 1:
+            # our string should end at the closing quote, although safely ignore a closing semi-colon
+            if len( value ) > index + 1 and value[index+1:].strip() != ';':
                 raise DotEnvSyntaxError( "Syntax error: data found outside of the quote in line %s" % line )
 
             # don't forget to unescape any quotes and return
