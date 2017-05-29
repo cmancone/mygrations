@@ -1,4 +1,5 @@
 from mygrations.helpers.dotenv import dotenv
+from mygrations.helpers.db_credentials import db_credentials
 
 def execute( options ):
 
@@ -7,6 +8,7 @@ def execute( options ):
 
 class import_files( object ):
 
+    credentials = {}
     options = {}
     env = {}
 
@@ -17,9 +19,17 @@ class import_files( object ):
         if not 'env' in self.options:
             raise ValueError( 'Missing "env" in options for commands.import_files' )
 
+        if not 'config' in self.options:
+            raise ValueError( 'Missing "config" in options for commands.import_files' )
+
+        self.credentials = db_credentials( self.options['env'], self.options['config'] )
+
+        print( self.credentials['hostname'] )
+        print( self.credentials['database'] )
+        print( self.credentials['username'] )
+        print( self.credentials['password'] )
+
     def execute( self ):
 
         # try to read in the .env file
-        self.env = dotenv( self.options['env'] )
-
-        print( self.env.parsed )
+        print( 'go!' )

@@ -10,10 +10,9 @@ from json import JSONDecodeError
 class DotEnvSyntaxError(Exception):
     pass
 
-class dotenv( object ):
+class dotenv( dict ):
 
     raw_contents = ''
-    parsed = {}
     comment = ''
     comment_length = 0
 
@@ -27,11 +26,13 @@ class dotenv( object ):
             self.raw_contents = self.get_contents( filename )
 
             # and parse
-            self.parsed = self.parse( self.raw_contents, comment )
+            parsed = self.parse( self.raw_contents, comment )
 
         else:
             self.raw_contents = ''
-            self.parsed = {}
+            parsed = {}
+
+        super().__init__( parsed )
 
     def get_contents( self, filename ):
 

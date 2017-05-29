@@ -1,11 +1,13 @@
 __ver__ = '0.1'
 
 from .core import commands
+from .helpers.dotenv import dotenv
 
 class mygrate( object ):
 
     command = ''
     options = {}
+    config = {}
 
     def __init__( self, command, options = {} ):
 

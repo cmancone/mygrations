@@ -6,7 +6,8 @@ from mygrations.mygrate import mygrate
 # argument parsing
 parser = argparse.ArgumentParser()
 parser.add_argument( 'command', nargs='?', default='import', choices=[ 'import' ], help='Action to execute (default: import)' )
-parser.add_argument( '--env', dest='env', default='.env', help='Location of environment file (default: .env)' )
+parser.add_argument( '--env', default='.env', help='Location of environment file (default: .env)' )
+parser.add_argument( '--config', default='mygrate.conf', help='Location of mygrate configuration file (default: mygrate.conf)' )
 args = parser.parse_args()
 
 # load up a mygrate object
