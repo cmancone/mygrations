@@ -18,8 +18,8 @@ class db_credentials( dict ):
         # env represents the contents of the applications .env file.
         # Normally the config file will tell us which keys in the .env
         # file have the database credentials.
-        self.config = dotenv( config )
-        self.env = dotenv( env )
+        self.config = config if isinstance( config, dotenv ) else dotenv( config )
+        self.env = env if isinstance( env, dotenv ) else dotenv( env )
 
         # we need four pieces of information for this to work:
         for key in [ 'hostname_key', 'username_key', 'password_key', 'database_key' ]:
