@@ -1,7 +1,7 @@
 import io, os
-from .parsers.comment_parser import comment_parser
-from .parsers.create_parser import create_parser
-from .parsers.insert_parser import insert_parser
+from .comment_parser import comment_parser
+from .create_parser import create_parser
+from .insert_parser import insert_parser
 
 class reader( object ):
 
@@ -62,7 +62,7 @@ class reader( object ):
                 raise ValueError( "Unrecognized MySQL command: %s" % data )
 
             # now load up our parser
-            parser = parser_class( data )
-            data = parser.parse()
+            parser = parser_class()
+            data = parser.parse( data )
 
         return ( '', '' )

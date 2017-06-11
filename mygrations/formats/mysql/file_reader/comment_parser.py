@@ -1,24 +1,17 @@
-class comment_parser( object ):
+from mygrations.core.parse.parser import parser
 
+class comment_parser( parser ):
+
+    rules = [ 'nope' ]
     sql = ''
 
-    def __init__( self, sql ):
-        """ parser = comment_parser( sql )
-
-        Processes any comments at the start of the string
-
-        :param sql: The SQL string to parse
-        :type sql: string
-        """
-
-        self.sql = sql.strip();
-        self.comment = ''
-
-    def parse( self ):
+    def parse( self, sql ):
         """ res = paser.parse()
 
         Parses the SQL, storing the comment and returning an SQL string with the comment removed
 
+        :param sql: The SQL string to parse
+        :type sql: string
         :returns: The SQL string with the first comment removed
         :rtype: string
 
@@ -32,6 +25,9 @@ class comment_parser( object ):
                 INSERT INTO some_table (1,2)
         """
 
+        self.sql = sql.strip();
+        self.comment = ''
+
         # what kind of comment are we dealing with?
         # -- and # go to the end of the line.  /* goes to */
         if self.sql[0] == '#' or self.sql[:2] == '--':
@@ -40,12 +36,14 @@ class comment_parser( object ):
             # whole thing is our comment and there is no data left
             if not self.sql.count( '\n' ):
                 self.comment = self.sql
+                self._values = { 'commment': self.comment }
                 return '';
 
             # otherwise just find the newline and return the rest
             else:
                 index = self.sql.index( '\n' )
                 self.comment = self.sql[:index]
+                self._values = { 'commment': self.comment }
                 return self.sql[index+1:].strip()
 
         # then we should be dealing with /* ... */.  Our line should
@@ -59,4 +57,5 @@ class comment_parser( object ):
         # otherwise this is very straight-forward
         index = self.sql.index( '*/' )
         self.comment = self.sql[2:index].strip()
+        self._values = { 'commment': self.comment }
         return self.sql[index+2:].strip()
