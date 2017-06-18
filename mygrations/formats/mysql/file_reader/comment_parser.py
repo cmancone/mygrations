@@ -5,6 +5,12 @@ class comment_parser( parser ):
     rules = [ 'nope' ]
     sql = ''
 
+    def __init__( self, rules = [] ):
+
+        # we're not yet a rules-based parser (I may do that eventually), so
+        # I don't want to run the normal parser __init__()
+        pass
+
     def parse( self, sql ):
         """ res = paser.parse()
 
