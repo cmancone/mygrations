@@ -1,6 +1,35 @@
 from .rule_base import rule_base
 
 class rule_children( rule_base ):
+    """ rule = rule_children( parser, rule, next_rule )
+
+    rule_children constructor.  Pass in the parser object that the rule is for, the rule
+    that is being parsed, and the next rule in the parsing chain.
+
+    This class takes as input a list of parser classes to be matched against the string
+    being parsed.  During parsing, it will attempt to fit any of the child parsers (in
+    any order) against the string being parsed.  After each match, the matched contents
+    will be removed and parsing will start again.  This repeats until no more matches
+    can be found.
+
+    keys for the rules dictionary:
+
+    =========  ========
+    key        contents
+    =========  ========
+    name       The name of the rule
+    classes    A list with classes to be matched
+    optional   (optional) If true, denotes that this rule is optional
+    =========  ========
+
+    :param parser: The parser that this rule belongs to
+    :param rule: A dictionary representing the rule configuration (see each rule class for details)
+    :param next_rule: A dictionary representing the next rule
+    :type parser: parser
+    :type rule: dict
+    :type next_rule: dict
+    :returns: rule object
+    """
 
     require_value = False
 

@@ -1,6 +1,31 @@
 from .rule_base import rule_base
 
 class rule_literal( rule_base ):
+    """ rule = rule_children( parser, rule, next_rule )
+
+    rule_literal constructor.  Pass in the parser object that the rule is for, the rule
+    that is being parsed, and the next rule in the parsing chain.
+
+    This class attempts to match a literal string (case-insensitive).
+
+    keys for the rules dictionary:
+
+    =========  ========
+    key        contents
+    =========  ========
+    value      The literal value to look for
+    name       (optional) The name of the rule
+    optional   (optional) If true, denotes that this rule is optional
+    =========  ========
+
+    :param parser: The parser that this rule belongs to
+    :param rule: A dictionary representing the rule configuration (see each rule class for details)
+    :param next_rule: A dictionary representing the next rule
+    :type parser: parser
+    :type rule: dict
+    :type next_rule: dict
+    :returns: rule object
+    """
 
     # names are not required for literals
     require_name = False

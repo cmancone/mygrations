@@ -1,6 +1,36 @@
 from .rule_base import rule_base
 
 class rule_delimited( rule_base ):
+    """ rule = rule_delimited( parser, rule, next_rule )
+
+    rule_delimited constructor.  Pass in the parser object that the rule is for, the rule
+    that is being parsed, and the next rule in the parsing chain.
+
+    This class takes as input the character that values are delimited by and an optional
+    character to use to quote strings.  It will then parse the input string looking for
+    a list of values separated by the given delimiter.
+
+    As part of the logic, all delimited rules must be followed up bby a rule_literal object.
+
+    Allowed keys in the rules dictionary:
+
+    =========  ========
+    key        contents
+    =========  ========
+    name       The name of the rule
+    separator  The character that separates values
+    quote      (optional) A character that encloses values
+    optional   (optional) If true, denotes that this rule is optional
+    =========  ========
+
+    :param parser: The parser that this rule belongs to
+    :param rule: A dictionary representing the rule configuration (see each rule class for details)
+    :param next_rule: A dictionary representing the next rule
+    :type parser: parser
+    :type rule: dict
+    :type next_rule: dict
+    :returns: rule object
+    """
 
     require_value = False
 
@@ -24,6 +54,12 @@ class rule_delimited( rule_base ):
         self.separator = self.rule['separator']
         self.quote = self.rule['quote'] if 'quote' in self.rule else ''
 
+        # separator and quote must be a single character
+        if len( self.separator ) > 1:
+            raise ValueError( "separator for delimited rule must be one character only for rule %s in class %s" % ( self.rule, self.parser_class ) )
+
+        if len( self.quote ) > 1:
+            raise ValueError( "quote for delimited rule must be one character only for rule %s in class %s" % ( self.rule, self.parser_class ) )
 
     def parse( self, string ):
 

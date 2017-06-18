@@ -2,6 +2,31 @@ from .rule_base import rule_base
 import re
 
 class rule_regexp( rule_base ):
+    """ rule = rule_regexp( parser, rule, next_rule )
+
+    rule_literal constructor.  Pass in the parser object that the rule is for, the rule
+    that is being parsed, and the next rule in the parsing chain.
+
+    This class attempts to match a regular expression (case-insensitive).
+
+    keys for the rules dictionary:
+
+    =========  ========
+    key        contents
+    =========  ========
+    value      The regular expression to look for
+    name       The name of the rule
+    optional   (optional) If true, denotes that this rule is optional
+    =========  ========
+
+    :param parser: The parser that this rule belongs to
+    :param rule: A dictionary representing the rule configuration (see each rule class for details)
+    :param next_rule: A dictionary representing the next rule
+    :type parser: parser
+    :type rule: dict
+    :type next_rule: dict
+    :returns: rule object
+    """
 
     regexp = ''
 
