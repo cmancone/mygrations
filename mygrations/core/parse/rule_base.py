@@ -27,7 +27,7 @@ class rule_base( object ):
             raise ValueError( "name required for rule %s in class %s" % ( self.rule, self.parser_class ) )
 
         # ditto rule
-        if self.require_value and not 'value' in self.rule:
+        if self.require_value and not 'value' in self.rule or not self.rule['value']:
             raise ValueError( 'missing value in rule %s for class %s' % ( self.rule, self.parser_class ) )
 
     def parse( self, string ):
