@@ -42,6 +42,9 @@ class rule_children( rule_base ):
         if not 'classes' in self.rule:
             raise ValueError( 'Missing classes for children rule %s in %s' % ( rule, self.parser_class ) )
 
+        if not self.rule['classes']:
+            raise ValueError( 'Missing classes for children rule %s in %s' % ( rule, self.parser_class ) )
+
         self.classes = self.rule['classes']
 
     def parse( self, string ):
@@ -98,7 +101,7 @@ class rule_children( rule_base ):
                     return True
                 else:
                     self.leftovers = string
-                    self.result = False
+                    self.result = ''
                 return False
 
         # the only way we would get here is if we matched the entire string
