@@ -17,6 +17,12 @@ class test_rule_two( parser ):
         { 'type': 'literal', 'value': 'sup' }
     ]
 
+class test_rule_overlap( parser ):
+
+    rules = [
+        { 'type': 'regexp', 'name': 'test_overlap', 'value': '\S+' }
+    ]
+
 class test_parse_children( unittest.TestCase ):
 
     def get_rule( self, name, classes ):
@@ -42,3 +48,37 @@ class test_parse_children( unittest.TestCase ):
         self.assertFalse( rule.parse( 'okay bob greg' ) )
         self.assertEquals( '', rule.result )
         self.assertEquals( 'okay bob greg', rule.leftovers )
+
+    # we should be able to match any number of children in any order
+    # as long as their parsers match, we will match them
+    def test_match_any_order( self ):
+
+        rule = self.get_rule( 'test', [ test_rule, test_rule_two ] )
+        self.assertTrue( rule.parse( '999 sup bob greg bob greg 1234568 sup hey' ) )
+        self.assertEquals( 'hey', rule.leftovers )
+
+        self.assertEquals( 4, len( rule.result ) )
+        self.assertTrue( rule.result[0].__class__ == test_rule_two )
+        self.assertTrue( rule.result[1].__class__ == test_rule )
+        self.assertTrue( rule.result[2].__class__ == test_rule )
+        self.assertTrue( rule.result[3].__class__ == test_rule_two )
+
+    # if two rules both match a string the rule that matches
+    # the largest portion of the string wins.
+    def test_matches_most_wins( self ):
+
+        rule = self.get_rule( 'test', [ test_rule_overlap, test_rule ] )
+
+        self.assertTrue( rule.parse( 'bob greg' ) )
+        self.assertTrue( rule.result[0].__class__ == test_rule )
+        self.assertEquals( '', rule.leftovers )
+
+    # if a child can't match all required params other
+    # children can match
+    def test_missing_required_cant_match( self ):
+
+        rule = self.get_rule( 'test', [ test_rule_overlap, test_rule ] )
+
+        self.assertTrue( rule.parse( 'bob' ) )
+        self.assertTrue( rule.result[0].__class__ == test_rule_overlap )
+        self.assertEquals( '', rule.leftovers )
