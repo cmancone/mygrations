@@ -20,9 +20,14 @@ class parser( object ):
     _values = {}
     matched = False
 
+    errors = []
+    warnings = []
+
     def __init__( self, rules = [] ):
 
         self._values = {}
+        self.errors = []
+        self.warnings = []
 
         # rules should be defined by the subclass
         if rules:
@@ -117,5 +122,15 @@ class parser( object ):
 
         # if we got here then we didn't match everything, but we fulfilled all of our
         # required rules.  As a result, we are done!
+        self.process()
         self.matched = True
         return string
+
+    process( self ):
+        """ parser.process()
+
+        Processes the results of the parsing process.  Only called if a match is found.  No input
+        or output as it modifies the parser object in place, populating attributes as needed.
+        """
+
+        pass
