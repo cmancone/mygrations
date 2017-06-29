@@ -24,7 +24,7 @@ class index_unique( parser ):
 
         self.columns = []
 
-    process( self ):
+    def process( self ):
 
         self.name = self._values['name']
         self.columns = self._values['columns']

@@ -36,7 +36,7 @@ class constraint_foreign( parser ):
         { 'type': 'literal', 'value': ',', 'optional': True, 'name': 'ending_comma' }
     ]
 
-    process( self ):
+    def process( self ):
 
         self.name = self._values['name']
         self.column = self._values['column']

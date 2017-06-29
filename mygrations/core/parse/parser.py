@@ -126,7 +126,7 @@ class parser( object ):
         self.matched = True
         return string
 
-    process( self ):
+    def process( self ):
         """ parser.process()
 
         Processes the results of the parsing process.  Only called if a match is found.  No input

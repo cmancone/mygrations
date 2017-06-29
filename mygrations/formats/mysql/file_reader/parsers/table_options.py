@@ -12,7 +12,7 @@ class table_options( parser ):
         { 'type': 'regexp', 'value': '[^\s;]+', 'name': 'value' }
     ]
 
-    process( self ):
+    def process( self ):
 
         self.name = self._values['name']
         self.value = self._values['value']

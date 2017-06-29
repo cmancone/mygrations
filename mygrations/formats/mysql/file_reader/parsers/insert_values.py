@@ -18,7 +18,7 @@ class insert_values( parser ):
 
         self.values = []
 
-    process( self ):
+    def process( self ):
 
         self.values = self._values['values']
         self.has_comma = True if 'ending_comma' in self._values else False
