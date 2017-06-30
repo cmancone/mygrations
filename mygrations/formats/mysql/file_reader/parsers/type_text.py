@@ -4,13 +4,13 @@ class type_text( parser ):
 
     #***** Lint error if default is found for text field ******
     allowed_types = {
-        'tinyblob,':    True
-        'blob,':        True
-        'mediumblob,':  True
-        'longblob,':    True
-        'tinytext,':    True
-        'text,':        True
-        'mediumtext,':  True
+        'tinyblob':     True,
+        'blob':         True,
+        'mediumblob':   True,
+        'longblob':     True,
+        'tinytext':     True,
+        'text':         True,
+        'mediumtext':   True,
         'longtext':     True
     }
 

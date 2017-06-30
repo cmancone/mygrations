@@ -47,7 +47,7 @@ class type_enum( parser ):
         self.character_set = self._values['character_set'] if 'character_set' in self._values else ''
         self.collate = self._values['collate'] if 'collate' in self._values else ''
 
-        if !self.null and self.default.lower() == 'null':
+        if not self.null and self.default.lower() == 'null':
             self.errors.append( 'Default set to null for column %s but column is not nullable' % self.name )
 
         # only a few types of field are allowed to use this

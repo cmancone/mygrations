@@ -42,7 +42,7 @@ class type_decimal( parser ):
         self.null = False if 'NOT NULL' in self._values else True
         self.default = self._values['default'] if 'default' in self._values else ''
 
-        if !self.null and self.default.lower() == 'null':
+        if not self.null and self.default.lower() == 'null':
             self.errors.append( 'Default set to null for column %s but column is not nullable' % self.name )
 
         # only a few types of field are allowed to have decimals

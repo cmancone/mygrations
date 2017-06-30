@@ -4,15 +4,15 @@ class type_numeric( parser ):
 
     allowed_types = {
         'bit':          True,
-        'tinyint':      True
-        'smallint':     True
-        'mediumint':    True
-        'int':          True
-        'integer':      True
-        'bigint':       True
-        'decimal':      True
-        'numeric':      True
-        'char':         True
+        'tinyint':      True,
+        'smallint':     True,
+        'mediumint':    True,
+        'int':          True,
+        'integer':      True,
+        'bigint':       True,
+        'decimal':      True,
+        'numeric':      True,
+        'char':         True,
         'varchar':      True
     }
 
@@ -53,7 +53,7 @@ class type_numeric( parser ):
         self.default = self._values['default'] if 'default' in self._values else ''
         self.auto_increment = True if 'AUTO_INCREMENT' in self._values else False
 
-        if !self.null and self.default.lower() == 'null':
+        if not self.null and self.default.lower() == 'null':
             self.errors.append( 'Default set to null for column %s but column is not nullable' % self.name )
 
         # only a few types of field are allowed to have decimals

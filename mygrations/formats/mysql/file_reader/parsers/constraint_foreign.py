@@ -38,10 +38,10 @@ class constraint_foreign( parser ):
 
     def process( self ):
 
-        self.name = self._values['name']
-        self.column = self._values['column']
-        self.foreign_table = self._values['foreign_table']
-        self.foreign_column = self._values['foreign_column']
+        self.name = self._values['name'].strip().strip( '`' )
+        self.column = self._values['column'].strip().strip( '`' )
+        self.foreign_table = self._values['foreign_table'].strip().strip( '`' )
+        self.foreign_column = self._values['foreign_column'].strip().strip( '`' )
 
         # figure out what our rules are
         self.on_delete = self.find_action( 'DELETE' )
@@ -54,7 +54,7 @@ class constraint_foreign( parser ):
         # watch for more than one action for this type
         found = ''
         for action in [ 'CASCADE', 'NO ACTION', 'RESTRICT', 'SET DEFAULT', 'SET NULL' ]:
-            if not ( 'ON %s %s' % update_type, action ) in self._values:
+            if not ( 'ON %s %s' % ( update_type, action ) ) in self._values:
                 continue
 
             if found:
@@ -62,4 +62,8 @@ class constraint_foreign( parser ):
             else:
                 found = action
 
-        return found
+        # restrict is the default for MySQL if not specified
+        if not found:
+            return 'RESTRICT'
+
+        return found.upper()
