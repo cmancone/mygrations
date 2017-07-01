@@ -26,6 +26,9 @@ class index_key( parser ):
 
     def process( self ):
 
-        self.name = self._values['name']
+        self.name = self._values['name'].strip().strip( '`' )
         self.columns = self._values['columns']
         self.has_comma = True if 'ending_comma' in self._values else False
+
+        if len( self.name ) > 64:
+            self.errors.append( 'Key name %s is too long' % ( self.name ) )

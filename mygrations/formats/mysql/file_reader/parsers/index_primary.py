@@ -2,7 +2,7 @@ from mygrations.core.parse.parser import parser
 
 class index_primary( parser ):
 
-    definition_type = 'primary_key'
+    definition_type = 'primary'
 
     column = ''
     has_comma = False
@@ -18,5 +18,5 @@ class index_primary( parser ):
 
     def process( self ):
 
-        self.column = self._values['column']
+        self.column = self._values['column'].strip().strip( '`' )
         self.has_comma = True if 'ending_comma' in self._values else False

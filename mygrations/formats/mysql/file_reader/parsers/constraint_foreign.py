@@ -12,6 +12,11 @@ class constraint_foreign( parser ):
     on_delete = ''
     has_comma = False
 
+    #################
+    #################
+    # If I condensed the ON DELETE's and ON UPDATES's into a children rule,
+    # then the order wouldn't matter and I could get better errors.
+
     # CONSTRAINT `accounts_status_id_ref_account_statuses_id` FOREIGN KEY (`status_id`) REFERENCES `account_statuses` (`id`) ON UPDATE CASCADE
     rules = [
         { 'type': 'literal', 'value': 'CONSTRAINT' },
@@ -48,6 +53,9 @@ class constraint_foreign( parser ):
         self.on_update = self.find_action( 'UPDATE' )
 
         self.has_comma = True if 'ending_comma' in self._values else False
+
+        if len( self.name ) > 64:
+            self.errors.append( 'Key name %s is too long' % ( self.name ) )
 
     def find_action( self, update_type ):
 

@@ -116,6 +116,7 @@ class parser( object ):
 
         # did we check every required rule?
         for check_index in range( rule_index+1, self.num_rules ):
+            rule = self.rules[check_index]
             if not 'optional' in rule or not rule['optional']:
                 self.matched = False
                 return string
