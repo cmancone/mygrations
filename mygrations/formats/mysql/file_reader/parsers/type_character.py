@@ -38,9 +38,9 @@ class type_character( parser ):
         { 'type': 'regexp', 'value': '\d+', 'name': 'length' },
         { 'type': 'literal', 'value': ')' },
         { 'type': 'literal', 'value': 'NOT NULL', 'optional': True },
-        { 'type': 'regexp', 'value': 'DEFAULT [^\(\s\)]+', 'optional': True, 'name': 'default' },
-        { 'type': 'regexp', 'value': 'CHARACTER SET [^\(\s\)]+', 'name': 'character_set', 'optional': True },
-        { 'type': 'regexp', 'value': 'COLLATE [^\(\s\)]+', 'name': 'collate', 'optional': True },
+        { 'type': 'regexp', 'value': 'DEFAULT ([^\(\s\),]+)', 'optional': True, 'name': 'default' },
+        { 'type': 'regexp', 'value': 'CHARACTER SET ([^\(\s\),]+)', 'name': 'character_set', 'optional': True },
+        { 'type': 'regexp', 'value': 'COLLATE ([^\(\s\),]+)', 'name': 'collate', 'optional': True },
         { 'type': 'literal', 'value': ',', 'optional': True, 'name': 'ending_comma' }
     ]
 
@@ -52,16 +52,35 @@ class type_character( parser ):
         self.column_type = self._values['type']
         self.length = self._values['length']
         self.null = False if 'NOT NULL' in self._values else True
-        self.default = self._values['default'] if 'default' in self._values else ''
+        self.default = self._values['default'] if 'default' in self._values else None
         self.character_set = self._values['character_set'] if 'character_set' in self._values else ''
         self.collate = self._values['collate'] if 'collate' in self._values else ''
 
-        if not self.null and self.default.lower() == 'null':
-            self.errors.append( 'Default set to null for column %s but column is not nullable' % self.name )
+        # make sense of the default
+        if self.default and len( self.default ) >= 2 and self.default[0] == "'" and self.default[-1] == "'":
+            self.default = self.default.strip( "'" )
+        elif self.default:
+            if self.default.lower() == 'null':
+                self.default = None
+            if not self.default.isdigit():
+                self.errors.append( 'Default value of "%s" should have quotes for field %s' % (self.default,self.name) )
+                self.matched = False
+
+        if len( self.character_set ) >= 2 and self.character_set[0] == "'" and self.character_set[-1] == "'":
+            self.character_set = self.character_set.strip( "'" )
+
+        if len( self.collate ) >= 2 and self.collate[0] == "'" and self.collate[-1] == "'":
+            self.collate = self.collate.strip( "'" )
 
         if self.character_set or self.collate:
             if not self.column_type.lower() in self.allowed_collation_types:
                 self.errors.append( 'Column of type %s is not allowed to have a collation or character set for column %s' % ( self.column_type, self.name ) )
+                self.matched = False
+
+        if self.default is None and not self.null:
+            self.errors.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self.name ) )
+            self.matched = False
 
         if self.column_type.lower() in self.disallowed_types:
             self.errors.append( 'Column of type %s is not allowed to have a length for column %s' % ( self.column_type, self.name ) )
+            self.matched = False
