@@ -73,7 +73,7 @@ class test_type_character( unittest.TestCase ):
         self.assertTrue( parser.matched )
         self.assertEquals( '', returned )
 
-        self.assertTrue( 'is not null and has no default' in parser.errors[0] )
+        self.assertTrue( 'is not null and has no default' in parser.warnings[0] )
 
     # only char and varchar can have collate
     def test_disallowed_collate( self ):

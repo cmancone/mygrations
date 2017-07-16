@@ -63,8 +63,7 @@ class type_character( parser ):
             if self.default.lower() == 'null':
                 self.default = None
             if not self.default.isdigit():
-                self.errors.append( 'Default value of "%s" should have quotes for field %s' % (self.default,self.name) )
-                self.matched = False
+                self.warnings.append( 'Default value of "%s" should have quotes for field %s' % (self.default,self.name) )
 
         if len( self.character_set ) >= 2 and self.character_set[0] == "'" and self.character_set[-1] == "'":
             self.character_set = self.character_set.strip( "'" )
@@ -75,12 +74,9 @@ class type_character( parser ):
         if self.character_set or self.collate:
             if not self.column_type.lower() in self.allowed_collation_types:
                 self.errors.append( 'Column of type %s is not allowed to have a collation or character set for column %s' % ( self.column_type, self.name ) )
-                self.matched = False
 
         if self.default is None and not self.null:
-            self.errors.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self.name ) )
-            self.matched = False
+            self.warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self.name ) )
 
         if self.column_type.lower() in self.disallowed_types:
             self.errors.append( 'Column of type %s is not allowed to have a length for column %s' % ( self.column_type, self.name ) )
-            self.matched = False
