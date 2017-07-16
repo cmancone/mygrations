@@ -4,7 +4,15 @@ from .parsers import *
 
 class create_parser( parser ):
 
-    string = ''
+    semicolon = False
+    name = ''
+    definitions = []
+    table_options = []
+
+    def __init__( self, rules = [] ):
+
+        self.definitions = []
+        self.table_options = []
 
     # this defines the rules for the parsing engine.  Yes, I decided to try to build
     # a parsing engine to parse the MySQL.  Seems like a reasonable choice at the
@@ -20,7 +28,7 @@ class create_parser( parser ):
     # which also have to be defined.  That is handled below for the sake of brevity
     rules = [
         { 'type': 'literal', 'value': 'CREATE TABLE' },
-        { 'type': 'regexp', 'value': '\S+', 'name': 'table' },
+        { 'type': 'regexp', 'value': '\S+', 'name': 'name' },
         { 'type': 'literal', 'value': '(' },
         { 'type': 'children', 'name': 'definitions', 'classes': [
             index_primary, index_key, index_unique, constraint_foreign, type_character, type_numeric, type_decimal, type_text, type_enum, type_plain
@@ -30,8 +38,20 @@ class create_parser( parser ):
         { 'type': 'literal', 'value': ';', 'optional': True, 'name': 'closing_semicolon' }
     ]
 
-    ###### A line can potentially match multiple elements.  Imagine a mistake like this:
-    # varchar(255) UNSIGNED NOT NULL DEFAULT '' CHARACTER SET 'utf8'
-    # It is a syntax error and should be identified as such
+    def process( self ):
 
-    ###### Track match percentage to get syntax errors
+        self.semicolon = True if 'closing_semicolon' in self._values else False
+        self.name = self._values['name'].strip( '`' )
+        self.definitions = self._values['definitions']
+        self.table_options = self._values['table_options']
+
+        ncols = 0
+        for definition in self.definitions:
+            if definition.definition_type == 'column':
+                ncols += 1
+
+        if not self.name:
+            self.errors.append( 'Table name is required' )
+
+        if not ncols:
+            self.errors.append( "Table %s has no columns" % self.name )
