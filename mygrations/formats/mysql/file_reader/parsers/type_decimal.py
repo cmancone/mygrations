@@ -26,7 +26,7 @@ class type_decimal( parser ):
         { 'type': 'literal', 'value': ')' },
         { 'type': 'literal', 'value': 'UNSIGNED', 'optional': True },
         { 'type': 'literal', 'value': 'NOT NULL', 'optional': True },
-        { 'type': 'regexp', 'value': 'DEFAULT [^\(\s\)]+', 'optional': True, 'name': 'default' },
+        { 'type': 'regexp', 'value': 'DEFAULT ([^\(\s\),]+)', 'optional': True, 'name': 'default' },
         { 'type': 'literal', 'value': ',', 'optional': True, 'name': 'ending_comma' }
     ]
 
@@ -40,10 +40,17 @@ class type_decimal( parser ):
         self.decimals = self._values['decimals']
         self.unsigned = True if 'UNSIGNED' in self._values else False
         self.null = False if 'NOT NULL' in self._values else True
-        self.default = self._values['default'] if 'default' in self._values else ''
+        self.default = self._values['default'] if 'default' in self._values else None
 
-        if not self.null and self.default.lower() == 'null':
-            self.errors.append( 'Default set to null for column %s but column is not nullable' % self.name )
+        # make sense of the default
+        if self.default and len( self.default ) >= 2 and self.default[0] == "'" and self.default[-1] == "'":
+            self.default = self.default.strip( "'" )
+            self.warnings.append( 'Default value for numeric column %s does not need to be quoted' % self.name )
+        elif self.default and self.default.lower() == 'null':
+            self.default = None
+
+        if self.default is None and not self.null:
+            self.warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self.name ) )
 
         # only a few types of field are allowed to have decimals
         if not self.column_type.lower() in self.allowed_types:
