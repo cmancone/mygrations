@@ -8,7 +8,7 @@ from .type_enum import type_enum
 from .type_numeric import type_numeric
 from .type_plain import type_plain
 from .type_text import type_text
-from .table_options import table_options
+from .table_option import table_option
 from .insert_values import insert_values
 
-__all__ = [ "constraint_foreign", "index_key", "index_primary", "index_unique", "type_character", "type_decimal", "type_enum", "type_numeric", "type_plain", "type_text", "table_options", "insert_values" ]
+__all__ = [ "constraint_foreign", "index_key", "index_primary", "index_unique", "type_character", "type_decimal", "type_enum", "type_numeric", "type_plain", "type_text", "table_option", "insert_values" ]

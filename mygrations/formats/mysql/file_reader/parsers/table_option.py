@@ -1,6 +1,6 @@
 from mygrations.core.parse.parser import parser
 
-class table_options( parser ):
+class table_option( parser ):
 
     name = ''
     value = ''

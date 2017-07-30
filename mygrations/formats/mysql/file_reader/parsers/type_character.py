@@ -62,7 +62,7 @@ class type_character( parser ):
         elif self.default:
             if self.default.lower() == 'null':
                 self.default = None
-            if not self.default.isdigit():
+            elif not self.default.isdigit():
                 self.warnings.append( 'Default value of "%s" should have quotes for field %s' % (self.default,self.name) )
 
         if len( self.character_set ) >= 2 and self.character_set[0] == "'" and self.character_set[-1] == "'":

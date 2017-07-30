@@ -6,6 +6,7 @@ class index_primary( parser ):
 
     column = ''
     has_comma = False
+    name = ''
 
     # PRIMARY KEY (`id`),
     rules = [
@@ -20,3 +21,4 @@ class index_primary( parser ):
 
         self.column = self._values['column'].strip().strip( '`' )
         self.has_comma = True if 'ending_comma' in self._values else False
+        self.name = self.column

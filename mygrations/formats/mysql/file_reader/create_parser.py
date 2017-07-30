@@ -1,6 +1,7 @@
 from mygrations.core.parse.parser import parser
 
 from .parsers import *
+from ..definitions import table
 
 class create_parser( parser ):
 
@@ -8,6 +9,7 @@ class create_parser( parser ):
     name = ''
     definitions = []
     table_options = []
+    definition = None
 
     def __init__( self, rules = [] ):
 
@@ -34,7 +36,7 @@ class create_parser( parser ):
             index_primary, index_key, index_unique, constraint_foreign, type_character, type_numeric, type_decimal, type_text, type_enum, type_plain
         ] },
         { 'type': 'literal', 'value': ')' },
-        { 'type': 'children', 'name': 'table_options', 'classes': [ table_options ], 'optional': True },
+        { 'type': 'children', 'name': 'table_options', 'classes': [ table_option ], 'optional': True },
         { 'type': 'literal', 'value': ';', 'optional': True, 'name': 'closing_semicolon' }
     ]
 
@@ -55,3 +57,6 @@ class create_parser( parser ):
 
         if not ncols:
             self.errors.append( "Table %s has no columns" % self.name )
+
+        if not self.errors:
+            self.definition = table( self )
