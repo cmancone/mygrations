@@ -1,17 +1,37 @@
 from collections import OrderedDict
-from .wrap_parser import wrap_parser
 
 class table( object ):
 
     columns = None
     indexes = None
     constraints = None
+    primary_column = ''
 
     def __init__( self, parsed_table ):
+
+        self.columns = OrderedDict()
+        self.indexes = OrderedDict()
+        self.constraints = OrderedDict()
 
         for parsed_definition in parsed_table.definitions:
 
             definition = wrap_parser( parsed_definition )
-            print ( '%s %s' % ( parsed_definition.name, definition.__class__ ) )
-            #print( '%s %s' % ( definition.name, definition.definition_type ) )
 
+            # we still have to do a little sorting
+            if definition.definition_type == 'column':
+                store_name = 'columns'
+            elif definition.definition_type == 'index':
+                store_name = 'indexes'
+            elif definition.definition_type == 'primary':
+                store_name = 'indexes'
+                self.primary_column = definition.name
+            elif definition.definition_type == 'constraint':
+                store_name = 'constraints'
+
+            store = getattr( self, store_name )
+            store[definition.name] = definition
+            setattr( self, store_name, store )
+
+        #print( self.columns )
+        #print( self.indexes )
+        #print( self.constraints )

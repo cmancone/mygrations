@@ -47,16 +47,16 @@ class create_parser( parser ):
         self.definitions = self._values['definitions']
         self.table_options = self._values['table_options']
 
-        ncols = 0
-        for definition in self.definitions:
-            if definition.definition_type == 'column':
-                ncols += 1
+        #ncols = 0
+        #for definition in self.definitions:
+            #if definition.definition_type == 'column':
+                #ncols += 1
 
-        if not self.name:
-            self.errors.append( 'Table name is required' )
+        #if not self.name:
+            #self.errors.append( 'Table name is required' )
 
-        if not ncols:
-            self.errors.append( "Table %s has no columns" % self.name )
+        #if not ncols:
+            #self.errors.append( "Table %s has no columns" % self.name )
 
-        if not self.errors:
-            self.definition = table( self )
+        #if not self.errors:
+            #self.definition = table( self )

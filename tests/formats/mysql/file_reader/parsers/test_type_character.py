@@ -15,7 +15,7 @@ class test_type_character( unittest.TestCase ):
 
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'name', parser.name )
-        self.assertEquals( 'varchar', parser.column_type )
+        self.assertEquals( 'VARCHAR', parser.column_type )
         self.assertEquals( '255', parser.length )
         self.assertFalse( parser.null )
         self.assertEquals( 'sup', parser.default )
@@ -35,7 +35,7 @@ class test_type_character( unittest.TestCase ):
 
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'name', parser.name )
-        self.assertEquals( 'varchar', parser.column_type )
+        self.assertEquals( 'VARCHAR', parser.column_type )
         self.assertEquals( '255', parser.length )
         self.assertFalse( parser.null )
         self.assertEquals( 'sup', parser.default )
@@ -55,7 +55,7 @@ class test_type_character( unittest.TestCase ):
 
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'name', parser.name )
-        self.assertEquals( 'varchar', parser.column_type )
+        self.assertEquals( 'VARCHAR', parser.column_type )
         self.assertEquals( '255', parser.length )
         self.assertTrue( parser.null )
         self.assertEquals( None, parser.default )
@@ -63,6 +63,17 @@ class test_type_character( unittest.TestCase ):
         self.assertEquals( '', parser.character_set )
         self.assertEquals( '', parser.collate )
         self.assertEquals( 0, len( parser.errors ) )
+
+    def test_empty_default( self ):
+
+        # parse typical insert values
+        parser = type_character()
+        returned = parser.parse( "name varchar(255) default ''" )
+
+        self.assertTrue( parser.matched )
+        self.assertEquals( '', returned )
+
+        self.assertEquals( '', parser.default )
 
     def test_strip_backticks( self ):
 
