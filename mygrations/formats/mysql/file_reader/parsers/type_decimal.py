@@ -34,7 +34,7 @@ class type_decimal( parser ):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        self.name = self._values['name']
+        self.name = self._values['name'].strip( '`' )
         self.column_type = self._values['type']
         self.length = self._values['length']
         self.decimals = self._values['decimals']

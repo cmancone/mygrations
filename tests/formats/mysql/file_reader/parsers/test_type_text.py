@@ -40,6 +40,17 @@ class test_type_text( unittest.TestCase ):
         self.assertEquals( 'boo', parser.collate )
         self.assertEquals( 0, len( parser.errors ) )
 
+    def test_strip_backticks( self ):
+
+        # parse typical insert values
+        parser = type_text()
+        returned = parser.parse( "`name` text not null" )
+
+        self.assertTrue( parser.matched )
+        self.assertEquals( '', returned )
+        self.assertEquals( 'column', parser.definition_type )
+        self.assertEquals( 'name', parser.name )
+
     def test_no_default( self ):
 
         # parse typical insert values

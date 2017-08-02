@@ -40,6 +40,17 @@ class test_type_plain( unittest.TestCase ):
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( 0, len( parser.warnings ) )
 
+    def test_strip_backticks( self ):
+
+        # parse typical insert values
+        parser = type_plain()
+        returned = parser.parse( "`created` date" )
+
+        self.assertTrue( parser.matched )
+        self.assertEquals( '', returned )
+        self.assertEquals( 'column', parser.definition_type )
+        self.assertEquals( 'created', parser.name )
+
     def test_not_null_needs_default( self ):
 
         # parse typical insert values

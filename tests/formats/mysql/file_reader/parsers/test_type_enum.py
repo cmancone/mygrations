@@ -42,6 +42,17 @@ class test_type_enum( unittest.TestCase ):
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( 0, len( parser.warnings ) )
 
+    def test_strip_backticks( self ):
+
+        # parse typical insert values
+        parser = type_enum()
+        returned = parser.parse( "`options` enum('bob','joe','ray')" )
+
+        self.assertTrue( parser.matched )
+        self.assertEquals( '', returned )
+        self.assertEquals( 'column', parser.definition_type )
+        self.assertEquals( 'options', parser.name )
+
     def test_warning_for_no_quote_default( self ):
 
         # parse typical insert values

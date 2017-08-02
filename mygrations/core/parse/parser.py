@@ -34,7 +34,7 @@ class parser( object ):
             self.rules = rules
 
         if not self.rules:
-            raise ValueError( "Cannot extend parser without providing rules in %s" % ( self.__class__ ) )
+            raise NotImplementedError( "Cannot extend parser without providing rules in %s" % ( self.__class__ ) )
 
         for ( rule_index, rule ) in enumerate( self.rules ):
 

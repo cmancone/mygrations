@@ -64,6 +64,18 @@ class test_type_character( unittest.TestCase ):
         self.assertEquals( '', parser.collate )
         self.assertEquals( 0, len( parser.errors ) )
 
+    def test_strip_backticks( self ):
+
+        # parse typical insert values
+        parser = type_character()
+        returned = parser.parse( "`name` varchar(255)" )
+
+        self.assertTrue( parser.matched )
+        self.assertEquals( '', returned )
+
+        self.assertEquals( 'column', parser.definition_type )
+        self.assertEquals( 'name', parser.name )
+
     def test_not_null_needs_default( self ):
 
         # parse typical insert values

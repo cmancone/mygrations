@@ -39,7 +39,7 @@ class type_enum( parser ):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        self.name = self._values['name']
+        self.name = self._values['name'].strip( '`' )
         self.column_type = self._values['type']
         self.values = self._values['values']
         self.null = False if 'NOT NULL' in self._values else True

@@ -46,6 +46,18 @@ class test_type_decimal( unittest.TestCase ):
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( 0, len( parser.warnings ) )
 
+    def test_strip_backticks( self ):
+
+        # parse typical insert values
+        parser = type_decimal()
+        returned = parser.parse( "`latitude` float(10,7)" )
+
+        self.assertTrue( parser.matched )
+        self.assertEquals( '', returned )
+
+        self.assertEquals( 'column', parser.definition_type )
+        self.assertEquals( 'latitude', parser.name )
+
     def test_warning_for_string_default( self ):
 
         # parse typical insert values

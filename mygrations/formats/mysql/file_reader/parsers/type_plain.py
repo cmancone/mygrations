@@ -23,7 +23,7 @@ class type_plain( parser ):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        self.name = self._values['name']
+        self.name = self._values['name'].strip( '`' )
         self.column_type = self._values['type']
         self.default = self._values['default'].strip( "'" ) if 'default' in self._values else None
         self.null = False if 'NOT NULL' in self._values else True

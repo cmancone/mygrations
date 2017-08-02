@@ -39,7 +39,7 @@ class type_text( parser ):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        self.name = self._values['name']
+        self.name = self._values['name'].strip( '`' )
         self.column_type = self._values['type']
         self.null = False if 'NOT NULL' in self._values else True
         self.character_set = self._values['character_set'].strip( "'" ) if 'character_set' in self._values else ''
