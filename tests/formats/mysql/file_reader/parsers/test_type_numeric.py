@@ -13,9 +13,8 @@ class test_type_numeric( unittest.TestCase ):
         self.assertTrue( parser.matched )
         self.assertEquals( '', returned )
 
-        self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'created', parser.name )
-        self.assertEquals( 'int', parser.column_type )
+        self.assertEquals( 'INT', parser.column_type )
         self.assertEquals( '10', parser.length )
         self.assertFalse( parser.unsigned )
         self.assertFalse( parser.null )
@@ -33,9 +32,8 @@ class test_type_numeric( unittest.TestCase ):
         self.assertTrue( parser.matched )
         self.assertEquals( '', returned )
 
-        self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'created', parser.name )
-        self.assertEquals( 'int', parser.column_type )
+        self.assertEquals( 'INT', parser.column_type )
         self.assertTrue( parser.unsigned )
         self.assertEquals( '10', parser.length )
         self.assertTrue( parser.null )
@@ -52,7 +50,6 @@ class test_type_numeric( unittest.TestCase ):
 
         self.assertTrue( parser.matched )
         self.assertEquals( '', returned )
-        self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'created', parser.name )
 
     def test_warning_for_string_default( self ):

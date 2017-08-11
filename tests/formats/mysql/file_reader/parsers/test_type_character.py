@@ -20,8 +20,8 @@ class test_type_character( unittest.TestCase ):
         self.assertFalse( parser.null )
         self.assertEquals( 'sup', parser.default )
         self.assertTrue( parser.has_comma )
-        self.assertEquals( '', parser.character_set )
-        self.assertEquals( '', parser.collate )
+        self.assertTrue( parser.character_set is None )
+        self.assertTrue( parser.collate is None )
         self.assertEquals( 0, len( parser.errors ) )
 
     def test_character_set( self ):
@@ -40,8 +40,8 @@ class test_type_character( unittest.TestCase ):
         self.assertFalse( parser.null )
         self.assertEquals( 'sup', parser.default )
         self.assertTrue( parser.has_comma )
-        self.assertEquals( 'blah', parser.character_set )
-        self.assertEquals( 'boo', parser.collate )
+        self.assertEquals( 'BLAH', parser.character_set )
+        self.assertEquals( 'BOO', parser.collate )
         self.assertEquals( 0, len( parser.errors ) )
 
     def test_optional_default( self ):
@@ -60,8 +60,8 @@ class test_type_character( unittest.TestCase ):
         self.assertTrue( parser.null )
         self.assertEquals( None, parser.default )
         self.assertFalse( parser.has_comma )
-        self.assertEquals( '', parser.character_set )
-        self.assertEquals( '', parser.collate )
+        self.assertTrue( parser.character_set is None )
+        self.assertTrue( parser.collate is None )
         self.assertEquals( 0, len( parser.errors ) )
 
     def test_empty_default( self ):

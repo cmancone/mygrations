@@ -2,6 +2,9 @@ class column( object ):
 
     definition_type = 'column'
     _unsigned = None
+    _character_set = None
+    _collate = None
+    _auto_increment = None
 
     @property
     def name( self ):
@@ -90,3 +93,38 @@ class column( object ):
         :rtype: bool|None
         """
         return self._unsigned
+
+    @property
+    def character_set( self ):
+        """ Public getter.  Returns None or a value to denote the CHARACTER_SET property
+
+        :returns: string, or None
+        :rtype: string|None
+        """
+        return None if self._character_set is None else self._character_set.upper()
+
+    @property
+    def collate( self ):
+        """ Public getter.  Returns None or a value to denote the COLLATE property
+
+        :returns: string, or None
+        :rtype: string|None
+        """
+        return None if self._character_set is None else self._collate.upper()
+
+    @property
+    def auto_increment( self ):
+        """ Public getter.  Returns True, False, or None to denote the status of the AUTO_INCREMENT property
+
+        ==================  ====================
+        Return Value        Meaning
+        ==================  ====================
+        True                The column is an AUTO_INCREMENT column
+        False               The column is not an AUTO_INCREMENT column
+        None                AUTO_INCREMENT is not an applicable property for this column type
+        ==================  ====================
+
+        :returns: True, False, or None
+        :rtype: bool|None
+        """
+        return self._auto_increment

@@ -15,7 +15,7 @@ class test_type_plain( unittest.TestCase ):
 
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'created', parser.name )
-        self.assertEquals( 'date', parser.column_type )
+        self.assertEquals( 'DATE', parser.column_type )
         self.assertFalse( parser.null )
         self.assertEquals( 'bob', parser.default )
         self.assertTrue( parser.has_comma )
@@ -33,7 +33,7 @@ class test_type_plain( unittest.TestCase ):
 
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'created', parser.name )
-        self.assertEquals( 'date', parser.column_type )
+        self.assertEquals( 'DATE', parser.column_type )
         self.assertTrue( parser.null )
         self.assertEquals( None, parser.default )
         self.assertFalse( parser.has_comma )

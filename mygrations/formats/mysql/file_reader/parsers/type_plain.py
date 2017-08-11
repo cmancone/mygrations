@@ -1,14 +1,9 @@
 from mygrations.core.parse.parser import parser
+from mygrations.formats.mysql.definitions.column import column
 
-class type_plain( parser ):
+class type_plain( parser, column ):
 
-    definition_type = 'column'
-
-    name = ''
-    column_type = ''
-    default = ''
     has_comma = False
-    null = False
 
     # created date
     rules = [
@@ -23,14 +18,14 @@ class type_plain( parser ):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        self.name = self._values['name'].strip( '`' )
-        self.column_type = self._values['type']
-        self.default = self._values['default'].strip( "'" ) if 'default' in self._values else None
-        self.null = False if 'NOT NULL' in self._values else True
+        self._name = self._values['name'].strip( '`' )
+        self._column_type = self._values['type']
+        self._default = self._values['default'].strip( "'" ) if 'default' in self._values else None
+        self._null = False if 'NOT NULL' in self._values else True
 
         # make sense of the default
-        if self.default and self.default.lower() == 'null':
-            self.default = None
+        if self._default and self._default.lower() == 'null':
+            self._default = None
 
-        if self.default is None and not self.null:
-            self.warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self.name ) )
+        if self._default is None and not self._null:
+            self.warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self._name ) )

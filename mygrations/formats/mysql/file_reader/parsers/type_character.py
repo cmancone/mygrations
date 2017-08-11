@@ -20,8 +20,6 @@ class type_character( parser, column ):
         'json':         True
     }
 
-    character_set = ''
-    collate = ''
     has_comma = False
 
     # name varchar(255) NOT NULL DEFAULT '' CHARACTER SET uf8 COLLATE utf8
@@ -47,8 +45,8 @@ class type_character( parser, column ):
         self._length = self._values['length']
         self._null = False if 'NOT NULL' in self._values else True
         self._default = self._values['default'] if 'default' in self._values else None
-        self.character_set = self._values['character_set'] if 'character_set' in self._values else ''
-        self.collate = self._values['collate'] if 'collate' in self._values else ''
+        self._character_set = self._values['character_set'] if 'character_set' in self._values else None
+        self._collate = self._values['collate'] if 'collate' in self._values else None
 
         # make sense of the default
         if self._default and len( self._default ) >= 2 and self._default[0] == "'" and self._default[-1] == "'":
@@ -59,13 +57,13 @@ class type_character( parser, column ):
             elif not self._default.isdigit():
                 self.warnings.append( 'Default value of "%s" should have quotes for field %s' % (self._default,self._name) )
 
-        if len( self.character_set ) >= 2 and self.character_set[0] == "'" and self.character_set[-1] == "'":
-            self.character_set = self.character_set.strip( "'" )
+        if self._character_set and len( self._character_set ) >= 2 and self._character_set[0] == "'" and self._character_set[-1] == "'":
+            self._character_set = self._character_set.strip( "'" )
 
-        if len( self.collate ) >= 2 and self.collate[0] == "'" and self.collate[-1] == "'":
-            self.collate = self.collate.strip( "'" )
+        if self._collate and len( self._collate ) >= 2 and self._collate[0] == "'" and self._collate[-1] == "'":
+            self._collate = self._collate.strip( "'" )
 
-        if self.character_set or self.collate:
+        if self._character_set or self._collate:
             if not self._column_type.lower() in self.allowed_collation_types:
                 self.errors.append( 'Column of type %s is not allowed to have a collation or character set for column %s' % ( self._column_type, self._name ) )
 
@@ -76,7 +74,7 @@ class type_character( parser, column ):
             self.errors.append( 'Column of type %s is not allowed to have a length for column %s' % ( self._column_type, self._name ) )
 
         self._attributes = {}
-        if self.character_set:
-            self._attributes['CHARACTER SET'] = self.character_set
-        if self.collate:
-            self._attributes['COLLATE'] = self.collate
+        if self._character_set:
+            self._attributes['CHARACTER SET'] = self._character_set
+        if self._collate:
+            self._attributes['COLLATE'] = self._collate

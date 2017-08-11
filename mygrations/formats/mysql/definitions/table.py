@@ -15,8 +15,6 @@ class table( object ):
 
         for parsed_definition in parsed_table.definitions:
 
-            definition = wrap_parser( parsed_definition )
-
             # we still have to do a little sorting
             if definition.definition_type == 'column':
                 store_name = 'columns'

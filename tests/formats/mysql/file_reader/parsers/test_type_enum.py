@@ -13,9 +13,8 @@ class test_type_enum( unittest.TestCase ):
         self.assertTrue( parser.matched )
         self.assertEquals( '', returned )
 
-        self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'options', parser.name )
-        self.assertEquals( 'enum', parser.column_type )
+        self.assertEquals( 'ENUM', parser.column_type )
         self.assertEquals( [ 'bob', 'joe', 'ray' ], parser.values )
         self.assertFalse( parser.null )
         self.assertEquals( 'bob', parser.default )
@@ -32,9 +31,8 @@ class test_type_enum( unittest.TestCase ):
         self.assertTrue( parser.matched )
         self.assertEquals( '', returned )
 
-        self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'options', parser.name )
-        self.assertEquals( 'enum', parser.column_type )
+        self.assertEquals( 'ENUM', parser.column_type )
         self.assertEquals( [ 'bob', 'joe', 'ray' ], parser.values )
         self.assertTrue( parser.null )
         self.assertEquals( None, parser.default )
@@ -50,7 +48,6 @@ class test_type_enum( unittest.TestCase ):
 
         self.assertTrue( parser.matched )
         self.assertEquals( '', returned )
-        self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'options', parser.name )
 
     def test_warning_for_no_quote_default( self ):

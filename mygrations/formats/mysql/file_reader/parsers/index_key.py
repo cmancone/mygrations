@@ -1,12 +1,11 @@
 from mygrations.core.parse.parser import parser
+from mygrations.formats.mysql.definitions.index import index
 
-class index_key( parser ):
+class index_key( parser, index ):
 
-    definition_type = 'index'
-
-    name = ''
+    _index_type = 'index'
     has_comma = False
-    columns = []
+    _columns = []
 
     # KEY account_id (account_id,name)
     rules = [
@@ -22,12 +21,12 @@ class index_key( parser ):
 
         super().__init__( rules )
 
-        self.columns = []
+        self._columns = []
 
     def process( self ):
 
-        self.name = self._values['name'].strip().strip( '`' )
-        self.columns = self._values['columns']
+        self._name = self._values['name'].strip().strip( '`' )
+        self._columns = self._values['columns']
         self.has_comma = True if 'ending_comma' in self._values else False
 
         if len( self.name ) > 64:

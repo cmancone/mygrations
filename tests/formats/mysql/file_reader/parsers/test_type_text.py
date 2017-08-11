@@ -15,7 +15,7 @@ class test_type_text( unittest.TestCase ):
 
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'name', parser.name )
-        self.assertEquals( 'text', parser.column_type )
+        self.assertEquals( 'TEXT', parser.column_type )
         self.assertFalse( parser.null )
         self.assertTrue( parser.has_comma )
         self.assertEquals( '', parser.character_set )
@@ -33,11 +33,11 @@ class test_type_text( unittest.TestCase ):
 
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'name', parser.name )
-        self.assertEquals( 'text', parser.column_type )
+        self.assertEquals( 'TEXT', parser.column_type )
         self.assertTrue( parser.null )
         self.assertTrue( parser.has_comma )
-        self.assertEquals( 'blah', parser.character_set )
-        self.assertEquals( 'boo', parser.collate )
+        self.assertEquals( 'BLAH', parser.character_set )
+        self.assertEquals( 'BOO', parser.collate )
         self.assertEquals( 0, len( parser.errors ) )
 
     def test_strip_backticks( self ):

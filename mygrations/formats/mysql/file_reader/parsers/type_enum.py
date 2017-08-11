@@ -1,18 +1,11 @@
 from mygrations.core.parse.parser import parser
+from mygrations.formats.mysql.definitions.column import column
 
-class type_enum( parser ):
+class type_enum( parser, column ):
 
     allowed_types = { 'set': True, 'enum': True }
 
-    definition_type = 'column'
-
-    name = ''
-    column_type = ''
     values = []
-    null = True
-    default = ''
-    character_set = ''
-    collate = ''
     has_comma = False
 
     # types enum( `young`,`middle`,`old` )
@@ -39,35 +32,36 @@ class type_enum( parser ):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        self.name = self._values['name'].strip( '`' )
-        self.column_type = self._values['type']
+        self._name = self._values['name'].strip( '`' )
+        self._column_type = self._values['type']
         self.values = self._values['values']
-        self.null = False if 'NOT NULL' in self._values else True
-        self.default = self._values['default'] if 'default' in self._values else None
-        self.character_set = self._values['character_set'] if 'character_set' in self._values else ''
-        self.collate = self._values['collate'] if 'collate' in self._values else ''
+        self._length = self.values
+        self._null = False if 'NOT NULL' in self._values else True
+        self._default = self._values['default'] if 'default' in self._values else None
+        self._character_set = self._values['character_set'] if 'character_set' in self._values else None
+        self._collate = self._values['collate'] if 'collate' in self._values else None
 
-        if len( self.character_set ) >= 2 and self.character_set[0] == "'" and self.character_set[-1] == "'":
-            self.character_set = self.character_set.strip( "'" )
+        if self._character_set and len( self._character_set ) >= 2 and self._character_set[0] == "'" and self._character_set[-1] == "'":
+            self._character_set = self._character_set.strip( "'" )
 
-        if len( self.collate ) >= 2 and self.collate[0] == "'" and self.collate[-1] == "'":
-            self.collate = self.collate.strip( "'" )
+        if self._collate and len( self._collate ) >= 2 and self._collate[0] == "'" and self._collate[-1] == "'":
+            self._collate = self._collate.strip( "'" )
 
         # make sense of the default
-        if self.default and len( self.default ) >= 2 and self.default[0] == "'" and self.default[-1] == "'":
-            self.default = self.default.strip( "'" )
-        elif self.default:
-            if self.default.lower() == 'null':
-                self.default = None
+        if self._default and len( self._default ) >= 2 and self._default[0] == "'" and self._default[-1] == "'":
+            self._default = self._default.strip( "'" )
+        elif self._default:
+            if self._default.lower() == 'null':
+                self._default = None
             else:
-                self.warnings.append( 'Default value of "%s" should have quotes for field %s' % (self.default,self.name) )
+                self.warnings.append( 'Default value of "%s" should have quotes for field %s' % (self._default,self._name) )
 
-        if self.default and not( self.default in self.values ):
-            self.errors.append( "Column %s has default value of %s but this is not an allowed value" % (self.name,self.default) )
+        if self._default and not( self._default in self.values ):
+            self.errors.append( "Column %s has default value of %s but this is not an allowed value" % (self._name,self._default) )
 
-        if self.default is None and not self.null:
-            self.warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self.name ) )
+        if self._default is None and not self._null:
+            self.warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self._name ) )
 
         # only a few types of field are allowed to use this
-        if not self.column_type.lower() in self.allowed_types:
-            self.errors.append( 'Column of type %s is not allowed to have a list of values for column %s' % ( self.column_type, self.name ) )
+        if not self._column_type.lower() in self.allowed_types:
+            self.errors.append( 'Column of type %s is not allowed to have a list of values for column %s' % ( self._column_type, self._name ) )

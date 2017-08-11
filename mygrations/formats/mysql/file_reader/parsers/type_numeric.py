@@ -1,6 +1,7 @@
 from mygrations.core.parse.parser import parser
+from mygrations.formats.mysql.definitions.column import column
 
-class type_numeric( parser ):
+class type_numeric( parser, column ):
 
     allowed_types = {
         'bit':          True,
@@ -16,15 +17,6 @@ class type_numeric( parser ):
         'varchar':      True
     }
 
-    definition_type = 'column'
-
-    name = ''
-    column_type = ''
-    length = ''
-    unsigned = False
-    null = True
-    default = ''
-    auto_increment = False
     has_comma = False
     is_char = False
 
@@ -46,36 +38,36 @@ class type_numeric( parser ):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        self.name = self._values['name'].strip( '`' )
-        self.column_type = self._values['type']
-        self.length = self._values['length']
-        self.unsigned = True if 'UNSIGNED' in self._values else False
-        self.null = False if 'NOT NULL' in self._values else True
-        self.default = self._values['default'] if 'default' in self._values else None
-        self.auto_increment = True if 'AUTO_INCREMENT' in self._values else False
-        self.is_char = self.column_type in [ 'char', 'varchar' ]
+        self._name = self._values['name'].strip( '`' )
+        self._column_type = self._values['type']
+        self._length = self._values['length']
+        self._unsigned = True if 'UNSIGNED' in self._values else False
+        self._null = False if 'NOT NULL' in self._values else True
+        self._default = self._values['default'] if 'default' in self._values else None
+        self._auto_increment = True if 'AUTO_INCREMENT' in self._values else False
+        self.is_char = self._column_type in [ 'char', 'varchar' ]
 
         # double check unsigned
-        if self.unsigned and self.is_char:
-            self.errors.append( "Column %s is a character type and cannot be unsigned" % self.name )
+        if self._unsigned and self.is_char:
+            self.errors.append( "Column %s is a character type and cannot be unsigned" % self._name )
 
         # make sense of the default
-        if self.default and len( self.default ) >= 2 and self.default[0] == "'" and self.default[-1] == "'":
-            self.default = self.default.strip( "'" )
+        if self._default and len( self._default ) >= 2 and self._default[0] == "'" and self._default[-1] == "'":
+            self._default = self._default.strip( "'" )
             if not self.is_char:
-                self.warnings.append( 'Default value for numeric column %s does not need to be quoted' % self.name )
-        elif self.default:
-            if self.default.lower() == 'null':
-                self.default = None
+                self.warnings.append( 'Default value for numeric column %s does not need to be quoted' % self._name )
+        elif self._default:
+            if self._default.lower() == 'null':
+                self._default = None
             elif self.is_char:
-                self.warnings.append( 'Default value for column %s should be quoted' % self.name )
+                self.warnings.append( 'Default value for column %s should be quoted' % self._name )
 
-        if self.default is None and not self.null and not self.auto_increment:
-            self.warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self.name ) )
+        if self._default is None and not self._null and not self._auto_increment:
+            self.warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self._name ) )
 
-        if self.auto_increment and self.is_char:
-            self.errors.append( 'Column %s is an auto increment character field: only numeric fields can auto increment' % ( self.name ) )
+        if self._auto_increment and self.is_char:
+            self.errors.append( 'Column %s is an auto increment character field: only numeric fields can auto increment' % ( self._name ) )
 
         # only a few types of field are allowed to have decimals
-        if not self.column_type.lower() in self.allowed_types:
-            self.errors.append( 'Column of type %s is not allowed to have a length for column %s' % ( self.column_type, self.name ) )
+        if not self._column_type.lower() in self.allowed_types:
+            self.errors.append( 'Column of type %s is not allowed to have a length for column %s' % ( self._column_type, self._name ) )
