@@ -5,7 +5,6 @@ class index_key( parser, index ):
 
     _index_type = 'index'
     has_comma = False
-    _columns = []
 
     # KEY account_id (account_id,name)
     rules = [

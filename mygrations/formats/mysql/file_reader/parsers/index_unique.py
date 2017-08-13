@@ -1,12 +1,10 @@
 from mygrations.core.parse.parser import parser
+from mygrations.formats.mysql.definitions.index import index
 
-class index_unique( parser ):
+class index_unique( parser, index ):
 
-    definition_type = 'unique'
-
-    name = ''
+    _index_type = 'unique'
     has_comma = False
-    columns = []
 
     # UNIQUE account_id (account_id)
     rules = [
@@ -22,13 +20,13 @@ class index_unique( parser ):
 
         super().__init__( rules )
 
-        self.columns = []
+        self._columns = []
 
     def process( self ):
 
-        self.name = self._values['name'].strip().strip( '`' )
-        self.columns = self._values['columns']
+        self._name = self._values['name'].strip().strip( '`' )
+        self._columns = self._values['columns']
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        if len( self.name ) > 64:
-            self.errors.append( 'Key name %s is too long' % ( self.name ) )
+        if len( self._name ) > 64:
+            self.errors.append( 'Key name %s is too long' % ( self._name ) )

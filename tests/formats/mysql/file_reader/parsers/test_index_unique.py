@@ -19,7 +19,7 @@ class test_index_unique( unittest.TestCase ):
         # we should have lots of data now
         self.assertEquals( 'users_email', parser.name )
         self.assertEquals( [ 'email' ], parser.columns )
-        self.assertEquals( parser.definition_type, 'unique' )
+        self.assertEquals( parser.index_type, 'UNIQUE' )
         self.assertTrue( parser.has_comma )
 
     def test_optional_comma( self ):
@@ -58,5 +58,5 @@ class test_index_unique( unittest.TestCase ):
         # we should have lots of data now
         self.assertEquals( 'users_email', parser.name )
         self.assertEquals( [ 'email', 'username', 'password' ], parser.columns )
-        self.assertEquals( parser.definition_type, 'unique' )
+        self.assertEquals( parser.index_type, 'UNIQUE' )
         self.assertTrue( parser.has_comma )

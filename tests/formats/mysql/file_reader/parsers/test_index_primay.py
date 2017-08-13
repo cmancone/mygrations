@@ -17,8 +17,8 @@ class test_index_primary( unittest.TestCase ):
         self.assertEquals( '', returned )
 
         # we should have lots of data now
-        self.assertEquals( 'id', parser.column )
-        self.assertEquals( parser.definition_type, 'primary' )
+        self.assertEquals( ['id'], parser.columns )
+        self.assertEquals( parser.index_type, 'PRIMARY' )
         self.assertTrue( parser.has_comma )
 
     def test_optional_comma( self ):
@@ -28,7 +28,7 @@ class test_index_primary( unittest.TestCase ):
         returned = parser.parse( 'PRIMARY KEY (`id`)' )
 
         # we should have matched
-        self.assertEquals( 'id', parser.column )
+        self.assertEquals( ['id'], parser.columns )
         self.assertTrue( parser.matched )
         self.assertFalse( parser.has_comma )
 
@@ -40,4 +40,4 @@ class test_index_primary( unittest.TestCase ):
 
         # we should have matched
         self.assertTrue( parser.matched )
-        self.assertEquals( 'sup', parser.column )
+        self.assertEquals( ['sup'], parser.columns )
