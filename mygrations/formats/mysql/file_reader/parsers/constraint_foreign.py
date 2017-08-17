@@ -1,21 +1,9 @@
 from mygrations.core.parse.parser import parser
+from mygrations.formats.mysql.definitions.constraint import constraint
 
-class constraint_foreign( parser ):
+class constraint_foreign( parser, constraint ):
 
-    definition_type = 'constraint'
-
-    name = ''
-    column = ''
-    foreign_table = ''
-    foreign_column = ''
-    on_update = ''
-    on_delete = ''
     has_comma = False
-
-    #################
-    #################
-    # If I condensed the ON DELETE's and ON UPDATES's into a children rule,
-    # then the order wouldn't matter and I could get better errors.
 
     # CONSTRAINT `accounts_status_id_ref_account_statuses_id` FOREIGN KEY (`status_id`) REFERENCES `account_statuses` (`id`) ON UPDATE CASCADE
     rules = [
@@ -43,19 +31,19 @@ class constraint_foreign( parser ):
 
     def process( self ):
 
-        self.name = self._values['name'].strip().strip( '`' )
-        self.column = self._values['column'].strip().strip( '`' )
-        self.foreign_table = self._values['foreign_table'].strip().strip( '`' )
-        self.foreign_column = self._values['foreign_column'].strip().strip( '`' )
+        self._name = self._values['name'].strip().strip( '`' )
+        self._column = self._values['column'].strip().strip( '`' )
+        self._foreign_table = self._values['foreign_table'].strip().strip( '`' )
+        self._foreign_column = self._values['foreign_column'].strip().strip( '`' )
 
         # figure out what our rules are
-        self.on_delete = self.find_action( 'DELETE' )
-        self.on_update = self.find_action( 'UPDATE' )
+        self._on_delete = self.find_action( 'DELETE' )
+        self._on_update = self.find_action( 'UPDATE' )
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        if len( self.name ) > 64:
-            self.errors.append( 'Key name %s is too long' % ( self.name ) )
+        if len( self._name ) > 64:
+            self.errors.append( 'Key name %s is too long' % ( self._name ) )
 
     def find_action( self, update_type ):
 

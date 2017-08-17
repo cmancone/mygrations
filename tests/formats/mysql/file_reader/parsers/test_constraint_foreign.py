@@ -24,7 +24,6 @@ class test_constraint_foreign( unittest.TestCase ):
         self.assertEquals( 'CASCADE', parser.on_delete )
         self.assertEquals( 'SET NULL', parser.on_update )
         self.assertFalse( parser.has_comma )
-        self.assertEquals( parser.definition_type, 'constraint' )
 
     def test_all_deletes( self ):
 

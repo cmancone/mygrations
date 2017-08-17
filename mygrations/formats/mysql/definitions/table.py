@@ -2,34 +2,62 @@ from collections import OrderedDict
 
 class table( object ):
 
-    columns = None
-    indexes = None
-    constraints = None
-    primary_column = ''
+    @property
+    def name( self ):
+        """ Public getter.  Returns the name of the column.
 
-    def __init__( self, parsed_table ):
+        :returns: The column name
+        :rtype: string
+        """
 
-        self.columns = OrderedDict()
-        self.indexes = OrderedDict()
-        self.constraints = OrderedDict()
+        return self._name
 
-        for parsed_definition in parsed_table.definitions:
+    @property
+    def options( self ):
+        """ Public getter.  Returns a list of table options
 
-            # we still have to do a little sorting
-            if definition.definition_type == 'column':
-                store_name = 'columns'
-            elif definition.definition_type == 'index':
-                store_name = 'indexes'
-            elif definition.definition_type == 'primary':
-                store_name = 'indexes'
-                self.primary_column = definition.name
-            elif definition.definition_type == 'constraint':
-                store_name = 'constraints'
+        :returns: Table options
+        :rtype: list
+        """
 
-            store = getattr( self, store_name )
-            store[definition.name] = definition
-            setattr( self, store_name, store )
+        return self._options
 
-        #print( self.columns )
-        #print( self.indexes )
-        #print( self.constraints )
+    @property
+    def columns( self ):
+        """ Public getter.  Returns an ordered dictionary of table columns
+
+        :returns: Table columns
+        :rtype: OrderedDict
+        """
+
+        return self._columns
+
+    @property
+    def indexes( self ):
+        """ Public getter.  Returns an ordered dictionary of table indexes
+
+        :returns: Table indexes
+        :rtype: OrderedDict
+        """
+
+        return self._indexes
+
+    @property
+    def constraints( self ):
+        """ Public getter.  Returns an ordered dictionary of table constraints
+
+        :returns: Table constraints
+        :rtype: OrderedDict
+        """
+
+        return self._constraints
+
+    @property
+    def primary( self ):
+        """ Public getter.  Returns the index object for the primary key
+
+        :returns: The index object of the primary key column
+        :rtype: isinstance(formats.mysql.definitions.index)
+        """
+
+        return self._primary

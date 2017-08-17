@@ -14,15 +14,6 @@ class parser( object ):
         'regexp':       rule_regexp
     }
 
-    num_rules = 0;
-    rules = []
-
-    _values = {}
-    matched = False
-
-    errors = []
-    warnings = []
-
     def __init__( self, rules = [] ):
 
         self._values = {}

@@ -1,20 +1,14 @@
+from collections import OrderedDict
+
 from mygrations.core.parse.parser import parser
+from mygrations.formats.mysql.definitions.constraint import constraint
+from mygrations.formats.mysql.definitions.index import index
+from mygrations.formats.mysql.definitions.column import column
+from mygrations.formats.mysql.definitions.table import table
 
 from .parsers import *
-from ..definitions import table
 
-class create_parser( parser ):
-
-    semicolon = False
-    name = ''
-    definitions = []
-    table_options = []
-    definition = None
-
-    def __init__( self, rules = [] ):
-
-        self.definitions = []
-        self.table_options = []
+class create_parser( parser, table ):
 
     # this defines the rules for the parsing engine.  Yes, I decided to try to build
     # a parsing engine to parse the MySQL.  Seems like a reasonable choice at the
@@ -43,20 +37,34 @@ class create_parser( parser ):
     def process( self ):
 
         self.semicolon = True if 'closing_semicolon' in self._values else False
-        self.name = self._values['name'].strip( '`' )
-        self.definitions = self._values['definitions']
-        self.table_options = self._values['table_options']
+        self._name = self._values['name'].strip( '`' )
+        self._definitions = self._values['definitions']
+        self._options = self._values['table_options']
+        self._columns = OrderedDict()
+        self._indexes = OrderedDict()
+        self._constraints = OrderedDict()
+        self.errors = []
+        self._primary = ''
 
-        #ncols = 0
-        #for definition in self.definitions:
-            #if definition.definition_type == 'column':
-                #ncols += 1
+        for definition in self._definitions:
+            if isinstance( definition, column ):
+                self._columns[definition.name] = definition
+            elif isinstance( definition, index ):
+                self._indexes[definition.name] = definition
 
-        #if not self.name:
-            #self.errors.append( 'Table name is required' )
+                if definition.index_type == 'PRIMARY':
+                    if self._primary:
+                        self.errors.append( 'Found more than one primary column for table %s' % ( self._name ) )
+                    else:
+                        self._primary = definition
+            elif isinstance( definition, constraint ):
+                self._constraints[definition.name] = definition
 
-        #if not ncols:
-            #self.errors.append( "Table %s has no columns" % self.name )
+        if not self._name:
+            self.errors.append( 'Table name is required' )
 
-        #if not self.errors:
-            #self.definition = table( self )
+        if not len( self._columns ):
+            self.errors.append( "Table %s has no columns" % self._name )
+
+        if not self.semicolon:
+            self.errors.append( "Missing ending semicolon for table %s" % self._name )

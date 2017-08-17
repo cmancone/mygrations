@@ -4,7 +4,7 @@ from mygrations.formats.mysql.file_reader.create_parser import create_parser
 
 class test_constraint_foreign( unittest.TestCase ):
 
-    def test_simple( self ):
+    def test_complicated_table_parses( self ):
 
         # parse a typical foreign key constraint
         parser = create_parser()
@@ -41,11 +41,19 @@ class test_constraint_foreign( unittest.TestCase ):
             CONSTRAINT `tasks_assigned_to_id_ref_memberships_user_id` FOREIGN KEY (`assigned_to_id`) REFERENCES `memberships` (`id`) ON DELETE SET NULL,
             CONSTRAINT `tasks_priority_id_ref_task_priorities_id` FOREIGN KEY (`priority_id`) REFERENCES `task_priorities` (`id`) ON UPDATE CASCADE,
             CONSTRAINT `tasks_type_id_ref_task_types_id` FOREIGN KEY (`task_type_id`) REFERENCES `task_types` (`id`) ON UPDATE CASCADE
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         """ )
 
         # we should have matched
         self.assertTrue( parser.matched )
 
         # and we should have matched everything
+        self.assertEquals( 'tasks', parser.name )
         self.assertEquals( '', returned )
+        self.assertEquals( 23, len( parser.columns ) )
+        self.assertEquals( 6, len( parser.indexes ) )
+        self.assertEquals( 3, len( parser.constraints ) )
+        self.assertEquals( 2, len( parser.options ) )
+        self.assertTrue( parser.semicolon )
+        self.assertEquals( 0, len( parser.errors ) )
+        self.assertEquals( [ 'id' ], parser.primary.columns )
