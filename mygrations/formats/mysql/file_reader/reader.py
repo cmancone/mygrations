@@ -5,37 +5,66 @@ from .insert_parser import insert_parser
 
 class reader( object ):
 
-    contents = ''
-    tables = []
-    records = []
+    def __init__( self ):
 
-    def __init__( self, filename ):
+        self.tables = {}
+        self.rows = {}
+        self.errors = []
+        self.warnings = []
+        self.matched = False
 
-        self.tables = []
-        self.records = []
+    """ Helper that returns info about the current filename (if present) for error messages
+
+    :returns: Part of an error message
+    :rtype: string
+    """
+    def _filename_notice( self ):
+
+        if self.filename:
+            return ' in file %s' % self.filename
+
+        return ''
+
+    """ Reads the file, if necessary
+
+    Reader is a bit more flexible than the other parsers.  It can accept a filename,
+    file-like object, or a string.  This method handles that flexibility, taking
+    the input from the _parse method and extracting the actual contents no matter
+    what was passed in.
+
+    :returns: The data to parse
+    :rtype: string
+    """
+    def _unpack( self, filename ):
 
         # be flexible about what we accept
         # file pointer
+        self.filename = ''
         if isinstance( filename, io.IOBase ):
-            self.contents = filename.read()
+            contents = filename.read()
 
         # and an actual string
         elif isinstance( filename, str ):
 
             # which could be a filename
             if os.path.isfile( filename ):
+                self.filename = filename
                 fp = open( filename, 'r' )
-                self.contents = fp.read()
+                contents = fp.read()
                 fp.close()
             else:
-                self.contents = filename
+                contents = filename
 
         else:
             raise ValueError( "Unknown type for filename: must be an ascii string, a filename, file pointer, or StringIO" )
 
-        ( self.tables, self.records ) = self.parse( self.contents )
+        return contents
 
-    def parse( self, data ):
+    """ Main parsing loop: attempts to find create, insert, and comments in the SQL string
+    """
+    def parse( self, filename ):
+
+        data = self._unpack( filename )
 
         # okay then!  This is our main parsing loop.
         c = 0;
@@ -50,19 +79,27 @@ class reader( object ):
             # now we are looking for one of three things:
             # comment, create, insert
             if data[:2] == '--' or data[:2] == '/*' or data[0] == '#':
-                parser_class = comment_parser
+                try:
+                    parser = comment_parser();
+                    data = parser.parse( data )
+                except SyntaxError as e:
+                    self.errors.append( 'Parsing error: %s%s' % ( str(e), self._filename_notice() ) )
 
             elif data[:6].lower() == 'create':
-                parser_class = create_parser
+                parser = create_parser()
+                data = parser.parse( data )
+                self.tables[parser.name] = parser
 
             elif data[:6].lower() == 'insert':
-                parser_class = insert_parser
+                parser = insert_parser()
+                data = parser.parse( data )
+                if not parser.table in self.rows:
+                    self.rows[parser.table] = []
+
+                self.rows[parser.table].append( parser )
 
             else:
                 raise ValueError( "Unrecognized MySQL command: %s" % data )
 
-            # now load up our parser
-            parser = parser_class()
-            data = parser.parse( data )
-
-        return ( '', '' )
+        self.matched = True
+        return data

@@ -16,6 +16,7 @@ class test_insert_parser( unittest.TestCase ):
         self.assertEquals( '', returned )
 
         # we should have lots of data now
+        self.assertEquals( 'test_table', parser.table )
         self.assertEquals( [ 'col1', 'col2' ], parser.columns )
         self.assertEquals( [ [ 'val', 'val2' ] ], parser.raw_rows )
         self.assertTrue( parser.has_semicolon )
@@ -33,6 +34,7 @@ class test_insert_parser( unittest.TestCase ):
         self.assertEquals( '', returned )
 
         # we should have lots of data now
+        self.assertEquals( 'test_table', parser.table )
         self.assertEquals( [ 'col1', 'col2' ], parser.columns )
         self.assertEquals( [ [ 'val', 'val2' ], [ 'val3', 'val4' ] ], parser.raw_rows )
         self.assertFalse( parser.has_semicolon )
@@ -50,6 +52,7 @@ class test_insert_parser( unittest.TestCase ):
         self.assertEquals( '', returned )
 
         # we should have lots of data now
+        self.assertEquals( 'test_table', parser.table )
         self.assertEquals( [ 'col1', 'col2' ], parser.columns )
         self.assertEquals( [ [ 'val', 'val2' ], [ 'val3', 'val4' ] ], parser.raw_rows )
         self.assertFalse( parser.has_semicolon )

@@ -1,6 +1,16 @@
 class rows( object ):
 
     @property
+    def table( self ):
+        """ Public getter.  Returns the name of the table that records are being inserted for
+
+        :returns: The name of the table
+        :rtype: list
+        """
+
+        return self._table
+
+    @property
     def raw_rows( self ):
         """ Public getter.  Returns a list of insert values from the VALUES part of the query
 

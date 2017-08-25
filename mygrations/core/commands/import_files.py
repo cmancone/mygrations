@@ -1,6 +1,6 @@
 from mygrations.helpers.dotenv import dotenv
 from mygrations.helpers.db_credentials import db_credentials
-from mygrations.formats.mysql.file_reader import reader
+from mygrations.formats.mysql.file_reader.database import database as database_parser
 import glob
 import os
 
@@ -13,7 +13,6 @@ class import_files( object ):
 
     credentials = {}
     config = {}
-    files_directory = ''
 
     def __init__( self, options ):
 
@@ -34,19 +33,6 @@ class import_files( object ):
         if not 'files_directory' in self.config:
             raise ValueError( 'Missing files_directory configuration setting in configuration file' )
 
-        # figure out where the files live
-        self.files_directory = self.config['files_directory']
-
-        # and make sure that ends in a slash
-        if self.files_directory[-1] != os.sep:
-            self.files_directory = '%s%s' % ( self.files_directory, os.sep )
-
     def execute( self ):
 
-        # this will move soon enough
-        for filename in glob.glob( '%s*.sql' % self.files_directory ):
-
-            try:
-                contents = reader( filename )
-            except ValueError as e:
-                print( "Error in file %s: %s" % ( filename, e ) )
+        files_database = database_parser( self.config['files_directory'] )

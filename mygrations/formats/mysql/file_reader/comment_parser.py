@@ -54,7 +54,7 @@ class comment_parser( parser ):
 
         # then we should be dealing with /* ... */.  Our line should
         # start with it or we have a problem
-        if self.sql[:1] != '/*':
+        if self.sql[:2] != '/*':
             raise ValueError( 'SQL passed to comment parser did not start with a comment' )
 
         if not self.sql.count( '*/' ):
