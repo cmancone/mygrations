@@ -43,7 +43,8 @@ class create_parser( parser, table ):
         self._columns = OrderedDict()
         self._indexes = OrderedDict()
         self._constraints = OrderedDict()
-        self.errors = []
+        self._errors = []
+        self._warnings = []
         self._primary = ''
 
         for definition in self._definitions:
@@ -54,17 +55,17 @@ class create_parser( parser, table ):
 
                 if definition.index_type == 'PRIMARY':
                     if self._primary:
-                        self.errors.append( 'Found more than one primary column for table %s' % ( self._name ) )
+                        self._errors.append( 'Found more than one primary column for table %s' % ( self._name ) )
                     else:
                         self._primary = definition
             elif isinstance( definition, constraint ):
                 self._constraints[definition.name] = definition
 
         if not self._name:
-            self.errors.append( 'Table name is required' )
+            self._errors.append( 'Table name is required' )
 
         if not len( self._columns ):
-            self.errors.append( "Table %s has no columns" % self._name )
+            self._errors.append( "Table %s has no columns" % self._name )
 
         if not self.semicolon:
-            self.errors.append( "Missing ending semicolon for table %s" % self._name )
+            self._errors.append( "Missing ending semicolon for table %s" % self._name )

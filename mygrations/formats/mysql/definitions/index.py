@@ -53,4 +53,4 @@ class index( object ):
         :returns: A list of parsing/table warnings
         :rtype: list
         """
-        return [] if self._warnings is None else self.warnings
+        return [] if self._warnings is None else self._warnings

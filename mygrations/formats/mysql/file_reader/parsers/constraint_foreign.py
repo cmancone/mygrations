@@ -31,6 +31,8 @@ class constraint_foreign( parser, constraint ):
 
     def process( self ):
 
+        self._errors = []
+        self._warnings = []
         self._name = self._values['name'].strip().strip( '`' )
         self._column = self._values['column'].strip().strip( '`' )
         self._foreign_table = self._values['foreign_table'].strip().strip( '`' )
@@ -43,7 +45,7 @@ class constraint_foreign( parser, constraint ):
         self.has_comma = True if 'ending_comma' in self._values else False
 
         if len( self._name ) > 64:
-            self.errors.append( 'Key name %s is too long' % ( self._name ) )
+            self._errors.append( 'Key name %s is too long' % ( self._name ) )
 
     def find_action( self, update_type ):
 
@@ -54,7 +56,7 @@ class constraint_foreign( parser, constraint ):
                 continue
 
             if found:
-                self.errors.append( 'Found contradictory rules in foreign constraint for ON %s' % update_type )
+                self._errors.append( 'Found contradictory rules in foreign constraint for ON %s' % update_type )
             else:
                 found = action
 

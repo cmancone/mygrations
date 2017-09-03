@@ -19,6 +19,8 @@ class index_primary( parser, index ):
 
         super().__init__( rules )
 
+        self._errors = []
+        self._warnings = []
         self._columns = []
 
     def process( self ):

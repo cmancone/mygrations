@@ -26,6 +26,8 @@ class type_enum( parser, column ):
 
         super().__init__( rules )
 
+        self._errors = []
+        self._warnings = []
         self.values = []
 
     def process( self ):
@@ -54,14 +56,14 @@ class type_enum( parser, column ):
             if self._default.lower() == 'null':
                 self._default = None
             else:
-                self.warnings.append( 'Default value of "%s" should have quotes for field %s' % (self._default,self._name) )
+                self._warnings.append( 'Default value of "%s" should have quotes for field %s' % (self._default,self._name) )
 
         if self._default and not( self._default in self.values ):
-            self.errors.append( "Column %s has default value of %s but this is not an allowed value" % (self._name,self._default) )
+            self._errors.append( "Column %s has default value of %s but this is not an allowed value" % (self._name,self._default) )
 
         if self._default is None and not self._null:
-            self.warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self._name ) )
+            self._warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self._name ) )
 
         # only a few types of field are allowed to use this
         if not self._column_type.lower() in self.allowed_types:
-            self.errors.append( 'Column of type %s is not allowed to have a list of values for column %s' % ( self._column_type, self._name ) )
+            self._errors.append( 'Column of type %s is not allowed to have a list of values for column %s' % ( self._column_type, self._name ) )

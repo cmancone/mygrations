@@ -17,8 +17,6 @@ class parser( object ):
     def __init__( self, rules = [] ):
 
         self._values = {}
-        self.errors = []
-        self.warnings = []
 
         # rules should be defined by the subclass
         if rules:

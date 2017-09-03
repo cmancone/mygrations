@@ -18,6 +18,8 @@ class type_plain( parser, column ):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
+        self._errors = []
+        self._warnings = []
         self._name = self._values['name'].strip( '`' )
         self._column_type = self._values['type']
         self._default = self._values['default'].strip( "'" ) if 'default' in self._values else None
@@ -28,4 +30,4 @@ class type_plain( parser, column ):
             self._default = None
 
         if self._default is None and not self._null:
-            self.warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self._name ) )
+            self._warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self._name ) )

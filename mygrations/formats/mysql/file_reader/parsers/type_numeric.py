@@ -36,6 +36,8 @@ class type_numeric( parser, column ):
 
     def process( self ):
 
+        self._errors = []
+        self._warnings = []
         self.has_comma = True if 'ending_comma' in self._values else False
 
         self._name = self._values['name'].strip( '`' )
@@ -49,25 +51,25 @@ class type_numeric( parser, column ):
 
         # double check unsigned
         if self._unsigned and self.is_char:
-            self.errors.append( "Column %s is a character type and cannot be unsigned" % self._name )
+            self._errors.append( "Column %s is a character type and cannot be unsigned" % self._name )
 
         # make sense of the default
         if self._default and len( self._default ) >= 2 and self._default[0] == "'" and self._default[-1] == "'":
             self._default = self._default.strip( "'" )
             if not self.is_char:
-                self.warnings.append( 'Default value for numeric column %s does not need to be quoted' % self._name )
+                self._warnings.append( 'Default value for numeric column %s does not need to be quoted' % self._name )
         elif self._default:
             if self._default.lower() == 'null':
                 self._default = None
             elif self.is_char:
-                self.warnings.append( 'Default value for column %s should be quoted' % self._name )
+                self._warnings.append( 'Default value for column %s should be quoted' % self._name )
 
         if self._default is None and not self._null and not self._auto_increment:
-            self.warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self._name ) )
+            self._warnings.append( 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' % ( self._name ) )
 
         if self._auto_increment and self.is_char:
-            self.errors.append( 'Column %s is an auto increment character field: only numeric fields can auto increment' % ( self._name ) )
+            self._errors.append( 'Column %s is an auto increment character field: only numeric fields can auto increment' % ( self._name ) )
 
         # only a few types of field are allowed to have decimals
         if not self._column_type.lower() in self.allowed_types:
-            self.errors.append( 'Column of type %s is not allowed to have a length for column %s' % ( self._column_type, self._name ) )
+            self._errors.append( 'Column of type %s is not allowed to have a length for column %s' % ( self._column_type, self._name ) )

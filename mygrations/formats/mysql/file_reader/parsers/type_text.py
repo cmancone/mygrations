@@ -32,6 +32,8 @@ class type_text( parser, column ):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
+        self._errors = []
+        self._warnings = []
         self._name = self._values['name'].strip( '`' )
         self._column_type = self._values['type']
         self._null = False if 'NOT NULL' in self._values else True
@@ -39,7 +41,7 @@ class type_text( parser, column ):
         self._collate = self._values['collate'].strip( "'" ) if 'collate' in self._values else ''
 
         if 'default' in self._values:
-            self.errors.append( 'Column of type %s is not allowed to have a default value for column %s' % ( self._column_type, self._name ) )
+            self._errors.append( 'Column of type %s is not allowed to have a default value for column %s' % ( self._column_type, self._name ) )
 
         if not self._column_type.lower() in self.allowed_types:
-            self.errors.append( 'Column of type %s must have a length for column %s' % ( self._column_type, self._name ) )
+            self._errors.append( 'Column of type %s must have a length for column %s' % ( self._column_type, self._name ) )
