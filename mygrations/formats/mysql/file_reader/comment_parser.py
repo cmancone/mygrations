@@ -9,7 +9,9 @@ class comment_parser( parser ):
 
         # we're not yet a rules-based parser (I may do that eventually), so
         # I don't want to run the normal parser __init__()
-        pass
+        self.errors = []
+        self.warnings = []
+        self.matched = False
 
     def parse( self, sql ):
         """ res = paser.parse()
@@ -43,6 +45,7 @@ class comment_parser( parser ):
             if not self.sql.count( '\n' ):
                 self.comment = self.sql
                 self._values = { 'commment': self.comment }
+                self.matched = True
                 return '';
 
             # otherwise just find the newline and return the rest
@@ -50,6 +53,7 @@ class comment_parser( parser ):
                 index = self.sql.index( '\n' )
                 self.comment = self.sql[:index]
                 self._values = { 'commment': self.comment }
+                self.matched = True
                 return self.sql[index+1:].strip()
 
         # then we should be dealing with /* ... */.  Our line should
@@ -58,10 +62,12 @@ class comment_parser( parser ):
             raise ValueError( 'SQL passed to comment parser did not start with a comment' )
 
         if not self.sql.count( '*/' ):
-            raise SyntaxError( 'Could not find closing comment indicator, */' )
+            self.errors.append( 'Could not find closing comment indicator, */' )
+            return self.sql
 
         # otherwise this is very straight-forward
         index = self.sql.index( '*/' )
         self.comment = self.sql[2:index].strip()
         self._values = { 'commment': self.comment }
+        self.matched = True
         return self.sql[index+2:].strip()

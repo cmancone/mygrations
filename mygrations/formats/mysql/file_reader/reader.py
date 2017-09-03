@@ -7,11 +7,11 @@ class reader( object ):
 
     def __init__( self ):
 
-        self.tables = {}
-        self.rows = {}
+        self._tables = {}
+        self._rows = {}
         self._errors = []
         self._warnings = []
-        self.matched = False
+        self._matched = False
 
     @property
     def errors( self ):
@@ -30,6 +30,24 @@ class reader( object ):
         :rtype: list
         """
         return [] if self._warnings is None else self._warnings
+
+    @property
+    def tables( self ):
+        """ Public getter.  Returns a list of table definitions
+
+        :returns: A list of table definitions
+        :rtype: [mygrations.formats.mysql.definitions.table]
+        """
+        return self._tables
+
+    @property
+    def rows( self ):
+        """ Public getter.  Returns a dictionary containing a lists of rows by table name
+
+        :returns: A dictionary containing list of rows by table name
+        :rtype: {table_name: [mygrations.formats.mysql.defintions.row]}
+        """
+        return self._rows
 
     """ Helper that returns info about the current filename (if present) for error messages
 
@@ -97,27 +115,25 @@ class reader( object ):
             # now we are looking for one of three things:
             # comment, create, insert
             if data[:2] == '--' or data[:2] == '/*' or data[0] == '#':
-                try:
-                    parser = comment_parser();
-                    data = parser.parse( data )
-                except SyntaxError as e:
-                    self._errors.append( 'Parsing error: %s%s' % ( str(e), self._filename_notice() ) )
+                parser = comment_parser();
+                data = parser.parse( data )
 
             elif data[:6].lower() == 'create':
                 parser = create_parser()
                 data = parser.parse( data )
-                self.tables[parser.name] = parser
+                self._tables[parser.name] = parser
 
             elif data[:6].lower() == 'insert':
                 parser = insert_parser()
                 data = parser.parse( data )
-                if not parser.table in self.rows:
-                    self.rows[parser.table] = []
+                if not parser.table in self._rows:
+                    self._rows[parser.table] = []
 
-                self.rows[parser.table].append( parser )
+                self._rows[parser.table].append( parser )
 
             else:
-                raise ValueError( "Unrecognized MySQL command: %s" % data )
+                self._errors.append( "Unrecognized MySQL command: %s%s" % ( data, self._filename_notice() ) )
+                return data
 
             for error in parser.errors:
                 self._errors.append( '%s%s' % ( error, self._filename_notice() ) )
