@@ -1,9 +1,10 @@
 import os
 import glob
 
-from .reader import reader
+from .reader import reader as sql_reader
+from mygrations.formats.mysql.definitions.database import database as database_definition
 
-class database( object ):
+class database( database_definition ):
 
     def __init__( self, strings ):
         """ Constructor.  Accepts a string or list of strings with different possible contents
@@ -25,6 +26,8 @@ class database( object ):
 
         self._warnings = []
         self._errors = []
+        self._tables = {}
+        self._rows = {}
 
         if isinstance( strings, str ):
             strings = [ strings ]
@@ -32,23 +35,7 @@ class database( object ):
         for string in strings:
             self.process( string )
 
-    @property
-    def errors( self ):
-        """ Public getter.  Returns a list of parsing errors
-
-        :returns: A list of parsing errors
-        :rtype: list
-        """
-        return [] if self._errors is None else self._errors
-
-    @property
-    def warnings( self ):
-        """ Public getter.  Returns a list of parsing/table warnings
-
-        :returns: A list of parsing/table warnings
-        :rtype: list
-        """
-        return [] if self._warnings is None else self._warnings
+        self.ingest()
 
     def process( self, string ):
         """ Processes a string.
@@ -66,7 +53,7 @@ class database( object ):
         else:
             self._read( string )
 
-    def _process_directory( directory ):
+    def _process_directory( self, directory ):
         """ Processes a directory.
 
         Finds all SQL files in the directory and calls `_read()` on them,
@@ -83,7 +70,7 @@ class database( object ):
         for filename in glob.glob( '%s*.sql' % directory ):
             self._read( filename )
 
-    def _read( contents ):
+    def _read( self, contents ):
         """ Processes a file or string of SQL.
 
         Creates a reader object (which accepts files or a string of SQL)
@@ -95,6 +82,23 @@ class database( object ):
         """
 
         try:
-            contents = reader( filename )
+            reader = sql_reader()
+            reader.parse( contents )
+
         except ValueError as e:
-            print( "Error in file %s: %s" % ( filename, e ) )
+            print( "Error in file %s: %s" % ( contents, e ) )
+
+        # pull in all errors and warnings
+        self._errors.extend( reader.errors )
+        self._warnings.extend( reader.warnings )
+
+        # keep rows and tables separate while we are reading
+        for (table_name,table) in reader.tables.items():
+            if table.name in self._tables:
+                self.errors.append( 'Found two definitions for table %s' % table.name )
+            self._tables[table.name] = table
+
+        for (table_name,rows) in reader.rows.items():
+            if not table_name in self._rows:
+                self._rows = []
+            self._rows.extend( rows )
