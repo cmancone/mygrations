@@ -9,9 +9,27 @@ class reader( object ):
 
         self.tables = {}
         self.rows = {}
-        self.errors = []
-        self.warnings = []
+        self._errors = []
+        self._warnings = []
         self.matched = False
+
+    @property
+    def errors( self ):
+        """ Public getter.  Returns a list of parsing errors
+
+        :returns: A list of parsing errors
+        :rtype: list
+        """
+        return [] if self._errors is None else self._errors
+
+    @property
+    def warnings( self ):
+        """ Public getter.  Returns a list of parsing/table warnings
+
+        :returns: A list of parsing/table warnings
+        :rtype: list
+        """
+        return [] if self._warnings is None else self._warnings
 
     """ Helper that returns info about the current filename (if present) for error messages
 
@@ -83,7 +101,7 @@ class reader( object ):
                     parser = comment_parser();
                     data = parser.parse( data )
                 except SyntaxError as e:
-                    self.errors.append( 'Parsing error: %s%s' % ( str(e), self._filename_notice() ) )
+                    self._errors.append( 'Parsing error: %s%s' % ( str(e), self._filename_notice() ) )
 
             elif data[:6].lower() == 'create':
                 parser = create_parser()
@@ -100,6 +118,11 @@ class reader( object ):
 
             else:
                 raise ValueError( "Unrecognized MySQL command: %s" % data )
+
+            for error in parser.errors:
+                self._errors.append( '%s%s' % ( error, self._filename_notice() ) )
+            for warning in parser.warnings:
+                self._warnings.append( '%s%s' % ( warning, self._filename_notice() ) )
 
         self.matched = True
         return data

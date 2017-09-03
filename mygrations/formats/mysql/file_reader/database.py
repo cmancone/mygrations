@@ -23,11 +23,32 @@ class database( object ):
         :type strings: string|list
         """
 
+        self._warnings = []
+        self._errors = []
+
         if isinstance( strings, str ):
             strings = [ strings ]
 
         for string in strings:
             self.process( string )
+
+    @property
+    def errors( self ):
+        """ Public getter.  Returns a list of parsing errors
+
+        :returns: A list of parsing errors
+        :rtype: list
+        """
+        return [] if self._errors is None else self._errors
+
+    @property
+    def warnings( self ):
+        """ Public getter.  Returns a list of parsing/table warnings
+
+        :returns: A list of parsing/table warnings
+        :rtype: list
+        """
+        return [] if self._warnings is None else self._warnings
 
     def process( self, string ):
         """ Processes a string.
@@ -77,4 +98,3 @@ class database( object ):
             contents = reader( filename )
         except ValueError as e:
             print( "Error in file %s: %s" % ( filename, e ) )
-
