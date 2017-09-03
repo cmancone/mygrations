@@ -1,5 +1,14 @@
 class constraint( object ):
 
+    _errors = None
+    _warnings = None
+    _name = ''
+    _column = ''
+    _foreign_table = ''
+    _foreign_column = ''
+    _on_delete = ''
+    _on_update = ''
+
     @property
     def name( self ):
         """ Public getter.  Returns the name of the column.
@@ -59,3 +68,21 @@ class constraint( object ):
         """
 
         return self._on_update
+
+    @property
+    def errors( self ):
+        """ Public getter.  Returns a list of parsing errors
+
+        :returns: A list of parsing errors
+        :rtype: list
+        """
+        return [] if self._errors is None else self._errors
+
+    @property
+    def warnings( self ):
+        """ Public getter.  Returns a list of parsing/table warnings
+
+        :returns: A list of parsing/table warnings
+        :rtype: list
+        """
+        return [] if self._warnings is None else self.warnings

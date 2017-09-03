@@ -2,6 +2,15 @@ from collections import OrderedDict
 
 class table( object ):
 
+    _name = ''
+    _options = None
+    _columns = None
+    _indexes = None
+    _constraints = None
+    _primary = None
+    _errors = None
+    _warnings = None
+
     @property
     def name( self ):
         """ Public getter.  Returns the name of the column.
@@ -61,3 +70,21 @@ class table( object ):
         """
 
         return self._primary
+
+    @property
+    def errors( self ):
+        """ Public getter.  Returns a list of parsing errors
+
+        :returns: A list of parsing errors
+        :rtype: list
+        """
+        return [] if self._errors is None else self._errors
+
+    @property
+    def warnings( self ):
+        """ Public getter.  Returns a list of parsing/table warnings
+
+        :returns: A list of parsing/table warnings
+        :rtype: list
+        """
+        return [] if self._warnings is None else self.warnings

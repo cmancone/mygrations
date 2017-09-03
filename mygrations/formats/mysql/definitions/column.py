@@ -5,6 +5,8 @@ class column( object ):
     _character_set = None
     _collate = None
     _auto_increment = None
+    _errors = None
+    _warnings = None
 
     @property
     def name( self ):
@@ -128,3 +130,21 @@ class column( object ):
         :rtype: bool|None
         """
         return self._auto_increment
+
+    @property
+    def errors( self ):
+        """ Public getter.  Returns a list of parsing errors
+
+        :returns: A list of parsing errors
+        :rtype: list
+        """
+        return [] if self._errors is None else self._errors
+
+    @property
+    def warnings( self ):
+        """ Public getter.  Returns a list of parsing/table warnings
+
+        :returns: A list of parsing/table warnings
+        :rtype: list
+        """
+        return [] if self._warnings is None else self.warnings
