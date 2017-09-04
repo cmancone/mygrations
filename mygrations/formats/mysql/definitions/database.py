@@ -32,6 +32,16 @@ class database( object ):
         """
         return [] if self._warnings is None else self._warnings
 
-    def ingest( self ):
+    def store_rows_with_tables( self ):
+        """ Processes table rows and adds them to the appropriate tables
 
-        pass
+        Table rows are stored with tables for comparison purposes, but might
+        come in through their own separate files.  This method puts the two
+        together.
+        """
+        for (table,rows) in self._rows.items():
+            if not rows.table in self._tables:
+                self._errors.append( 'Found rows for table %s but that table does not have a definition' % rows.table )
+                continue
+
+            self._tables[rows.table].add_rows( rows )

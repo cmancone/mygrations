@@ -35,7 +35,7 @@ class database( database_definition ):
         for string in strings:
             self.process( string )
 
-        self.ingest()
+        self.store_rows_with_tables()
 
     def process( self, string ):
         """ Processes a string.

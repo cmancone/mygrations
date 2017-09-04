@@ -21,7 +21,7 @@ class rows( object ):
         """ Public getter.  Returns a list of insert values from the VALUES part of the query
 
         :returns: A list of values for each row
-        :rtype: list
+        :rtype: list[list]
         """
 
         return self._raw_rows
@@ -34,6 +34,18 @@ class rows( object ):
         :rtype: list
         """
         return self._columns
+
+    @property
+    def num_explicit_columns( self ):
+        """ Public getter.  Returns the number of columns specified in the insert query
+
+        Can be zero if none are specified, which happens for queries like:
+        INSERT INTO table (val1, val2, val3...);
+
+        :returns: The number of columns which have been explicitly defined
+        :rtype: integer
+        """
+        return self._num_explicit_columns
 
     @property
     def errors( self ):
