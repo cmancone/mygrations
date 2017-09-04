@@ -92,6 +92,24 @@ class table( object ):
         """
         return [] if self._warnings is None else self._warnings
 
+    @property
+    def auto_increment( self ):
+        """ Public getter.  Returns the autoincrement for the table
+
+        :returns: The auto increment
+        :rtype: int
+        """
+        return self._auto_increment
+
+    @property
+    def rows( self ):
+        """ Public getter.  Returns an ordered dictionary with row data by id
+
+        :returns: An ordered dictionary with row data by id
+        :rtype: OrderedDict
+        """
+        return [] if self._rows is None else self._rows
+
     def add_rows( self, rows ):
         """ Adds a mygrations.formats.mysql.definitions.rows object to the table
 
@@ -132,7 +150,7 @@ class table( object ):
             # to know where in the list of values the id column lives
             try:
                 id_index = columns.index( 'id' )
-                row_id = values[id_index]
+                row_id = int( values[id_index] )
             except ValuerError:
                 row_id = self._auto_increment
 
@@ -141,3 +159,5 @@ class table( object ):
                 return 'Duplicate row id found for table %s and row %s' % ( self._name, values )
 
             self._rows[row_id] = OrderedDict( zip( columns, values ) )
+
+        return True

@@ -39,9 +39,11 @@ class database( object ):
         come in through their own separate files.  This method puts the two
         together.
         """
-        for (table,rows) in self._rows.items():
+        for rows in self._rows:
             if not rows.table in self._tables:
                 self._errors.append( 'Found rows for table %s but that table does not have a definition' % rows.table )
                 continue
 
-            self._tables[rows.table].add_rows( rows )
+            returned = self._tables[rows.table].add_rows( rows )
+            if isinstance( returned, str ):
+                self._errors.append( returned )

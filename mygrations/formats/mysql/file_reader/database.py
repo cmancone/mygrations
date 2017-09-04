@@ -27,7 +27,7 @@ class database( database_definition ):
         self._warnings = []
         self._errors = []
         self._tables = {}
-        self._rows = {}
+        self._rows = []
 
         if isinstance( strings, str ):
             strings = [ strings ]
