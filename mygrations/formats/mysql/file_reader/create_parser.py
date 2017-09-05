@@ -61,6 +61,14 @@ class create_parser( parser, table ):
             elif isinstance( definition, constraint ):
                 self._constraints[definition.name] = definition
 
+            if definition.errors:
+                for error in definition.errors:
+                    self._errors.append( '%s in table %s' % ( error, self._name ) )
+
+            if definition.warnings:
+                for warning in definition.warnings:
+                    self._warnings.append( '%s in table %s' % ( warning, self._name ) )
+
         if not self._name:
             self._errors.append( 'Table name is required' )
 

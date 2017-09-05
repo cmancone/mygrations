@@ -57,3 +57,21 @@ class test_constraint_foreign( unittest.TestCase ):
         self.assertTrue( parser.semicolon )
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( [ 'id' ], parser.primary.columns )
+
+    def test_keeps_errors( self ):
+
+        # parse a typical foreign key constraint
+        parser = create_parser()
+        returned = parser.parse( """CREATE TABLE `tasks` (
+            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+            `subject` varchar DEFAULT NULL,
+            `task` text DEFAULT NULL
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        """ )
+
+        # we should have matched
+        self.assertTrue( parser.matched )
+
+        # and we should have some errors
+        self.assertTrue( 'must have a length for column subject in table tasks' in parser.errors[0] )
+        self.assertTrue( 'not allowed to have a default value for column task in table tasks' in parser.errors[1] )

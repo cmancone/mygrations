@@ -50,3 +50,17 @@ class test_database( unittest.TestCase ):
         self.assertEquals( 'sup', rows[1]['traceback'] )
         self.assertEquals( 'what', rows[2]['message'] )
         self.assertEquals( 'kay', rows[2]['traceback'] )
+
+    def test_keeps_errors( self ):
+
+        strings = ["""
+            CREATE TABLE `logs` (
+                `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                `message` TEXT DEFAULT '',
+                `traceback` text,
+                PRIMARY KEY (`id`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+        """]
+        database = database_reader( strings )
+
+        self.assertTrue( 'not allowed to have a default value for column message in table logs' in database.errors[0] )
