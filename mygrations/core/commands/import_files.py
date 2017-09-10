@@ -1,8 +1,11 @@
+import MySQLdb
+import glob
+import os
+
 from mygrations.helpers.dotenv import dotenv
 from mygrations.helpers.db_credentials import db_credentials
 from mygrations.formats.mysql.file_reader.database import database as database_parser
-import glob
-import os
+from mygrations.formats.mysql.database_reader.database import database as database_reader
 
 def execute( options ):
 
@@ -36,3 +39,8 @@ class import_files( object ):
     def execute( self ):
 
         files_database = database_parser( self.config['files_directory'] )
+
+        # use the credentials to load up a database connection
+        conn = MySQLdb.connect( **self.credentials )
+
+        live_database = database_reader( conn )

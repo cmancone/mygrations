@@ -6,10 +6,10 @@ class db_credentials( dict ):
     env = {}
 
     key_map = {
-        'hostname_key':     'hostname',
-        'database_key':     'database',
-        'username_key':     'username',
-        'password_key':     'password'
+        'hostname_key':     'host',
+        'database_key':     'db',
+        'username_key':     'user',
+        'password_key':     'passwd'
     }
 
     def __init__( self, env, config ):
