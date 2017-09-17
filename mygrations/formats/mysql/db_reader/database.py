@@ -1,7 +1,7 @@
 import os
 import glob
 
-from .reader import reader as sql_reader
+from ..file_reader.reader import reader as sql_reader
 from mygrations.formats.mysql.definitions.database import database as database_definition
 
 class database( database_definition ):
