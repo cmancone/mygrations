@@ -1,6 +1,6 @@
 import re
 
-class database_structure:
+class db_structure:
     """ Mock class used when working with classes which read the database structure/rows
 
     This handles just a few simple queries: SHOW TABLES, SHOW CREATE TABLE,

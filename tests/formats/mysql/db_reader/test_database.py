@@ -24,7 +24,7 @@ class test_database( unittest.TestCase ):
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
         }
 
-        mock_db = database_structure( tables, {} )
+        mock_db = db_structure( tables, {} )
         database = database_reader( mock_db )
 
         # our parser should have a table!
