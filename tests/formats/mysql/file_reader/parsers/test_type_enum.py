@@ -21,6 +21,7 @@ class test_type_enum( unittest.TestCase ):
         self.assertTrue( parser.has_comma )
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( 0, len( parser.warnings ) )
+        self.assertEquals( "`options` ENUM('bob','joe','ray') NOT NULL DEFAULT 'bob'", str(parser) )
 
     def test_optional_default( self ):
 
@@ -39,6 +40,7 @@ class test_type_enum( unittest.TestCase ):
         self.assertFalse( parser.has_comma )
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( 0, len( parser.warnings ) )
+        self.assertEquals( "`options` ENUM('bob','joe','ray')", str(parser) )
 
     def test_strip_backticks( self ):
 
@@ -59,6 +61,7 @@ class test_type_enum( unittest.TestCase ):
         self.assertTrue( parser.matched )
         self.assertEquals( '', returned )
         self.assertTrue( 'should have quotes' in parser.warnings[0] )
+        self.assertEquals( "`options` ENUM('bob','joe','ray') DEFAULT 'bob'", str(parser) )
 
     def test_error_for_invalid_default( self ):
 

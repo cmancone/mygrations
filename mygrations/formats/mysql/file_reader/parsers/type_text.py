@@ -35,6 +35,8 @@ class type_text( parser, column ):
         self._errors = []
         self._warnings = []
         self._name = self._values['name'].strip( '`' )
+        self._length = ''
+        self._default = None
         self._column_type = self._values['type']
         self._null = False if 'NOT NULL' in self._values else True
         self._character_set = self._values['character_set'].strip( "'" ) if 'character_set' in self._values else ''

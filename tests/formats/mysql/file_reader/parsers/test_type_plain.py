@@ -21,6 +21,7 @@ class test_type_plain( unittest.TestCase ):
         self.assertTrue( parser.has_comma )
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( 0, len( parser.warnings ) )
+        self.assertEquals( "`created` DATE NOT NULL DEFAULT 'bob'", str(parser) )
 
     def test_optional_default( self ):
 
@@ -39,6 +40,7 @@ class test_type_plain( unittest.TestCase ):
         self.assertFalse( parser.has_comma )
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( 0, len( parser.warnings ) )
+        self.assertEquals( "`created` DATE", str(parser) )
 
     def test_strip_backticks( self ):
 
@@ -50,6 +52,7 @@ class test_type_plain( unittest.TestCase ):
         self.assertEquals( '', returned )
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'created', parser.name )
+        self.assertEquals( "`created` DATE", str(parser) )
 
     def test_not_null_needs_default( self ):
 

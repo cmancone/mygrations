@@ -21,6 +21,7 @@ class test_type_text( unittest.TestCase ):
         self.assertEquals( '', parser.character_set )
         self.assertEquals( '', parser.collate )
         self.assertEquals( 0, len( parser.errors ) )
+        self.assertEquals( "`name` TEXT NOT NULL", str(parser) )
 
     def test_character_set( self ):
 
@@ -39,6 +40,7 @@ class test_type_text( unittest.TestCase ):
         self.assertEquals( 'BLAH', parser.character_set )
         self.assertEquals( 'BOO', parser.collate )
         self.assertEquals( 0, len( parser.errors ) )
+        self.assertEquals( "`name` TEXT CHARACTER SET 'BLAH' COLLATE 'BOO'", str(parser) )
 
     def test_strip_backticks( self ):
 
@@ -50,6 +52,7 @@ class test_type_text( unittest.TestCase ):
         self.assertEquals( '', returned )
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'name', parser.name )
+        self.assertEquals( "`name` TEXT NOT NULL", str(parser) )
 
     def test_no_default( self ):
 

@@ -162,7 +162,11 @@ class column( object ):
 
         type_string = self.column_type
         if self.length:
-            type_string += '(%s)' % self.length
+            if type( self.length ) == type( [] ):
+                length = "'%s'" % ( "','".join( self.length ) )
+            else:
+                length = self.length
+            type_string += '(%s)' % length
         parts.append( type_string )
 
         if self.unsigned:

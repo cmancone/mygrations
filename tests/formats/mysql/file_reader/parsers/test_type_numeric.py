@@ -22,6 +22,7 @@ class test_type_numeric( unittest.TestCase ):
         self.assertTrue( parser.has_comma )
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( 0, len( parser.warnings ) )
+        self.assertEquals( "`created` INT(10) NOT NULL DEFAULT 0", str(parser) )
 
     def test_optional_default( self ):
 
@@ -41,6 +42,7 @@ class test_type_numeric( unittest.TestCase ):
         self.assertFalse( parser.has_comma )
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( 0, len( parser.warnings ) )
+        self.assertEquals( "`created` INT(10) UNSIGNED", str(parser) )
 
     def test_strip_backticks( self ):
 
@@ -51,6 +53,7 @@ class test_type_numeric( unittest.TestCase ):
         self.assertTrue( parser.matched )
         self.assertEquals( '', returned )
         self.assertEquals( 'created', parser.name )
+        self.assertEquals( "`created` INT(10) UNSIGNED", str(parser) )
 
     def test_warning_for_string_default( self ):
 
@@ -61,6 +64,7 @@ class test_type_numeric( unittest.TestCase ):
         self.assertTrue( parser.matched )
         self.assertEquals( '', returned )
         self.assertTrue( 'does not need to be quoted' in parser.warnings[0] )
+        self.assertEquals( "`created` INT(10) DEFAULT 0", str(parser) )
 
     def test_not_null_needs_default( self ):
 
