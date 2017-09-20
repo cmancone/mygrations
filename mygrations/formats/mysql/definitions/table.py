@@ -161,3 +161,32 @@ class table( object ):
             self._rows[row_id] = OrderedDict( zip( columns, values ) )
 
         return True
+
+    def __sub__( self, comparison_table ):
+        """ Compares two tables to eachother and returns a list of operations which can bring the structure of the second in line with the first
+
+        In other words, this pseudo code will make table have the same structure as comparison_table
+
+        for operation in (comparison_table - table):
+            table.apply( operation )
+
+        :param comparison_table: A table to find differences with
+        :type comparison_table: mygrations.formats.mysql.definitions.table
+        :returns: A list of operations to apply to table
+        :rtype: list[mygrations.formats.mysql.mygrations.operations.*]
+        """
+        # start with the columns, obviously
+        operations = []
+
+        new_columns = set()
+        current_columns = set()
+        for column in self.columns.keys():
+            current_columns.add( column )
+        for column in comparison_table.columns.keys():
+            new_columns.add( column )
+
+        columns_to_add = new_columns - current_columns
+        columns_to_remove = current_columns - new_columns
+        columns_to_update = new_columns.intersection( current_columns )
+
+        return operations

@@ -1,3 +1,5 @@
+from mygrations.formats.mysql.mygrations.mygration import mygration
+
 class database( object ):
 
     _errors = None
@@ -49,42 +51,17 @@ class database( object ):
                 self._errors.append( returned )
 
     def __sub__( self, new_db ):
-        """ Compares two databases with eachother and returns a list of differences
+        """ Compares two databases with eachother and returns a mygration object that builds an action plan to bring the second up-to-spec with the first
 
-        Specifically, it returns a list of mygrations.formats.definitions.operation objects.
-        These objects will easily return an SQL command that will correct any differences.
+        The mygration object can generate SQL commands that will correct any differences.
         In other words, this pseudo code will make DB1 have the same structure as DB2
 
-        for difference in DB2 - DB1:
+        for difference in (DB2 - DB1):
             DB1.apply( difference )
 
         :param new_db: A database to find differences with
         :type new_db: mygrations.formats.mysql.definitions.database
-        :returns: A list of differences
-        :rtype: list
+        :returns: A migration object that can adjust one database to match the other
+        :rtype: mygrations.formats.mysql.mygrations.mygration
         """
-        # start with the tables, obviously
-        current_tables = set()
-        new_tables = set()
-        for table in self._tables.keys():
-            current_tables.add( table )
-        for table in new_db.tables.keys():
-            new_tables.add( table )
-
-        tables_to_add = current_tables - new_tables
-        tables_to_remove = new_tables - current_tables
-
-        # with the straightened out, we just need to check and see what
-        # tables might differ
-        operations = []
-        for table in current_tables.intersection( new_tables ):
-            diff = self._tables[table] - new_db.tables[table]
-            if not diff:
-                continue
-
-            operations.extend( diff )
-
-        # tables to remove must be checked for violations of foreign keys
-        # tables to add must be added in proper order for foreign keys
-        # foreign keys should probably be added completely separately,
-        # although it would be nice to be smart
+        return mygration( self, new_db )
