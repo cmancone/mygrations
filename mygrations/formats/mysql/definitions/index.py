@@ -54,3 +54,24 @@ class index( object ):
         :rtype: list
         """
         return [] if self._warnings is None else self._warnings
+
+    def __str__( self ):
+        """ Returns the MySQL command that would create the column
+
+        i.e. column_name type(len) default ''
+
+        :returns: A partial MySQL command that could be used to generate the column
+        :rtype: string
+        """
+        parts = []
+        if self.index_type == 'PRIMARY':
+            parts.append( 'PRIMARY' )
+        elif self.index_type == 'UNIQUE':
+            parts.append( 'UNIQUE' )
+        parts.append( 'KEY' )
+
+        if self.name:
+            parts.append( '`%s`' % self.name )
+        parts.append( '(`%s`)' % ( "`,`".join( self.columns ) ) )
+
+        return ' '.join( parts )

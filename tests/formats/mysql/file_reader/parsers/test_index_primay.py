@@ -20,6 +20,7 @@ class test_index_primary( unittest.TestCase ):
         self.assertEquals( ['id'], parser.columns )
         self.assertEquals( parser.index_type, 'PRIMARY' )
         self.assertTrue( parser.has_comma )
+        self.assertEquals( 'PRIMARY KEY (`id`)', str( parser ) )
 
     def test_optional_comma( self ):
 
@@ -31,6 +32,7 @@ class test_index_primary( unittest.TestCase ):
         self.assertEquals( ['id'], parser.columns )
         self.assertTrue( parser.matched )
         self.assertFalse( parser.has_comma )
+        self.assertEquals( 'PRIMARY KEY (`id`)', str( parser ) )
 
     def test_optional_quotes( self ):
 
@@ -41,3 +43,4 @@ class test_index_primary( unittest.TestCase ):
         # we should have matched
         self.assertTrue( parser.matched )
         self.assertEquals( ['sup'], parser.columns )
+        self.assertEquals( 'PRIMARY KEY (`sup`)', str( parser ) )

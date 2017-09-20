@@ -21,6 +21,7 @@ class test_index_unique( unittest.TestCase ):
         self.assertEquals( [ 'email' ], parser.columns )
         self.assertEquals( parser.index_type, 'UNIQUE' )
         self.assertTrue( parser.has_comma )
+        self.assertEquals( 'UNIQUE KEY `users_email` (`email`)', str( parser ) )
 
     def test_optional_comma( self ):
 
@@ -31,6 +32,7 @@ class test_index_unique( unittest.TestCase ):
         # we should have matched
         self.assertTrue( parser.matched )
         self.assertFalse( parser.has_comma )
+        self.assertEquals( 'UNIQUE KEY `users_email` (`email`)', str( parser ) )
 
     def test_optional_quotes( self ):
 
@@ -41,6 +43,7 @@ class test_index_unique( unittest.TestCase ):
         # we should have matched
         self.assertTrue( parser.matched )
         self.assertEquals( 'users_email', parser.name )
+        self.assertEquals( 'UNIQUE KEY `users_email` (`email`)', str( parser ) )
 
 
     def test_multiple_columns( self ):
@@ -60,3 +63,4 @@ class test_index_unique( unittest.TestCase ):
         self.assertEquals( [ 'email', 'username', 'password' ], parser.columns )
         self.assertEquals( parser.index_type, 'UNIQUE' )
         self.assertTrue( parser.has_comma )
+        self.assertEquals( 'UNIQUE KEY `users_email` (`email`,`username`,`password`)', str( parser ) )
