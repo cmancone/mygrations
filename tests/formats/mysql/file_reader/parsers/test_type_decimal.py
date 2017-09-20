@@ -16,7 +16,7 @@ class test_type_decimal( unittest.TestCase ):
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'latitude', parser.name )
         self.assertEquals( 'FLOAT', parser.column_type )
-        self.assertEquals( '10.7', parser.length )
+        self.assertEquals( '10,7', parser.length )
         self.assertFalse( parser.unsigned )
         self.assertFalse( parser.null )
         self.assertEquals( '0', parser.default )
@@ -25,6 +25,7 @@ class test_type_decimal( unittest.TestCase ):
         self.assertEquals( 0, len( parser.warnings ) )
         self.assertTrue( parser.character_set is None )
         self.assertTrue( parser.collate is None )
+        self.assertEquals( "`latitude` FLOAT(10,7) NOT NULL DEFAULT 0", str(parser) )
 
     def test_optional_default( self ):
 
@@ -39,12 +40,13 @@ class test_type_decimal( unittest.TestCase ):
         self.assertEquals( 'latitude', parser.name )
         self.assertEquals( 'FLOAT', parser.column_type )
         self.assertTrue( parser.unsigned )
-        self.assertEquals( '10.7', parser.length )
+        self.assertEquals( '10,7', parser.length )
         self.assertTrue( parser.null )
         self.assertEquals( None, parser.default )
         self.assertFalse( parser.has_comma )
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( 0, len( parser.warnings ) )
+        self.assertEquals( "`latitude` FLOAT(10,7) UNSIGNED", str(parser) )
 
     def test_strip_backticks( self ):
 
@@ -57,6 +59,7 @@ class test_type_decimal( unittest.TestCase ):
 
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'latitude', parser.name )
+        self.assertEquals( "`latitude` FLOAT(10,7)", str(parser) )
 
     def test_warning_for_string_default( self ):
 

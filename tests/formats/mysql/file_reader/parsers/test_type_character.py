@@ -23,6 +23,7 @@ class test_type_character( unittest.TestCase ):
         self.assertTrue( parser.character_set is None )
         self.assertTrue( parser.collate is None )
         self.assertEquals( 0, len( parser.errors ) )
+        self.assertEquals( "`name` VARCHAR(255) NOT NULL DEFAULT 'sup'", str(parser) )
 
     def test_character_set( self ):
 
@@ -43,6 +44,7 @@ class test_type_character( unittest.TestCase ):
         self.assertEquals( 'BLAH', parser.character_set )
         self.assertEquals( 'BOO', parser.collate )
         self.assertEquals( 0, len( parser.errors ) )
+        self.assertEquals( "`name` VARCHAR(255) NOT NULL DEFAULT 'sup' CHARACTER SET 'BLAH' COLLATE 'BOO'", str(parser) )
 
     def test_optional_default( self ):
 
@@ -63,6 +65,7 @@ class test_type_character( unittest.TestCase ):
         self.assertTrue( parser.character_set is None )
         self.assertTrue( parser.collate is None )
         self.assertEquals( 0, len( parser.errors ) )
+        self.assertEquals( "`name` VARCHAR(255)", str(parser) )
 
     def test_empty_default( self ):
 
@@ -74,6 +77,7 @@ class test_type_character( unittest.TestCase ):
         self.assertEquals( '', returned )
 
         self.assertEquals( '', parser.default )
+        self.assertEquals( "`name` VARCHAR(255) DEFAULT ''", str(parser) )
 
     def test_strip_backticks( self ):
 
@@ -86,6 +90,7 @@ class test_type_character( unittest.TestCase ):
 
         self.assertEquals( 'column', parser.definition_type )
         self.assertEquals( 'name', parser.name )
+        self.assertEquals( "`name` VARCHAR(255)", str(parser) )
 
     def test_not_null_needs_default( self ):
 

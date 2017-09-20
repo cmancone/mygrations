@@ -148,3 +148,41 @@ class column( object ):
         :rtype: list
         """
         return [] if self._warnings is None else self._warnings
+
+    def __str__( self ):
+        """ Returns the MySQL command that would create the column
+
+        i.e. column_name type(len) default ''
+
+        :returns: A partial MySQL command that could be used to generate the column
+        :rtype: string
+        """
+        parts = []
+        parts.append( '`%s`' % self.name )
+
+        type_string = self.column_type
+        if self.length:
+            type_string += '(%s)' % self.length
+        parts.append( type_string )
+
+        if self.unsigned:
+            parts.append( 'UNSIGNED' )
+
+        if not self.null:
+            parts.append( 'NOT NULL' )
+
+        if self.default is not None:
+            if self.default == '':
+                parts.append( "DEFAULT ''" )
+            elif self.default.isnumeric():
+                parts.append( "DEFAULT %s" % self.default )
+            else:
+                parts.append( "DEFAULT '%s'" % self.default )
+
+        if self.character_set:
+            parts.append( "CHARACTER SET '%s'" % self.character_set )
+
+        if self.collate:
+            parts.append( "COLLATE '%s'" % self.collate )
+
+        return ' '.join( parts )
