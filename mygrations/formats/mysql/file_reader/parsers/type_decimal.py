@@ -32,7 +32,7 @@ class type_decimal( parser, column ):
         self._name = self._values['name'].strip( '`' )
         self._column_type = self._values['type']
         self.decimals = self._values['decimals']
-        self._length = '%s.%s' % ( self._values['length'], self._values['decimals'] )
+        self._length = '%s,%s' % ( self._values['length'], self._values['decimals'] )
         self._unsigned = True if 'UNSIGNED' in self._values else False
         self._null = False if 'NOT NULL' in self._values else True
         self._default = self._values['default'] if 'default' in self._values else None
