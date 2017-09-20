@@ -2,6 +2,10 @@
 
 A general purpose migration tool for managing MySQL updates.  Written in python but intended for use in other sysetms as well, especially PHP.
 
+## Dependencies
+
+https://pypi.python.org/pypi/mysqlclient
+
 ## About
 
 `mygrations` manages database migrations with a declarative approach.  Each table in your database has one SQL file which contains a `CREATE TABLE` command that gives the table definition.  This command isn't used directly to create your table.  Rather, it defines the table structure that `mygration` will create.  When it comes time to migrate your database, `mygrations` parses the SQL to determine the structure of the table you are trying to build.  It then compares this to the actual table structure in MySQl to determine all of the changes that need to happen to bring the database up to spec.  Finally, it generates and applies any necessary `ALTER TABLE` commands or creates the table if it doesn't exist.
