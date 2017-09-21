@@ -1,9 +1,16 @@
 from collections import OrderedDict
 from .rows import rows as rows_definition
+
 from ..mygrations.operations.alter_table import alter_table
 from ..mygrations.operations.add_column import add_column
 from ..mygrations.operations.change_column import change_column
 from ..mygrations.operations.remove_column import remove_column
+from ..mygrations.operations.add_key import add_key
+from ..mygrations.operations.change_key import change_key
+from ..mygrations.operations.remove_key import remove_key
+from ..mygrations.operations.add_constraint import add_constraint
+from ..mygrations.operations.change_constraint import change_constraint
+from ..mygrations.operations.remove_constraint import remove_constraint
 
 class table( object ):
 
@@ -166,6 +173,28 @@ class table( object ):
 
         return True
 
+    def column_before( self, column_name ):
+        """ Returns the name of the column that comes before a given row.
+
+        Returns true if the column is at the beginning of the table
+
+        :param column_name: The name of the column to find the position for
+        :type column_name: str
+        :returns: The name of the column before the given column, or True if at the beginning
+        :rtype: string|True
+        """
+        # this works because we used an OrderedDict
+        columns = [ col for col in self.columns.keys() ]
+
+        if not column_name in columns:
+            raise ValueError( "Cannot return column before %s because %s does not exist in table %s" % (column_name, column_name, self.name) )
+
+        index = columns.index( column_name )
+        if index == 0:
+            return True
+
+        return columns[index-1]
+
     def __sub__( self, comparison_table ):
         """ Compares two tables to eachother and returns a list of operations which can bring the structure of the second in line with the first
 
@@ -182,29 +211,56 @@ class table( object ):
         # start with the columns, obviously
         operations = []
 
-        new_columns = set()
-        current_columns = set()
-        for column in self.columns.keys():
-            current_columns.add( column )
-        for column in comparison_table.columns.keys():
-            new_columns.add( column )
+        ( current_columns, new_columns ) = self._to_set( self.columns.keys(), comparison_table.columns.keys() )
+        ( current_keys, new_keys ) = self._to_set( self.indexes.keys(), comparison_table.indexes.keys() )
+        ( current_constraints, new_constraints ) = self._to_set( self.constraints.keys(), comparison_table.constraints.keys() )
 
-        # keeping in mind the overall algorith, we're going to separate out three things:
-        # adding/changing columns, FKs, and removing columns
-        add_mod_columns = alter_table( self.name )
+        # keeping in mind the overall algorithm, we're going to separate out all changes into three alter statments
+        # these are broken up according to the way that the system has to process them to make sure that foreign
+        # keys are not violated during the process
+        # 1. Adding columns, changing columns, adding keys, changing keys, removing keys, removing foreign keys
+        # 2. Adding foreign keys, changing foreign keys
+        # 3. Removing columns
+        primary_alter = alter_table( self.name )
         for new_column in new_columns - current_columns:
-            add_mod_columns.add_operation( add_column( comparison_table[new_column] ) )
+            primary_alter.add_operation( add_column( comparison_table[new_column], comparison_table.column_before( new_column ) ) )
 
         for overlap_column in new_columns.intersection( current_columns ):
             # it's really easy to tell if a column changed
-            if str(self.columns[overlap_column]) == str(comparison_table.columns[overlap_column]):
+            if str( self.columns[overlap_column] ) == str( comparison_table.columns[overlap_column] ):
                 continue
-            add_mod_columns.add_operation( change_column( self.columns[new_column] ) )
+            primary_alter.add_operation( change_column( comparison_table.columns[overlap_column] ) )
 
+        # indexes also go in that first alter table
+        for new_key in new_keys - current_keys:
+            primary_alter.add_operation( add_key( comparison_table.indexes[new_key] )
+        for removed_key in current_keys - new_keys:
+            primary_alter.add_operation( remove_key( self.indexes[removed_key] ) )
+        for overlap_key in new_keys.intersection( current_keys ):
+            if str( self.indexes[overlap_key] ) == str( comparison_table.indexes[overlap_key] ):
+                continue
+            primary_alter.add_operation( change_key( comparison_table.indexes[overlap_key] ) )
+
+        # removed FKs can also go in the first alter table
+        for removed_constraint in current_constraints - new_constraint:
+            primary_alter.add_operation( remove_constraint( self.constraints[removed_constraint] ) )
+
+        # removed columns get their own alter
         removed_columns = alter_table( self.name )
         for removed_column in current_columns - new_columns:
             removed_columns.add_operation( remove_column( self.columns[removed_column] ) )
 
-        # same for foreign keys
+        if removed_columns:
+            operations.append( removed_columns )
 
         return operations
+
+    def _to_set( self, current, new ):
+        new_set = set()
+        current_set = set()
+        for name in current:
+            current_set.add( name )
+        for name in new:
+            new_set.add( name )
+
+        return ( current_set, new_set )

@@ -9,7 +9,10 @@ class alter_table:
         self.operations.append( operation )
 
     def __len__( self ):
-        return len(self.operations)
+        return len( self.operations )
+
+    def __bool__( self ):
+        return True if len( self.operations ) else False
 
     def __str__( self ):
         return 'ALTER TABLE %s %s' % (self.table, ' '.join( self.operations ))
