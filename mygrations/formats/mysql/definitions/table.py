@@ -1,5 +1,9 @@
 from collections import OrderedDict
 from .rows import rows as rows_definition
+from ..mygrations.operations.alter_table import alter_table
+from ..mygrations.operations.add_column import add_column
+from ..mygrations.operations.change_column import change_column
+from ..mygrations.operations.remove_column import remove_column
 
 class table( object ):
 
@@ -185,8 +189,22 @@ class table( object ):
         for column in comparison_table.columns.keys():
             new_columns.add( column )
 
-        columns_to_add = new_columns - current_columns
-        columns_to_remove = current_columns - new_columns
-        columns_to_update = new_columns.intersection( current_columns )
+        # keeping in mind the overall algorith, we're going to separate out three things:
+        # adding/changing columns, FKs, and removing columns
+        add_mod_columns = alter_table( self.name )
+        for new_column in new_columns - current_columns:
+            add_mod_columns.add_operation( add_column( comparison_table[new_column] ) )
+
+        for overlap_column in new_columns.intersection( current_columns ):
+            # it's really easy to tell if a column changed
+            if str(self.columns[overlap_column]) == str(comparison_table.columns[overlap_column]):
+                continue
+            add_mod_columns.add_operation( change_column( self.columns[new_column] ) )
+
+        removed_columns = alter_table( self.name )
+        for removed_column in current_columns - new_columns:
+            removed_columns.add_operation( remove_column( self.columns[removed_column] ) )
+
+        # same for foreign keys
 
         return operations

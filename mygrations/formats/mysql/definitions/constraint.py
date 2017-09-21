@@ -86,3 +86,24 @@ class constraint( object ):
         :rtype: list
         """
         return [] if self._warnings is None else self._warnings
+
+    def __str__( self ):
+        """ Returns the MySQL command that would create the constraint
+
+        i.e. CONSTRAINT `vendors_w9_fk` FOREIGN KEY (`w9_id`) REFERENCES `vendor_w9s` (`id`) ON UPDATE CASCADE
+
+        :returns: A partial MySQL command that could be used to generate the foreign key
+        :rtype: string
+        """
+        parts = [ 'CONSTRAINT' ]
+
+        parts.append( '`%s`' % self.name )
+        parts.append( 'FOREIGN KEY' )
+        parts.append( '(`%s`)' % ( self.column ) )
+        parts.append( 'REFERENCES' )
+        parts.append( '`%s`' % self.foreign_table )
+        parts.append( '(`%s`)' % (self.foreign_column) )
+        parts.append( 'ON DELETE %s' % self.on_delete )
+        parts.append( 'ON UPDATE %s' % self.on_update )
+
+        return ' '.join( parts )

@@ -24,6 +24,7 @@ class test_constraint_foreign( unittest.TestCase ):
         self.assertEquals( 'CASCADE', parser.on_delete )
         self.assertEquals( 'SET NULL', parser.on_update )
         self.assertFalse( parser.has_comma )
+        self.assertEquals( 'CONSTRAINT `accounts_status_id_ref_account_statuses_id` FOREIGN KEY (`status_id`) REFERENCES `account_statuses` (`id`) ON DELETE CASCADE ON UPDATE SET NULL', str( parser ) )
 
     def test_all_deletes( self ):
 
@@ -31,31 +32,37 @@ class test_constraint_foreign( unittest.TestCase ):
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON DELETE CASCADE ON UPDATE SET NULL' )
         self.assertEquals( 'CASCADE', parser.on_delete )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE CASCADE ON UPDATE SET NULL', str( parser ) )
 
         # parse a typical foreign key constraint
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON DELETE NO ACTION ON UPDATE SET NULL' )
         self.assertEquals( 'NO ACTION', parser.on_delete )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE NO ACTION ON UPDATE SET NULL', str( parser ) )
 
         # parse a typical foreign key constraint
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON DELETE RESTRICT ON UPDATE SET NULL' )
         self.assertEquals( 'RESTRICT', parser.on_delete )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE RESTRICT ON UPDATE SET NULL', str( parser ) )
 
         # parse a typical foreign key constraint
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON DELETE set default ON UPDATE SET NULL' )
         self.assertEquals( 'SET DEFAULT', parser.on_delete )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE SET DEFAULT ON UPDATE SET NULL', str( parser ) )
 
         # parse a typical foreign key constraint
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON DELETE set null ON UPDATE SET NULL' )
         self.assertEquals( 'SET NULL', parser.on_delete )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE SET NULL ON UPDATE SET NULL', str( parser ) )
 
         # parse a typical foreign key constraint
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON UPDATE SET NULL' )
         self.assertEquals( 'RESTRICT', parser.on_delete )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE RESTRICT ON UPDATE SET NULL', str( parser ) )
 
     def test_all_updates( self ):
 
@@ -63,31 +70,37 @@ class test_constraint_foreign( unittest.TestCase ):
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON DELETE CASCADE ON UPDATE SET NULL' )
         self.assertEquals( 'SET NULL', parser.on_update )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE CASCADE ON UPDATE SET NULL', str( parser ) )
 
         # parse a typical foreign key constraint
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON DELETE NO ACTION ON UPDATE SET DEFAULT' )
         self.assertEquals( 'SET DEFAULT', parser.on_update )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE NO ACTION ON UPDATE SET DEFAULT', str( parser ) )
 
         # parse a typical foreign key constraint
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON DELETE RESTRICT ON UPDATE CASCADE' )
         self.assertEquals( 'CASCADE', parser.on_update )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE', str( parser ) )
 
         # parse a typical foreign key constraint
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON DELETE set default ON UPDATE no action' )
         self.assertEquals( 'NO ACTION', parser.on_update )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE SET DEFAULT ON UPDATE NO ACTION', str( parser ) )
 
         # parse a typical foreign key constraint
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON DELETE set null ON UPDATE RESTRICT' )
         self.assertEquals( 'RESTRICT', parser.on_update )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT', str( parser ) )
 
         # parse a typical foreign key constraint
         parser = constraint_foreign()
         parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) ON DELETE SET NULL' )
         self.assertEquals( 'RESTRICT', parser.on_update )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE SET NULL ON UPDATE RESTRICT', str( parser ) )
 
     def test_action_optional( self ):
 
@@ -99,6 +112,7 @@ class test_constraint_foreign( unittest.TestCase ):
         self.assertEquals( '', remaining )
         self.assertEquals( 'RESTRICT', parser.on_update )
         self.assertEquals( 'RESTRICT', parser.on_delete )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT', str( parser ) )
 
     def test_leftovers( self ):
 
@@ -109,10 +123,12 @@ class test_constraint_foreign( unittest.TestCase ):
         self.assertTrue( parser.matched )
         self.assertEquals( 'sup', remaining )
         self.assertTrue( parser.has_comma )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT', str( parser ) )
 
         # even if the user forgets a comma
         parser = constraint_foreign()
         remaining = parser.parse( 'CONSTRAINT blah FOREIGN KEY (check) REFERENCES tbl (id) sup' )
+        self.assertEquals( 'CONSTRAINT `blah` FOREIGN KEY (`check`) REFERENCES `tbl` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT', str( parser ) )
 
         self.assertTrue( parser.matched )
         self.assertEquals( 'sup', remaining )
