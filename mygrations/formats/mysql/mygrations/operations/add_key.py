@@ -5,4 +5,4 @@ class add_key:
         self.key = key
 
     def __str__( self ):
-        return 'ADD %s' % self.key
+        return 'ADD %s' % str( self.key )

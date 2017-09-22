@@ -39,7 +39,7 @@ class create_parser( parser, table ):
         self.semicolon = True if 'closing_semicolon' in self._values else False
         self._name = self._values['name'].strip( '`' )
         self._definitions = self._values['definitions']
-        self._options = self._values['table_options']
+        self._options = self._values['table_options'] if 'table_options' in self._values else []
         self._columns = OrderedDict()
         self._indexes = OrderedDict()
         self._constraints = OrderedDict()

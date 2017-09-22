@@ -223,7 +223,7 @@ class table( object ):
         # 3. Removing columns
         primary_alter = alter_table( self.name )
         for new_column in new_columns - current_columns:
-            primary_alter.add_operation( add_column( comparison_table[new_column], comparison_table.column_before( new_column ) ) )
+            primary_alter.add_operation( add_column( comparison_table.columns[new_column], comparison_table.column_before( new_column ) ) )
 
         for overlap_column in new_columns.intersection( current_columns ):
             # it's really easy to tell if a column changed
@@ -233,7 +233,7 @@ class table( object ):
 
         # indexes also go in that first alter table
         for new_key in new_keys - current_keys:
-            primary_alter.add_operation( add_key( comparison_table.indexes[new_key] )
+            primary_alter.add_operation( add_key( comparison_table.indexes[new_key] ) )
         for removed_key in current_keys - new_keys:
             primary_alter.add_operation( remove_key( self.indexes[removed_key] ) )
         for overlap_key in new_keys.intersection( current_keys ):
@@ -242,8 +242,21 @@ class table( object ):
             primary_alter.add_operation( change_key( comparison_table.indexes[overlap_key] ) )
 
         # removed FKs can also go in the first alter table
-        for removed_constraint in current_constraints - new_constraint:
+        for removed_constraint in current_constraints - new_constraints:
             primary_alter.add_operation( remove_constraint( self.constraints[removed_constraint] ) )
+        if primary_alter:
+            operations.append( primary_alter )
+
+        # adding and changing foreign keys gets their own alter
+        constraints = alter_table( self.name )
+        for added_constraint in new_constraints - current_constraints:
+            constraints.add_operation( add_constraint( comparison_table.constraints[added_constraint] ) )
+        for overlap_constraint in new_constraints.intersection( current_constraints ):
+            if str( self.constraints[overlap_constraint] ) == str( comparison_table.constraints[overlap_constraint] ):
+                continue
+            constraints.add_operation( change_constraint( comparison_table.constraints[overlap_constraint] ) )
+        if constraints:
+            operations.append( constraints )
 
         # removed columns get their own alter
         removed_columns = alter_table( self.name )

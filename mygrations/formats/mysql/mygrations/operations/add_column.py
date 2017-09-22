@@ -33,4 +33,4 @@ class add_column:
         else:
             position = ''
 
-        return 'ADD %s%s' % (self.column, position)
+        return 'ADD %s%s' % ( str( self.column ), position )

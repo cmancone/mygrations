@@ -5,4 +5,4 @@ class add_constraint:
         self.constraint = constraint
 
     def __str__( self ):
-        return 'ADD %s' % self.constraint
+        return 'ADD %s' % str( self.constraint )
