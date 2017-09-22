@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from mygrations.core.OrderedSet import OrderedSet
 from .rows import rows as rows_definition
 
 from ..mygrations.operations.alter_table import alter_table
@@ -195,7 +196,7 @@ class table( object ):
 
         return columns[index-1]
 
-    def __sub__( self, comparison_table ):
+    def to( self, comparison_table, split_operations = True ):
         """ Compares two tables to eachother and returns a list of operations which can bring the structure of the second in line with the first
 
         In other words, this pseudo code will make table have the same structure as comparison_table
@@ -211,9 +212,9 @@ class table( object ):
         # start with the columns, obviously
         operations = []
 
-        ( current_columns, new_columns ) = self._to_set( self.columns.keys(), comparison_table.columns.keys() )
-        ( current_keys, new_keys ) = self._to_set( self.indexes.keys(), comparison_table.indexes.keys() )
-        ( current_constraints, new_constraints ) = self._to_set( self.constraints.keys(), comparison_table.constraints.keys() )
+        ( added_columns, removed_columns, overlap_columns ) = self.differences( self.columns, comparison_table.columns )
+        ( added_keys, removed_keys, overlap_keys ) = self.differences( self.indexes, comparison_table.indexes )
+        ( added_constraints, removed_constraints, overlap_constraints ) = self.differences( self.constraints, comparison_table.constraints )
 
         # keeping in mind the overall algorithm, we're going to separate out all changes into three alter statments
         # these are broken up according to the way that the system has to process them to make sure that foreign
@@ -222,58 +223,74 @@ class table( object ):
         # 2. Adding foreign keys, changing foreign keys
         # 3. Removing columns
         primary_alter = alter_table( self.name )
-        for new_column in new_columns - current_columns:
+        for new_column in added_columns:
             primary_alter.add_operation( add_column( comparison_table.columns[new_column], comparison_table.column_before( new_column ) ) )
 
-        for overlap_column in new_columns.intersection( current_columns ):
+        for overlap_column in overlap_columns:
             # it's really easy to tell if a column changed
             if str( self.columns[overlap_column] ) == str( comparison_table.columns[overlap_column] ):
                 continue
             primary_alter.add_operation( change_column( comparison_table.columns[overlap_column] ) )
 
         # indexes also go in that first alter table
-        for new_key in new_keys - current_keys:
+        for new_key in added_keys:
             primary_alter.add_operation( add_key( comparison_table.indexes[new_key] ) )
-        for removed_key in current_keys - new_keys:
+        for removed_key in removed_keys:
             primary_alter.add_operation( remove_key( self.indexes[removed_key] ) )
-        for overlap_key in new_keys.intersection( current_keys ):
+        for overlap_key in overlap_keys:
             if str( self.indexes[overlap_key] ) == str( comparison_table.indexes[overlap_key] ):
                 continue
             primary_alter.add_operation( change_key( comparison_table.indexes[overlap_key] ) )
 
         # removed FKs can also go in the first alter table
-        for removed_constraint in current_constraints - new_constraints:
+        for removed_constraint in removed_constraints:
             primary_alter.add_operation( remove_constraint( self.constraints[removed_constraint] ) )
-        if primary_alter:
-            operations.append( primary_alter )
 
         # adding and changing foreign keys gets their own alter
         constraints = alter_table( self.name )
-        for added_constraint in new_constraints - current_constraints:
+        for added_constraint in added_constraints:
             constraints.add_operation( add_constraint( comparison_table.constraints[added_constraint] ) )
-        for overlap_constraint in new_constraints.intersection( current_constraints ):
+        for overlap_constraint in overlap_constraints:
             if str( self.constraints[overlap_constraint] ) == str( comparison_table.constraints[overlap_constraint] ):
                 continue
             constraints.add_operation( change_constraint( comparison_table.constraints[overlap_constraint] ) )
-        if constraints:
-            operations.append( constraints )
 
         # removed columns get their own alter
-        removed_columns = alter_table( self.name )
-        for removed_column in current_columns - new_columns:
-            removed_columns.add_operation( remove_column( self.columns[removed_column] ) )
+        remove_columns_alter = alter_table( self.name )
+        for removed_column in removed_columns:
+            remove_columns_alter.add_operation( remove_column( self.columns[removed_column] ) )
 
-        if removed_columns:
-            operations.append( removed_columns )
+        # now put it all together
+        if split_operations:
+            if primary_alter:
+                operations.append( primary_alter )
+            if constraints:
+                operations.append( constraints )
+            if remove_columns_alter:
+                operations.append( remove_columns_alter )
+        else:
+            for operation in constraints:
+                primary_alter.add_operation( operation )
+            for operation in remove_columns_alter:
+                primary_alter.add_operation( operation )
+            if primary_alter:
+                operations.append( primary_alter )
 
         return operations
 
-    def _to_set( self, current, new ):
-        new_set = set()
-        current_set = set()
-        for name in current:
-            current_set.add( name )
-        for name in new:
-            new_set.add( name )
+    def differences(self, a, b):
+        """
+        Calculates the difference between two OrderedDicts.
 
-        return ( current_set, new_set )
+        https://codereview.stackexchange.com/a/176303/140581
+
+        :param a: OrderedDict
+        :param b: OrderedDict
+        :return: (added, removed, overlap)
+        """
+
+        return (
+            [key for key in b if key not in a],
+            [key for key in a if key not in b],
+            [key for key in a if key in b]
+        )

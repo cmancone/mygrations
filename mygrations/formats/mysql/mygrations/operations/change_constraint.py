@@ -5,4 +5,4 @@ class change_constraint:
         self.constraint = constraint
 
     def __str__( self ):
-        return 'DROP FOREIGN KEY %s, ADD %s' % ( self.constraint.name, str( self.constraint ) )
+        return 'DROP FOREIGN KEY `%s`, ADD %s' % ( self.constraint.name, str( self.constraint ) )

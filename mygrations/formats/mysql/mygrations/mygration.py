@@ -54,7 +54,7 @@ class mygration:
         # tables might differ
         operations = []
         for table in current_tables.intersection( new_tables ):
-            for operation in self.db1.tables[table] - self.db2.tables[table]:
+            for operation in self.db1.tables[table].to( self.db2.tables[table] ):
                 print( operation )
 
         # tables to remove must be checked for violations of foreign keys

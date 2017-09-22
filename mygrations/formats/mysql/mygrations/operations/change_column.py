@@ -5,4 +5,4 @@ class change_column:
         self.column = column
 
     def __str__( self ):
-        return 'CHANGE %s %s' % ( self.column.name, str( self.column ) )
+        return 'CHANGE `%s` %s' % ( self.column.name, str( self.column ) )

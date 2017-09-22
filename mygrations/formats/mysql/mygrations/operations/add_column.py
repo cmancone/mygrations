@@ -29,7 +29,7 @@ class add_column:
         if self.position == True:
             position = ' FIRST';
         elif type( self.position ) == type( '' ):
-            position = ' AFTER %s' % self.position
+            position = ' AFTER `%s`' % self.position
         else:
             position = ''
 

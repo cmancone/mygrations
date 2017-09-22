@@ -4,9 +4,8 @@ from mygrations.formats.mysql.file_reader.create_parser import create_parser
 
 class test_table_difference( unittest.TestCase ):
 
-    def test_add_columns( self ):
+    def test_drop_columns( self ):
 
-        # parse a typical foreign key constraint
         a = create_parser()
         a.parse( """CREATE TABLE `tasks` (
             `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -25,4 +24,64 @@ class test_table_difference( unittest.TestCase ):
             );
         """ )
 
-        print( (a-b)[0] )
+        # if we subtract b from a we should get some drop column queries in one alter statement
+        operations = b.to( a )
+        self.assertEquals( 1, len( operations ) )
+        self.assertEquals( 'ALTER TABLE `tasks` DROP membership_id, DROP subject', str( operations[0] ) )
+
+    def test_add_columns( self ):
+
+        a = create_parser()
+        a.parse( """CREATE TABLE `tasks` (
+            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+            `account_id` int(10) DEFAULT NULL,
+            `task` varchar(255) DEFAULT NULL
+            );
+        """ )
+
+        b = create_parser()
+        b.parse( """CREATE TABLE `tasks` (
+            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+            `account_id` int(10) DEFAULT NULL,
+            `membership_id` int(10) unsigned not null,
+            `task` varchar(255) DEFAULT NULL,
+            `subject` text
+            );
+        """ )
+
+        # if we subtract b from a we should get some drop column queries in one alter statement
+        operations = a.to( b )
+        self.assertEquals( 1, len( operations ) )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD `membership_id` INT(10) UNSIGNED NOT NULL AFTER `account_id`, ADD `subject` TEXT AFTER `task`', str( operations[0] ) )
+
+    def test_add_remove_change_columns( self ):
+
+        a = create_parser()
+        a.parse( """CREATE TABLE `tasks` (
+            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+            `account_id` int(10) DEFAULT NULL,
+            `task` varchar(255) DEFAULT NULL
+            );
+        """ )
+
+        b = create_parser()
+        b.parse( """CREATE TABLE `tasks` (
+            `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+            `account_id` int(10) NOT NULL DEFAULT 0,
+            `membership_id` int(10) unsigned not null,
+            `subject` text
+            );
+        """ )
+
+        # if we subtract b from a we should get some drop column queries in one alter statement
+        operations = a.to( b )
+
+        # this comes out in two operations due to our processing order
+        self.assertEquals( 2, len( operations ) )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD `membership_id` INT(10) UNSIGNED NOT NULL AFTER `account_id`, ADD `subject` TEXT AFTER `membership_id`, CHANGE `account_id` `account_id` INT(10) NOT NULL DEFAULT 0', str( operations[0] ) )
+        self.assertEquals( 'ALTER TABLE `tasks` DROP task', str( operations[1] ) )
+
+        # but we can ask for it in one
+        operations = a.to( b, False )
+        self.assertEquals( 1, len( operations ) )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD `membership_id` INT(10) UNSIGNED NOT NULL AFTER `account_id`, ADD `subject` TEXT AFTER `membership_id`, CHANGE `account_id` `account_id` INT(10) NOT NULL DEFAULT 0, DROP task', str( operations[0] ) )
