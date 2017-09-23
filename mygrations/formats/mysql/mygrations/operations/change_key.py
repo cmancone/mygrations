@@ -5,4 +5,4 @@ class change_key:
         self.key = key
 
     def __str__( self ):
-        return 'DROP KEY `%s`, ADD KEY %s' % ( self.key.name, str( self.key ) )
+        return 'DROP KEY `%s`, ADD %s' % ( self.key.name, str( self.key ) )

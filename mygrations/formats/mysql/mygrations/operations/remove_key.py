@@ -5,4 +5,6 @@ class remove_key:
         self.key = key
 
     def __str__( self ):
-        return 'DROP KEY %s' % (self.key.name)
+        if self.key.index_type == 'PRIMARY':
+            return 'DROP PRIMARY KEY'
+        return 'DROP KEY `%s`' % (self.key.name)

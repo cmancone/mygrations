@@ -1,5 +1,4 @@
 from collections import OrderedDict
-from mygrations.core.OrderedSet import OrderedSet
 from .rows import rows as rows_definition
 
 from ..mygrations.operations.alter_table import alter_table
