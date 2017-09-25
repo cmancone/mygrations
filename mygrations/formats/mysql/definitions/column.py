@@ -183,6 +183,9 @@ class column( object ):
             else:
                 parts.append( "DEFAULT '%s'" % self.default )
 
+        if self.auto_increment:
+            parts.append( 'AUTO_INCREMENT' )
+
         if self.character_set:
             parts.append( "CHARACTER SET '%s'" % self.character_set )
 

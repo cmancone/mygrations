@@ -18,11 +18,33 @@ class test_type_numeric( unittest.TestCase ):
         self.assertEquals( '10', parser.length )
         self.assertFalse( parser.unsigned )
         self.assertFalse( parser.null )
+        self.assertFalse( parser.auto_increment )
         self.assertEquals( '0', parser.default )
         self.assertTrue( parser.has_comma )
         self.assertEquals( 0, len( parser.errors ) )
         self.assertEquals( 0, len( parser.warnings ) )
         self.assertEquals( "`created` INT(10) NOT NULL DEFAULT 0", str(parser) )
+
+    def test_auto_increment( self ):
+
+        # parse typical insert values
+        parser = type_numeric()
+        returned = parser.parse( "created int(10) not null auto_increment," )
+
+        self.assertTrue( parser.matched )
+        self.assertEquals( '', returned )
+
+        self.assertEquals( 'created', parser.name )
+        self.assertEquals( 'INT', parser.column_type )
+        self.assertEquals( '10', parser.length )
+        self.assertTrue( parser.auto_increment )
+        self.assertFalse( parser.unsigned )
+        self.assertFalse( parser.null )
+        self.assertEquals( None, parser.default )
+        self.assertTrue( parser.has_comma )
+        self.assertEquals( 0, len( parser.errors ) )
+        self.assertEquals( 0, len( parser.warnings ) )
+        self.assertEquals( "`created` INT(10) NOT NULL AUTO_INCREMENT", str(parser) )
 
     def test_optional_default( self ):
 
