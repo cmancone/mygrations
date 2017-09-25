@@ -11,6 +11,7 @@ from ..mygrations.operations.remove_key import remove_key
 from ..mygrations.operations.add_constraint import add_constraint
 from ..mygrations.operations.change_constraint import change_constraint
 from ..mygrations.operations.remove_constraint import remove_constraint
+from ..mygrations.operations.create_table import create_table
 
 class table( object ):
 
@@ -195,6 +196,17 @@ class table( object ):
 
         return columns[index-1]
 
+    def __str__( self ):
+        return str( self.create() )
+
+    def create( self ):
+        """ Returns a create table operation that can create this table
+
+        :returns: A create table operation
+        :rtype: mygrations.operations.create_table
+        """
+        return create_table( self )
+
     def to( self, comparison_table, split_operations = True ):
         """ Compares two tables to eachother and returns a list of operations which can bring the structure of the second in line with the first
 
@@ -203,17 +215,22 @@ class table( object ):
         for operation in (comparison_table - table):
             table.apply( operation )
 
+        if split_operations is True (the default) then a list of migration operations will be returned.
+        If it is false then a single alter table operation will be returned that encompasses all changes
+
         :param comparison_table: A table to find differences with
+        :param split_operations: Whether to combine all operations in one alter table or separate them
         :type comparison_table: mygrations.formats.mysql.definitions.table
+        :type split_operations: bool
         :returns: A list of operations to apply to table
         :rtype: list[mygrations.formats.mysql.mygrations.operations.*]
         """
         # start with the columns, obviously
         operations = []
 
-        ( added_columns, removed_columns, overlap_columns ) = self.differences( self.columns, comparison_table.columns )
-        ( added_keys, removed_keys, overlap_keys ) = self.differences( self.indexes, comparison_table.indexes )
-        ( added_constraints, removed_constraints, overlap_constraints ) = self.differences( self.constraints, comparison_table.constraints )
+        ( added_columns, removed_columns, overlap_columns ) = self._differences ( self.columns, comparison_table.columns )
+        ( added_keys, removed_keys, overlap_keys ) = self._differences ( self.indexes, comparison_table.indexes )
+        ( added_constraints, removed_constraints, overlap_constraints ) = self._differences ( self.constraints, comparison_table.constraints )
 
         # keeping in mind the overall algorithm, we're going to separate out all changes into three alter statments
         # these are broken up according to the way that the system has to process them to make sure that foreign
@@ -277,7 +294,7 @@ class table( object ):
 
         return operations
 
-    def differences(self, a, b):
+    def _differences(self, a, b):
         """
         Calculates the difference between two OrderedDicts.
 
