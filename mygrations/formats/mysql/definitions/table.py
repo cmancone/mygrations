@@ -26,6 +26,16 @@ class table( object ):
     _warnings = None
     _auto_increment = 1
 
+    def __init__( self, name ):
+        self._name = name
+        self._options = []
+        self._columns = OrderedDict()
+        self._indexes = OrderedDict()
+        self._constraints = OrderedDict()
+        self._errors = []
+        self._warnings = []
+        self._primary = ''
+
     @property
     def name( self ):
         """ Public getter.  Returns the name of the column.

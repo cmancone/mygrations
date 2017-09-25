@@ -1,3 +1,6 @@
+import copy
+from mygrations.formats.mysql.definitions.database import database
+
 class mygration:
     """ Creates a migration plan to update a database to a given spec.
 
@@ -18,33 +21,57 @@ class mygration:
     5. Remove any columns that do not exist in the target database structure, noting an error if a FK is violated
     6. Remove any tables that do not exist in the target database structure, noting an error if a FK is violated
     """
-    def __init__( self, db1, db2 = None ):
+    def __init__( self, db_to, db_from = None ):
         """ Create a migration plan
 
-        :param db1: The target database structure to migrate to
-        :param db2: The current database structure to migrate from
-        :type db1: mygrations.formats.mysql.definitions.database
-        :type db2: mygrations.formats.mysql.definitions.database
+        :param db_to: The target database structure to migrate to
+        :param db_from: The current database structure to migrate from
+        :type db_to: mygrations.formats.mysql.definitions.database
+        :type db_from: mygrations.formats.mysql.definitions.database
         """
 
-        self.db1 = db1
-        self.db2 = db2
+        self.db_to = db_to
+        self.db_from = db_from
         self._process()
+
+    def _differences(self, a, b):
+        """
+        Calculates the difference between two OrderedDicts.
+
+        https://codereview.stackexchange.com/a/176303/140581
+
+        Duplication!!!! (formats.mysql.create_parser).  Sue me.
+
+        :param a: OrderedDict
+        :param b: OrderedDict
+        :return: (added, removed, overlap)
+        """
+
+        return (
+            [key for key in b if key not in a],
+            [key for key in a if key not in b],
+            [key for key in a if key in b]
+        )
 
     def _process( self ):
 
-        # start with the tables, obviously
-        new_tables = set()
-        current_tables = set()
-        for table in self.db1.tables.keys():
-            new_tables.add( table )
-        if self.db2:
-            for table in self.db2.tables.keys():
-                current_tables.add( table )
+        operations = []
+        # throughout this process we have to keep track of what tables and columns we have
+        # the simplest way to do this is with a database object.
+        tracking_db = copy.deepcopy( self.db_from ) if self.db_from else database()
 
-        tables_to_add = current_tables - new_tables
-        tables_to_remove = new_tables - current_tables
-        tables_to_update = new_tables.intersection( current_tables )
+        # start with the tables, obviously
+        db_from_tables = self.db_from.tables if self.db_from else {}
+        ( tables_to_add, tables_to_remove, tables_to_update ) = self._differences( db_from_tables, self.db_to.tables )
+
+        # keep looping through tables as long as we find some to process
+        last_number_to_add = 0
+        while tables_to_add and len( tables_to_add ) != last_number_to_add:
+            last_number_to_add = len( tables_to_add )
+            for table in tables_to_add:
+                if tracking_db.fulfills_fks( self.db_to.tables[table] ):
+                    tables_to_add.remove( table )
+                    operations.append( self.db_to.tables[table].create() )
 
         # now we have the general todo list, but the reality
         # is much more complicated than that: in particular FK checks.
