@@ -40,5 +40,5 @@ class test_database( unittest.TestCase ):
         """]
         db2 = database_reader( strings )
 
-        differences = db2 - db1
+        #differences = db2 - db1
         #self.assertEquals( [], differences )

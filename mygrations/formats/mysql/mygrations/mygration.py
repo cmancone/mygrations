@@ -1,5 +1,4 @@
 import copy
-from mygrations.formats.mysql.definitions.database import database
 
 class mygration:
     """ Creates a migration plan to update a database to a given spec.
@@ -58,7 +57,9 @@ class mygration:
         operations = []
         # throughout this process we have to keep track of what tables and columns we have
         # the simplest way to do this is with a database object.
-        tracking_db = copy.deepcopy( self.db_from ) if self.db_from else database()
+        tracking_db = copy.deepcopy( self.db_from ) if self.db_from else False
+        if not tracking_db:
+            raise ValueError( 'Need to resolve conflicting dependencies' )
 
         # start with the tables, obviously
         db_from_tables = self.db_from.tables if self.db_from else {}

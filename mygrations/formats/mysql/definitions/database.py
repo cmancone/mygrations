@@ -88,21 +88,41 @@ class database( object ):
             return True
 
         unsupported = []
-        for constraint in table.constraints:
+        for constraint_name in table.constraints:
+            constraint = table.constraints[constraint_name]
             if constraint.foreign_table not in self.tables:
                 unsupported.append( constraint )
                 continue
             foreign_table = self.tables[constraint.foreign_table]
-            if constraint.foreign_column not in foreign_table:
+            if constraint.foreign_column not in foreign_table.columns:
                 unsupported.append( constraint )
                 continue
 
             # the column exists but we may still have a 1215 error.  That can happen in a few ways
             table_column = table.columns[constraint.column]
-            foreign_column = foreign_table[constraint.foreign_column]
-            if table_column.column_type != foreign_column.column_type:
-                raise ValueError( "MySQL 1215 error for foreign key %s for '%s.%s': type of '%s' does not match type '%s' from '%s.%s'" % ( constraint.name, table.name, constraint.column, table_column.column_type, foreign_column.column_type, foreign_table.name, foreign_column.name ) )
+            foreign_column = foreign_table.columns[constraint.foreign_column]
 
+            # we have a few attributes that must must match exactly and have easy-to-produce errors
+            for attr in [ 'column_type', 'length', 'character_set', 'collate' ]:
+                table_value = getattr( table_column, attr )
+                foreign_value = getattr( foreign_column, attr )
+                if table_value != foreign_value:
+                    raise ValueError( "MySQL 1215 error for foreign key %s: %s mismatch. '%s.%s' is '%s' but '%s.%s' is '%s'" % ( constraint.name, attr.replace( '_', ' ' ), table.name, constraint.column, table_value, foreign_table.name, foreign_column.name, foreign_value ) )
+
+            # unsigned are separate because they get a slightly different message
+            if table_column.unsigned and not foreign_column.unsigned:
+                raise ValueError( "MySQL 1215 error for foreign key %s: unsigned mistmatch. '%s.%s' is unsigned but '%s.%s' is not" % ( constraint.name, table.name, table_column.name, foreign_table.name, foreign_column.name ) )
+
+            if not table_column.unsigned and foreign_column.unsigned:
+                raise ValueError( "MySQL 1215 error for foreign key %s: unsigned mistmatch. '%s.%s' is unsigned but '%s.%s' is not" % ( constraint.name, foreign_table.name, foreign_column.name, table.name, table_column.name ) )
+
+            # if the constraint has a SET NULL but the column cannot be null, then 1215
+            if ( constraint.on_delete == 'SET NULL' or constraint.on_update == 'SET NULL' ) and not table_column.null:
+                message_parts = []
+                if constraint.on_delete == 'SET NULL':
+                    message_parts.append( 'ON DELETE' )
+                if constraint.on_update == 'SET NULL':
+                    message_parts.append( 'ON UPDATE' )
+                raise ValueError( "MySQL 1215 error for foreign key %s: invalid SET NULL. '%s.%s' is not allowed to be null but the foreign key attempts to set the value to null %s" % ( constraint.name, table.name, table_column.name, ' and '.join( message_parts ) ) )
 
         return unsupported if unsupported else True
-
