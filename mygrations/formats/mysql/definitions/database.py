@@ -1,5 +1,3 @@
-from mygrations.formats.mysql.mygrations.mygration import mygration
-
 class database( object ):
 
     _errors = None
@@ -55,22 +53,6 @@ class database( object ):
             returned = self._tables[rows.table].add_rows( rows )
             if isinstance( returned, str ):
                 self._errors.append( returned )
-
-    def to( self, new_db ):
-        """ Compares two databases with eachother and returns a mygration object that builds an action plan to bring the database up-to-spec with the new one
-
-        The mygration object can generate SQL commands that will correct any differences.
-        In other words, this pseudo code will make DB1 have the same structure as DB2
-
-        for operation in DB1.to( DB2 ):
-            DB1.apply( difference )
-
-        :param new_db: A database to find differences with
-        :type new_db: mygrations.formats.mysql.definitions.database
-        :returns: A migration object that can adjust one database to match the other
-        :rtype: mygrations.formats.mysql.mygrations.mygration
-        """
-        return mygration( new_db, self )
 
     def fulfills_fks( self, table ):
         """ Returns True or a list of constraints to denote whether or not the database structure can support the foreign keys for the table

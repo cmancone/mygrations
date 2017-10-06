@@ -1,5 +1,7 @@
 import copy
 
+from mygrations.formats.mysql.definitions.database import database
+
 class mygration:
     """ Creates a migration plan to update a database to a given spec.
 
@@ -31,7 +33,31 @@ class mygration:
 
         self.db_to = db_to
         self.db_from = db_from
-        self._process()
+        self._operations = self._process()
+
+    @property
+    def operations( self ):
+        """ Public getter.  Returns list of operations to bring db_from to db_to
+
+        If db_from doesn't exist then it will be a list of operations to
+        create db_to.
+
+        :returns: A list of table operations
+        :rtype: [mygrations.formats.mysql.mygrations.operations.operation]
+        """
+        return self._operations
+
+    def __len__( self ):
+        return len( self._operations )
+
+    def __bool__( self ):
+        return True if len( self._operations ) else False
+
+    def __str__( self ):
+        return "\n".join( [ str( x ) for x in self._operations ] )
+
+    def __iter__( self ):
+        return self._operations.__iter__()
 
     def _differences(self, a, b):
         """
@@ -57,9 +83,7 @@ class mygration:
         operations = []
         # throughout this process we have to keep track of what tables and columns we have
         # the simplest way to do this is with a database object.
-        tracking_db = copy.deepcopy( self.db_from ) if self.db_from else False
-        if not tracking_db:
-            raise ValueError( 'Need to resolve conflicting dependencies' )
+        tracking_db = copy.deepcopy( self.db_from ) if self.db_from else database()
 
         # start with the tables, obviously
         db_from_tables = self.db_from.tables if self.db_from else {}
@@ -69,10 +93,12 @@ class mygration:
         last_number_to_add = 0
         while tables_to_add and len( tables_to_add ) != last_number_to_add:
             last_number_to_add = len( tables_to_add )
-            for table in tables_to_add:
-                if tracking_db.fulfills_fks( self.db_to.tables[table] ):
-                    tables_to_add.remove( table )
-                    operations.append( self.db_to.tables[table].create() )
+            for new_table_name in tables_to_add:
+                new_table = self.db_to.tables[new_table_name]
+                if tracking_db.fulfills_fks( new_table ):
+                    tables_to_add.remove( new_table_name )
+                    operations.append( new_table.create() )
+                    tracking_db.add_table( new_table )
 
         # now we have the general todo list, but the reality
         # is much more complicated than that: in particular FK checks.
@@ -80,12 +106,14 @@ class mygration:
 
         # with the straightened out, we just need to check and see what
         # tables might differ
-        operations = []
-        for table in current_tables.intersection( new_tables ):
-            for operation in self.db1.tables[table].to( self.db2.tables[table] ):
-                print( operation )
+        #operations = []
+        #for table in current_tables.intersection( new_tables ):
+            #for operation in self.db1.tables[table].to( self.db2.tables[table] ):
+                #print( operation )
 
         # tables to remove must be checked for violations of foreign keys
         # tables to add must be added in proper order for foreign keys
         # foreign keys should probably be added completely separately,
         # although it would be nice to be smart
+
+        return operations
