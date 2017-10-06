@@ -1,10 +1,11 @@
 import unittest
 
 from mygrations.formats.mysql.file_reader.database import database as database_reader
+from mygrations.formats.mysql.file_reader.create_parser import create_parser
 
 class test_database( unittest.TestCase ):
 
-    def test_simple( self ):
+    def _get_sample_db( self ):
 
         strings = ["""
             CREATE TABLE `logs` (
@@ -21,8 +22,11 @@ class test_database( unittest.TestCase ):
                 PRIMARY KEY (`id`)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
         """]
-        db1 = database_reader( strings )
+        return database_reader( strings )
 
+    def test_simple( self ):
+
+        db1 = self._get_sample_db()
         strings = ["""
             CREATE TABLE `logs` (
                 `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
@@ -42,3 +46,24 @@ class test_database( unittest.TestCase ):
 
         #differences = db2 - db1
         #self.assertEquals( [], differences )
+
+    def test_add_table( self ):
+        db = self._get_sample_db()
+
+        new_table = create_parser()
+        new_table.parse( """CREATE TABLE `log_changes` (
+            `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+            `log_id` INT(10) UNSIGNED NOT NULL,
+            `type_id` INT(10) UNSIGNED NOT NULL,
+            `change` VARCHAR(255),
+            PRIMARY KEY (id),
+            KEY `log_changes_log_id` (`log_id`),
+            KEY `log_changes_type_id` (`type_id`)
+            );
+        """ )
+
+        db.add_table( new_table )
+
+        self.assertEquals( 3, len( db.tables ) )
+        self.assertTrue( 'log_changes' in db.tables )
+        self.assertEquals( new_table, db.tables['log_changes'] )

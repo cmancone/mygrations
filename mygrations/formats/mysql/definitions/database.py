@@ -18,7 +18,7 @@ class database( object ):
         """ Public getter.  Returns a dict of table definitions, by table name
 
         :returns: A dict of table definitions, by table name
-        :rtype: list
+        :rtype: dict
         """
         return {} if self._tables is None else self._tables
 
@@ -126,3 +126,14 @@ class database( object ):
                 raise ValueError( "MySQL 1215 error for foreign key %s: invalid SET NULL. '%s.%s' is not allowed to be null but the foreign key attempts to set the value to null %s" % ( constraint.name, table.name, table_column.name, ' and '.join( message_parts ) ) )
 
         return unsupported if unsupported else True
+
+    def add_table( self, table ):
+        """ Adds a table to the database
+
+        :param table: The table to add
+        :type table: mygrations.formats.mysql.definitions.table
+        """
+        if table.name in self._tables:
+            raise ValueError( 'Cannot add table %s to database because it already exists' % table.name )
+
+        self._tables[table.name] = table
