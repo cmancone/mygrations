@@ -95,7 +95,9 @@ class mygration:
             last_number_to_add = len( tables_to_add )
             for new_table_name in tables_to_add:
                 new_table = self.db_to.tables[new_table_name]
-                if tracking_db.fulfills_fks( new_table ):
+                missing_constraints = tracking_db.fulfills_fks( new_table )
+
+                if missing_constraints == True:
                     tables_to_add.remove( new_table_name )
                     operations.append( new_table.create() )
                     tracking_db.add_table( new_table )
