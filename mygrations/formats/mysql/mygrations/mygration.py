@@ -95,12 +95,13 @@ class mygration:
             last_number_to_add = len( tables_to_add )
             for new_table_name in tables_to_add:
                 new_table = self.db_to.tables[new_table_name]
-                missing_constraints = tracking_db.fulfills_fks( new_table )
+                problem_constraints = tracking_db.unfulfilled_fks( new_table )
 
-                if missing_constraints == True:
+                if not problem_constraints:
                     tables_to_add.remove( new_table_name )
                     operations.append( new_table.create() )
                     tracking_db.add_table( new_table )
+                    continue
 
         # now we have the general todo list, but the reality
         # is much more complicated than that: in particular FK checks.

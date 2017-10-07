@@ -54,60 +54,69 @@ class database( object ):
             if isinstance( returned, str ):
                 self._errors.append( returned )
 
-    def fulfills_fks( self, table ):
-        """ Returns True or a list of constraints to denote whether or not the database structure can support the foreign keys for the table
+    def unfulfilled_fks( self, table ):
+        """ Returns a dictionary with information about all constraints in the table which are not fulfilled by this database
 
-        If all foreign keys are fulfilled by the database structure then True is returned
-        If some foreign keys are unmet then a list of the unsupported FKs is returned
-        If a foreign key exists but a structure mismatch would cause a 1215 error, a ValueError will be raised
+        If all foreign keys are fulfilled by the database structure then an empty dict is returned
+
+        The returned dictionary contains a key with the name of every foreign key that cannot
+        be fulfilled.  The value in the dictionary will be another dictionary containing
+        'error' (an error message stating exactly what the problem is) and 'foreign_key'
+        (the actual foreign key definition that cannot be fulfilled)
 
         :param table: The table to check
         :type table: mygrations.formats.mysql.definitions.table
-        :return: True if the foreign keys are supported or a list of which columns are not supported
-        :rtype: True|list[mygrations.formats.mysql.definitions.constraint]
+        :return: Dictionary with information on all foreign keys that cannot be fulfilled
+        :rtype: dict
         """
         if not table.constraints:
-            return True
+            return {}
 
-        unsupported = []
+        unfulfilled = {}
         for constraint_name in table.constraints:
             constraint = table.constraints[constraint_name]
-            if constraint.foreign_table not in self.tables:
-                unsupported.append( constraint )
-                continue
-            foreign_table = self.tables[constraint.foreign_table]
-            if constraint.foreign_column not in foreign_table.columns:
-                unsupported.append( constraint )
-                continue
+            error = self.find_1215_errors( table, constraint )
+            if error:
+                unfulfilled[constraint_name] = { "error": error, "foreign_key": constraint }
 
-            # the column exists but we may still have a 1215 error.  That can happen in a few ways
-            table_column = table.columns[constraint.column]
-            foreign_column = foreign_table.columns[constraint.foreign_column]
+        return unfulfilled
 
-            # we have a few attributes that must must match exactly and have easy-to-produce errors
-            for attr in [ 'column_type', 'length', 'character_set', 'collate' ]:
-                table_value = getattr( table_column, attr )
-                foreign_value = getattr( foreign_column, attr )
-                if table_value != foreign_value:
-                    raise ValueError( "MySQL 1215 error for foreign key %s: %s mismatch. '%s.%s' is '%s' but '%s.%s' is '%s'" % ( constraint.name, attr.replace( '_', ' ' ), table.name, constraint.column, table_value, foreign_table.name, foreign_column.name, foreign_value ) )
+    def find_1215_errors( self, table, constraint ):
 
-            # unsigned are separate because they get a slightly different message
-            if table_column.unsigned and not foreign_column.unsigned:
-                raise ValueError( "MySQL 1215 error for foreign key %s: unsigned mistmatch. '%s.%s' is unsigned but '%s.%s' is not" % ( constraint.name, table.name, table_column.name, foreign_table.name, foreign_column.name ) )
+        if constraint.foreign_table not in self.tables:
+            return "MySQL 1215 error for foreign key `%s`: `%s`.`%s` references `%s`.`%s`, but table `%s` does not exist" % ( constraint.name, table.name, constraint.column, constraint.foreign_table, constraint.foreign_column, constraint.foreign_table )
+        foreign_table = self.tables[constraint.foreign_table]
+        if constraint.foreign_column not in foreign_table.columns:
+            return "MySQL 1215 error for foreign key `%s`: `%s`.`%s` references `%s`.`%s`, but column `%s`.`%s` does not exist" % ( constraint.name, table.name, constraint.column, constraint.foreign_table, constraint.foreign_column, constraint.foreign_table, constraint.foreign_column )
 
-            if not table_column.unsigned and foreign_column.unsigned:
-                raise ValueError( "MySQL 1215 error for foreign key %s: unsigned mistmatch. '%s.%s' is unsigned but '%s.%s' is not" % ( constraint.name, foreign_table.name, foreign_column.name, table.name, table_column.name ) )
+        # the column exists but we may still have a 1215 error.  That can happen in a few ways
+        table_column = table.columns[constraint.column]
+        foreign_column = foreign_table.columns[constraint.foreign_column]
 
-            # if the constraint has a SET NULL but the column cannot be null, then 1215
-            if ( constraint.on_delete == 'SET NULL' or constraint.on_update == 'SET NULL' ) and not table_column.null:
-                message_parts = []
-                if constraint.on_delete == 'SET NULL':
-                    message_parts.append( 'ON DELETE' )
-                if constraint.on_update == 'SET NULL':
-                    message_parts.append( 'ON UPDATE' )
-                raise ValueError( "MySQL 1215 error for foreign key %s: invalid SET NULL. '%s.%s' is not allowed to be null but the foreign key attempts to set the value to null %s" % ( constraint.name, table.name, table_column.name, ' and '.join( message_parts ) ) )
+        # we have a few attributes that must must match exactly and have easy-to-produce errors
+        for attr in [ 'column_type', 'length', 'character_set', 'collate' ]:
+            table_value = getattr( table_column, attr )
+            foreign_value = getattr( foreign_column, attr )
+            if table_value != foreign_value:
+                return "MySQL 1215 error for foreign key `%s`: %s mismatch. `%s`.`%s` is '%s' but `%s`.`%s` is '%s'" % ( constraint.name, attr.replace( '_', ' ' ), table.name, constraint.column, table_value, foreign_table.name, foreign_column.name, foreign_value )
 
-        return unsupported if unsupported else True
+        # unsigned are separate because they get a slightly different message
+        if table_column.unsigned and not foreign_column.unsigned:
+            return "MySQL 1215 error for foreign key `%s`: unsigned mistmatch. `%s`.`%s` is unsigned but `%s`.`%s` is not" % ( constraint.name, table.name, table_column.name, foreign_table.name, foreign_column.name )
+
+        if not table_column.unsigned and foreign_column.unsigned:
+            return "MySQL 1215 error for foreign key `%s`: unsigned mistmatch. `%s`.`%s` is unsigned but `%s`.`%s` is not" % ( constraint.name, foreign_table.name, foreign_column.name, table.name, table_column.name )
+
+        # if the constraint has a SET NULL but the column cannot be null, then 1215
+        if ( constraint.on_delete == 'SET NULL' or constraint.on_update == 'SET NULL' ) and not table_column.null:
+            message_parts = []
+            if constraint.on_delete == 'SET NULL':
+                message_parts.append( 'ON DELETE' )
+            if constraint.on_update == 'SET NULL':
+                message_parts.append( 'ON UPDATE' )
+            return "MySQL 1215 error for foreign key `%s`: invalid SET NULL. `%s`.`%s` is not allowed to be null but the foreign key attempts to set the value to null %s" % ( constraint.name, table.name, table_column.name, ' and '.join( message_parts ) )
+
+        return False
 
     def add_table( self, table ):
         """ Adds a table to the database
