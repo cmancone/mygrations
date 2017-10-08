@@ -79,29 +79,79 @@ class mygration:
         )
 
     def _process( self ):
+        """ Figures out the operations (and proper order) need to get to self.db_to
+
+        Excessively commented because there are a lot of details and this is a critical
+        part of the process
+        """
 
         operations = []
-        # throughout this process we have to keep track of what tables and columns we have
-        # the simplest way to do this is with a database object.
+        # Our primary output is a list of operations, but there is more that we need
+        # to make all of this happen.  We need a database to keep track of the
+        # state of the database we are building after each operation is "applied"
         tracking_db = copy.deepcopy( self.db_from ) if self.db_from else database()
 
-        # start with the tables, obviously
+        # and we need to keep track of which tables can't be created at all due to
+        # foreign key errors
+        is_broken = False
+        bad_tables = {}
+
+        # and since this is a very iterative process, we will keep track of the tables
+        # we have checked that we know are good.
+        good_tables = {}
+
+        # First figure out the status of individual tables
         db_from_tables = self.db_from.tables if self.db_from else {}
         ( tables_to_add, tables_to_remove, tables_to_update ) = self._differences( db_from_tables, self.db_to.tables )
 
         # keep looping through tables as long as we find some to process
+        # the while loop will stop under two conditions: if all tables
+        # are processed or if we stop adding tables, which happens if we
+        # have tables with mutualy-dependent foreign key constraints
         last_number_to_add = 0
         while tables_to_add and len( tables_to_add ) != last_number_to_add:
             last_number_to_add = len( tables_to_add )
             for new_table_name in tables_to_add:
                 new_table = self.db_to.tables[new_table_name]
-                problem_constraints = tracking_db.unfulfilled_fks( new_table )
+                bad_constraints = tracking_db.unfulfilled_fks( new_table )
 
-                if not problem_constraints:
+                # if we found no problems then we can add this table to our
+                # tracking db and add the "CREATE TABLE" operation to our list of operations
+                if not bad_constraints:
                     tables_to_add.remove( new_table_name )
                     operations.append( new_table.create() )
                     tracking_db.add_table( new_table )
                     continue
+
+                # the next question is whether this is a valid constraint
+                # that simply can't be added yet (because it has dependencies
+                # that have not been added) or if there is an actual problem
+                # with the constraint.
+                if new_table_name in good_tables:
+                    continue
+
+                # If we are here we have to decide if this table is fulfillable
+                # eventually, or if there is a mistake with a foreign key that
+                # we can't fix.  To tell the difference we just check if the
+                # database we are migrating to can fulfill these foreign keys.
+                if self.db_to and not self.db_to.unfulfilled_fks( new_table ):
+                    good_tables[new_table_name] = True
+                    continue
+
+                # otherwise it is no good
+                is_broken = True
+
+                # we want to find exactly which foreign keys are bad.  Do this
+                # by checking all unfulfilled fks against the database we are
+                # migrating to
+                bad_tables[new_table_name] = []
+                for constraint_data in unfulfilled_fks.values():
+                    ###############
+                    ## We can save a redundant operation because this same line shows up
+                    # in the if condition above, and we don't actually have to run
+                    # every FK through individually
+                    error = self.db_to.unfulfilled_fks( new_table )
+
 
         # now we have the general todo list, but the reality
         # is much more complicated than that: in particular FK checks.
