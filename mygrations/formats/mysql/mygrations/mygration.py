@@ -33,7 +33,7 @@ class mygration:
 
         self.db_to = db_to
         self.db_from = db_from
-        self._operations = self._process()
+        [ self._errors_1215, self._operations ] = self._process()
 
     @property
     def operations( self ):
@@ -46,6 +46,15 @@ class mygration:
         :rtype: [mygrations.formats.mysql.mygrations.operations.operation]
         """
         return self._operations
+
+    @property
+    def errors_1215( self ):
+        """ Public getter.  Returns list of 1215 errors (as strings)
+
+        :returns: A list of 1215 error messages
+        :rtype: [string]
+        """
+        return self._errors_1215
 
     def __len__( self ):
         return len( self._operations )
@@ -85,24 +94,52 @@ class mygration:
         part of the process
         """
 
-        operations = []
         # Our primary output is a list of operations, but there is more that we need
         # to make all of this happen.  We need a database to keep track of the
         # state of the database we are building after each operation is "applied"
         tracking_db = copy.deepcopy( self.db_from ) if self.db_from else database()
 
-        # and we need to keep track of which tables can't be created at all due to
-        # foreign key errors
-        is_broken = False
-        bad_tables = {}
-
-        # and since this is a very iterative process, we will keep track of the tables
-        # we have checked that we know are good.
-        good_tables = {}
-
         # First figure out the status of individual tables
         db_from_tables = self.db_from.tables if self.db_from else {}
         ( tables_to_add, tables_to_remove, tables_to_update ) = self._differences( db_from_tables, self.db_to.tables )
+
+        # tracking db and tables_to_add are both modified in the call to _process_adds
+        # not my preference, but it makes it easier here
+        ( operations, errors_1215 ) = self._process_adds( tracking_db, tables_to_add )
+
+        if errors_1215:
+            return [ errors_1215, operations ]
+
+        # if we got here all of our tables are acceptable (aka have valid
+        # foreign key constraints) but may not have been processed, as
+        # there may be mutually-dependent foreign keys, or they may
+        # rely upon table modifications (which have not been processed
+        # yet).  Handle the table modifications next, then take another
+        # go at adding tables.
+
+        # now we have the general todo list, but the reality
+        # is much more complicated than that: in particular FK checks.
+        # begin straightening it all out!
+
+        # with the straightened out, we just need to check and see what
+        # tables might differ
+        #operations = []
+        #for table in current_tables.intersection( new_tables ):
+            #for operation in self.db1.tables[table].to( self.db2.tables[table] ):
+                #print( operation )
+
+        # tables to remove must be checked for violations of foreign keys
+        # tables to add must be added in proper order for foreign keys
+        # foreign keys should probably be added completely separately,
+        # although it would be nice to be smart
+
+        return operations
+
+    def _process_adds( tracking_db, tables_to_add ):
+
+        errors_1215 = []
+        operations = []
+        good_tables = {}
 
         # keep looping through tables as long as we find some to process
         # the while loop will stop under two conditions: if all tables
@@ -134,39 +171,16 @@ class mygration:
                 # eventually, or if there is a mistake with a foreign key that
                 # we can't fix.  To tell the difference we just check if the
                 # database we are migrating to can fulfill these foreign keys.
-                if self.db_to and not self.db_to.unfulfilled_fks( new_table ):
+                broken_constraints = self.db_to.unfulfilled_fks( new_table )
+                if not broken_constraints:
                     good_tables[new_table_name] = True
                     continue
 
-                # otherwise it is no good
+                # otherwise it is no good: record as such
                 is_broken = True
+                tables_to_add.remove( new_table_name )
+                bad_tables[new_table_name] = broken_constraints
+                for error in broken_constraints.values():
+                    errors_1215.append( error['error'] )
 
-                # we want to find exactly which foreign keys are bad.  Do this
-                # by checking all unfulfilled fks against the database we are
-                # migrating to
-                bad_tables[new_table_name] = []
-                for constraint_data in unfulfilled_fks.values():
-                    ###############
-                    ## We can save a redundant operation because this same line shows up
-                    # in the if condition above, and we don't actually have to run
-                    # every FK through individually
-                    error = self.db_to.unfulfilled_fks( new_table )
-
-
-        # now we have the general todo list, but the reality
-        # is much more complicated than that: in particular FK checks.
-        # begin straightening it all out!
-
-        # with the straightened out, we just need to check and see what
-        # tables might differ
-        #operations = []
-        #for table in current_tables.intersection( new_tables ):
-            #for operation in self.db1.tables[table].to( self.db2.tables[table] ):
-                #print( operation )
-
-        # tables to remove must be checked for violations of foreign keys
-        # tables to add must be added in proper order for foreign keys
-        # foreign keys should probably be added completely separately,
-        # although it would be nice to be smart
-
-        return operations
+        return [ errors_1215, operations ]
