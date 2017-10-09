@@ -217,7 +217,7 @@ class table( object ):
         """
         return create_table( self )
 
-    def to( self, comparison_table, split_operations = True ):
+    def to( self, comparison_table, split_operations = False ):
         """ Compares two tables to eachother and returns a list of operations which can bring the structure of the second in line with the first
 
         In other words, this pseudo code will make table have the same structure as comparison_table
@@ -225,19 +225,26 @@ class table( object ):
         for operation in table.to( comparison_table ):
             table.apply( operation )
 
-        if split_operations is True (the default) then a list of migration operations will be returned.
-        If it is false then a single alter table operation will be returned that encompasses all changes
+        if split_operations is True then a dict of migration operations will be returned separated by
+        "type".  The dict will have up to three keys: [ 'add_update', 'remove', 'fks' ]
+
+        'fks' contains the alter statement operation needed to add or change foreign keys
+        'remove' contains the alter statement operation needed to remove all columns
+        'add_update' contains the alter statment operation needed to do everything else
+
+        If that division of labor seems arbitrary, it isn't: it is separated out that
+        way due to the needs of the overall algorithm.
+
+        If split_operations is false then a single alter table operation will be returned that encompasses all changes
 
         :param comparison_table: A table to find differences with
         :param split_operations: Whether to combine all operations in one alter table or separate them
         :type comparison_table: mygrations.formats.mysql.definitions.table
         :type split_operations: bool
         :returns: A list of operations to apply to table
-        :rtype: list[mygrations.formats.mysql.mygrations.operations.*]
+        :rtype: list[mygrations.formats.mysql.mygrations.operations.*] | dict
         """
         # start with the columns, obviously
-        operations = []
-
         ( added_columns, removed_columns, overlap_columns ) = self._differences ( self.columns, comparison_table.columns )
         ( added_keys, removed_keys, overlap_keys ) = self._differences ( self.indexes, comparison_table.indexes )
         ( added_constraints, removed_constraints, overlap_constraints ) = self._differences ( self.constraints, comparison_table.constraints )
@@ -288,13 +295,15 @@ class table( object ):
 
         # now put it all together
         if split_operations:
+            operations = {}
             if primary_alter:
-                operations.append( primary_alter )
+                operations['add_update'] = primary_alter
             if constraints:
-                operations.append( constraints )
+                operations['fks'] = constraints
             if remove_columns_alter:
-                operations.append( remove_columns_alter )
+                operations['remove'] = remove_columns_alter
         else:
+            operations = []
             for operation in constraints:
                 primary_alter.add_operation( operation )
             for operation in remove_columns_alter:
