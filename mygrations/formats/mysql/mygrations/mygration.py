@@ -103,10 +103,18 @@ class mygration:
         db_from_tables = self.db_from.tables if self.db_from else {}
         ( tables_to_add, tables_to_remove, tables_to_update ) = self._differences( db_from_tables, self.db_to.tables )
 
-        # tracking db and tables_to_add are both modified in the call to _process_adds
+        # IMPORTANT! tracking db and tables_to_add are both passed in by reference
+        # (like everything in python), but in this case I actually modify them by reference.
         # not my preference, but it makes it easier here
-        ( operations, errors_1215 ) = self._process_adds( tracking_db, tables_to_add )
+        [ operations, errors_1215 ] = self._process_adds( tracking_db, tables_to_add )
 
+        # if we have errors we are done
+        if errors_1215:
+            return [ errors_1215, operations ]
+
+        # now apply table updates
+        [ more_operations, errors_1215 ] = self._process_updates( tracking_db, tables_to_update )
+        operations.extend( more_operations )
         if errors_1215:
             return [ errors_1215, operations ]
 
@@ -136,7 +144,13 @@ class mygration:
         return operations
 
     def _process_adds( tracking_db, tables_to_add ):
+        """ Runs through tables_to_add and resolves FK constraints to determine order to add tables in
 
+        tracking_db and tables_to_add are passed in by reference and modified
+
+        :returns: A list of 1215 error messages and a list of mygration operations
+        :rtype: [ [string], [mygrations.formats.mysql.mygrations.operations.operation] ]
+        """
         errors_1215 = []
         operations = []
         good_tables = {}
@@ -184,3 +198,30 @@ class mygration:
                     errors_1215.append( error['error'] )
 
         return [ errors_1215, operations ]
+
+    def _process_updates( tracking_db, tables_to_update ):
+        """ Runs through tables_to_update and resolves FK constraints to determine order to add them in
+
+        tracking_db and tables_to_update are passed in by reference and modified
+
+        :returns: A list of 1215 error messages and a list of mygration operations
+        :rtype: [ [string], [mygrations.formats.mysql.mygrations.operations.operation] ]
+        """
+
+        errors_1215 = []
+        operations = []
+
+        # keep looping through tables as long as we find some to process
+        # the while loop will stop under two conditions: if all tables
+        # are processed or if we stop adding tables, which happens if we
+        # have tables with mutualy-dependent foreign key constraints
+        last_number_to_update = 0
+        while tables_to_update and len( tables_to_update ) != last_number_to_update:
+            last_number_to_update = len( tables_to_update )
+            for update_table_name in tables_to_update:
+                target_table = self.db_to.tables[update_table_name]
+                source_table = self.db_from.tables[update_table_name]
+
+                #########
+                ### Pick up here
+                more_operations = source_table.to( target_table )

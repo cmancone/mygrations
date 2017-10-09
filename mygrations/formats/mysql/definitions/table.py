@@ -222,7 +222,7 @@ class table( object ):
 
         In other words, this pseudo code will make table have the same structure as comparison_table
 
-        for operation in (comparison_table - table):
+        for operation in table.to( comparison_table ):
             table.apply( operation )
 
         if split_operations is True (the default) then a list of migration operations will be returned.
