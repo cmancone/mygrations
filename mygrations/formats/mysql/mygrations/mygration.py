@@ -99,6 +99,24 @@ class mygration:
         # state of the database we are building after each operation is "applied"
         tracking_db = copy.deepcopy( self.db_from ) if self.db_from else database()
 
+        # a little bit of extra processing will simplify our algorithm by a good chunk.
+        # The situation is much more complicated when we have a database we are migrating
+        # from, because columns might be added/removed/changed, and it might be (for instance)
+        # that the removal of a column breaks a foreign key constraint.  The general
+        # ambiguities introduced by changes happening in different times/ways makes it
+        # much more difficult to figure out when foreign key constraints can properly
+        # be added without triggering a 1215 error.  The simplest way to straighten this
+        # all out is to cheat: "mygrate" the "to" database all by itself.  Without a "from"
+        # the operations are more straight-forward, and we can figure out with less effort
+        # whether or not all FK constraints can be fulfilled.  We can then return errors
+        # if they aren't.  If they are all fulfilled then we know our final table will
+        # be fine, so if we can just split off any uncertain foreign key constraints
+        # and apply them all at the end when our database is done being updated.  Simple(ish)!
+        if self.db_from:
+            check = mygration( self.db_to )
+            if check.errors_1215:
+                return [ check.errors_1215, [] ]
+
         # First figure out the status of individual tables
         db_from_tables = self.db_from.tables if self.db_from else {}
         ( tables_to_add, tables_to_remove, tables_to_update ) = self._differences( db_from_tables, self.db_to.tables )
@@ -106,17 +124,19 @@ class mygration:
         # IMPORTANT! tracking db and tables_to_add are both passed in by reference
         # (like everything in python), but in this case I actually modify them by reference.
         # not my preference, but it makes it easier here
-        [ operations, errors_1215 ] = self._process_adds( tracking_db, tables_to_add )
+        [ errors_1215, operations ] = self._process_adds( tracking_db, tables_to_add )
 
         # if we have errors we are done
         if errors_1215:
             return [ errors_1215, operations ]
 
-        # now apply table updates
-        [ more_operations, errors_1215 ] = self._process_updates( tracking_db, tables_to_update )
-        operations.extend( more_operations )
-        if errors_1215:
-            return [ errors_1215, operations ]
+        # now apply table updates.  This acts differently: it returns a dictionary with
+        # two sets of operations: onces to update the tables themselves, and ones to update
+        # the foreign keys.  The latter are applied after everything else has happened.
+        # split_operations = self._process_updates( tracking_db, tables_to_update )
+        #operations.extend( more_operations )
+        #if errors_1215:
+            #return [ errors_1215, operations ]
 
         # if we got here all of our tables are acceptable (aka have valid
         # foreign key constraints) but may not have been processed, as
@@ -141,9 +161,9 @@ class mygration:
         # foreign keys should probably be added completely separately,
         # although it would be nice to be smart
 
-        return operations
+        return [ errors_1215, operations ]
 
-    def _process_adds( tracking_db, tables_to_add ):
+    def _process_adds( self, tracking_db, tables_to_add ):
         """ Runs through tables_to_add and resolves FK constraints to determine order to add tables in
 
         tracking_db and tables_to_add are passed in by reference and modified
@@ -154,6 +174,7 @@ class mygration:
         errors_1215 = []
         operations = []
         good_tables = {}
+
 
         # keep looping through tables as long as we find some to process
         # the while loop will stop under two conditions: if all tables
@@ -193,7 +214,6 @@ class mygration:
                 # otherwise it is no good: record as such
                 is_broken = True
                 tables_to_add.remove( new_table_name )
-                bad_tables[new_table_name] = broken_constraints
                 for error in broken_constraints.values():
                     errors_1215.append( error['error'] )
 
@@ -202,14 +222,23 @@ class mygration:
     def _process_updates( tracking_db, tables_to_update ):
         """ Runs through tables_to_update and resolves FK constraints to determine order to add them in
 
-        tracking_db and tables_to_update are passed in by reference and modified
+        tracking_db is passed in by reference and modified
 
-        :returns: A list of 1215 error messages and a list of mygration operations
-        :rtype: [ [string], [mygrations.formats.mysql.mygrations.operations.operation] ]
+        This doesn't return a list of 1215 errors because those would have been
+        Taken care of the first run through when the "to" database was mygrated
+        by itself.  Instead, this separates alters and foreign key updates
+        into different operations so the foreign key updates can be ran separately.
+
+        :returns: a dict
+        :rtype: [mygrations.formats.mysql.mygrations.operations.operation]
         """
 
-        errors_1215 = []
-        operations = []
+        tables_to_update = tables_to_update[:]
+
+        operations = {
+            'fks':          [],
+            'kitchen_sink': []
+        }
 
         # keep looping through tables as long as we find some to process
         # the while loop will stop under two conditions: if all tables
@@ -222,6 +251,4 @@ class mygration:
                 target_table = self.db_to.tables[update_table_name]
                 source_table = self.db_from.tables[update_table_name]
 
-                #########
-                ### Pick up here
-                more_operations = source_table.to( target_table )
+                more_operations = source_table.to( target_table, True )
