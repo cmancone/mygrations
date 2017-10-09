@@ -99,7 +99,6 @@ class test_table_difference( unittest.TestCase ):
         """ )
 
         operations = a.to( b, True )
-        self.assertEquals( 3, len( operations ) )
+        self.assertEquals( 2, len( operations ) )
         self.assertEquals( 'ALTER TABLE `tasks` ADD CONSTRAINT `tasks_account_id_ref_accounts_id` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE', str( operations['fks'] ) )
-        self.assertEquals( 'ALTER TABLE `tasks` DROP task', str( operations['remove'] ) )
-        self.assertEquals( 'ALTER TABLE `tasks` ADD `membership_id` INT(10) UNSIGNED NOT NULL AFTER `account_id`, ADD `subject` TEXT AFTER `membership_id`, CHANGE `account_id` `account_id` INT(10) NOT NULL DEFAULT 0', str( operations['add_update'] ) )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD `membership_id` INT(10) UNSIGNED NOT NULL AFTER `account_id`, ADD `subject` TEXT AFTER `membership_id`, CHANGE `account_id` `account_id` INT(10) NOT NULL DEFAULT 0, DROP task', str( operations['kitchen_sink'] ) )

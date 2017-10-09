@@ -225,12 +225,11 @@ class table( object ):
         for operation in table.to( comparison_table ):
             table.apply( operation )
 
-        if split_operations is True then a dict of migration operations will be returned separated by
-        "type".  The dict will have up to three keys: [ 'add_update', 'remove', 'fks' ]
+        if split_operations is True then a dict of migration operations will be returned to separate
+        foreign key operations from everything else.  The dict will have up to two keys: [ 'fks', 'kitchen_sink' ]
 
-        'fks' contains the alter statement operation needed to add or change foreign keys
-        'remove' contains the alter statement operation needed to remove all columns
-        'add_update' contains the alter statment operation needed to do everything else
+        'fks' contains the alter statement operation needed to add/change/remove foreign keys
+        'kitchen_sink' contains everything else
 
         If that division of labor seems arbitrary, it isn't: it is separated out that
         way due to the needs of the overall algorithm.
@@ -265,6 +264,9 @@ class table( object ):
                 continue
             primary_alter.add_operation( change_column( comparison_table.columns[overlap_column] ) )
 
+        for removed_column in removed_columns:
+            primary_alter.add_operation( remove_column( self.columns[removed_column] ) )
+
         # indexes also go in that first alter table
         for new_key in added_keys:
             primary_alter.add_operation( add_key( comparison_table.indexes[new_key] ) )
@@ -275,11 +277,7 @@ class table( object ):
                 continue
             primary_alter.add_operation( change_key( comparison_table.indexes[overlap_key] ) )
 
-        # removed FKs can also go in the first alter table
-        for removed_constraint in removed_constraints:
-            primary_alter.add_operation( remove_constraint( self.constraints[removed_constraint] ) )
-
-        # adding and changing foreign keys gets their own alter
+        # adding/changing/removing foreign keys gets their own alter
         constraints = alter_table( self.name )
         for added_constraint in added_constraints:
             constraints.add_operation( add_constraint( comparison_table.constraints[added_constraint] ) )
@@ -287,26 +285,19 @@ class table( object ):
             if str( self.constraints[overlap_constraint] ) == str( comparison_table.constraints[overlap_constraint] ):
                 continue
             constraints.add_operation( change_constraint( comparison_table.constraints[overlap_constraint] ) )
-
-        # removed columns get their own alter
-        remove_columns_alter = alter_table( self.name )
-        for removed_column in removed_columns:
-            remove_columns_alter.add_operation( remove_column( self.columns[removed_column] ) )
+        for removed_constraint in removed_constraints:
+            constraints.add_operation( remove_constraint( self.constraints[removed_constraint] ) )
 
         # now put it all together
         if split_operations:
             operations = {}
             if primary_alter:
-                operations['add_update'] = primary_alter
+                operations['kitchen_sink'] = primary_alter
             if constraints:
                 operations['fks'] = constraints
-            if remove_columns_alter:
-                operations['remove'] = remove_columns_alter
         else:
             operations = []
             for operation in constraints:
-                primary_alter.add_operation( operation )
-            for operation in remove_columns_alter:
                 primary_alter.add_operation( operation )
             if primary_alter:
                 operations.append( primary_alter )
