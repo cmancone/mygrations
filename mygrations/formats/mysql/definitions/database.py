@@ -116,6 +116,17 @@ class database( object ):
                 message_parts.append( 'ON UPDATE' )
             return "MySQL 1215 error for foreign key `%s`: invalid SET NULL. `%s`.`%s` is not allowed to be null but the foreign key attempts to set the value to null %s" % ( constraint.name, table.name, table_column.name, ' and '.join( message_parts ) )
 
+        # if the column the constraint is on doesn't have an index, then 1215
+        index_found = False
+        for index in foreign_table.indexes.values():
+            if index.columns[0] != foreign_column.name:
+                continue
+            index_found = True
+            break
+
+        if not index_found:
+            return "MySQL 1215 error for foreign key `%s`: missing index. `%s`.`%s` references `%s`.`%s` but `%s`.`%s` does not have an index and therefore cannot be used in a foreign key constraint" % ( constraint.name, table.name, table_column.name, foreign_table.name, foreign_column.name, foreign_table.name, foreign_column.name )
+
         return False
 
     def add_table( self, table ):
