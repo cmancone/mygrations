@@ -150,3 +150,20 @@ class database( object ):
             raise ValueError( 'Cannot remove table %s from database because it does not exist' % table.name )
 
         self._tables.pop( table.name, None )
+
+    def apply_operation( self, table_name, operation ):
+        """ Applies an operation to the database
+
+        :param table_name: The table that the operation is being applied to
+        :param operation: The operation to apply
+        :type table: string|mygrations.formats.mysql.definitions.table
+        :type operation: mygrations.formats.mysql.mygration.operations.*
+        """
+        if type( table_name ) != str:
+            table_name = table_name.name
+
+        if not table_name in self._tables:
+            raise ValueError( 'Cannot apply operation to table %s because that table does not exist' % table_name )
+
+        # the table applies the operation
+        self._tables[table_name].apply_operation( operation )

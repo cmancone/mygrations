@@ -332,3 +332,142 @@ class table( object ):
             name = name.name
 
         self._indexes.pop( name, None )
+
+    def apply_operation( self, operation ):
+         """ Applies an operation to the table
+
+        :param operation: The operation to apply
+        :type operation: mygrations.formats.mysql.mygration.operations.*
+        """
+        # the operations will actually just end up calling one of the public methods
+        # of this object, but I prefer this to having (effectively) a big SWITCH/CASE
+        # statmemt on the operation class
+        operation.apply_to_table( self )
+
+    def add_column( self, column, position ):
+        """ Adds a column to the table
+
+        The value of position matches self.position from mygrations.formats.mysql.mygration.operations.add_column
+
+        :param column: The column to add
+        :param position: Where to put the column
+        :type column: mygrations.formats.mysql.definitions.column
+        :type position: See mygrations.formats.mysql.mygration.operations.add_column
+        """
+        # putting it at the end is easy
+        if not position:
+            self._columns[column.name] = column
+            return True
+
+        # end is also easy
+        if position == True:
+            self._columns[column.name] = column
+            self._columns.move_to_end(column.name, last=False)
+            return True
+
+        # now it is tricky
+        found = False
+        new_columns = OrderedDict();
+        for key, value in self._columns.items():
+            new_columns[key] = value
+            if key == position:
+                new_columns[column.name] = column
+                found = True
+
+        if not found:
+            raise ValueError( "Cannot add column %s after %s because %s does not exist" % ( column.name, position, position) )
+
+        self._columns = new_columns
+        return True
+
+    def remove_column( self, column_name ):
+        """ Removes a column from the table
+
+        :param column_name: The column to remove
+        :type column_name: string|mygrations.formats.mysql.definitions.column
+        """
+        if type( column_name ) != str:
+            column_name = column_name.name
+        self._columns.pop( column_name, None )
+
+    def change_column( self, new_column ):
+        """ Changes a column
+
+        This does not currently support renaming
+
+        :param new_column: The new column definition
+        :type new_column: mygrations.formats.mysql.definitions.column
+        """
+        if not new_column.name in self._columns:
+            raise ValueError( "Cannot modify column %s because column %s does not exist" % ( new_column.name, new_column.name ) )
+        self._columns[new_column.name] = new_column
+
+    def add_key( self, key ):
+        """ Adds an key to the table
+
+        :param key: The key to add
+        :type key: mygrations.formats.mysql.definitions.key
+        """
+        if key.name in self._keyes:
+            raise ValueError( "Cannot add key %s because key %s already exists" % ( key.name, key.name ) )
+        self._keyes[key.name] = key
+
+    def remove_key( self, key ):
+        """ Removes an key from the table
+
+        :param key: The key to remove
+        :type key: string|mygrations.formats.mysql.definitions.key
+        """
+        if type( key ) != str:
+            key = key.name
+
+        if key not in self._keyes:
+            raise ValueError( "Cannot remove key %s because key %s does not exist" % ( key, key ) )
+        self._keyes.pop( key, None )
+
+    def change_key( self, new_key ):
+        """ Changes a key
+
+        This does not currently support renaming
+
+        :param new_key: The new key definition
+        :type new_key: mygrations.formats.mysql.definitions.key
+        """
+        if not new_key.name in self._keyes:
+            raise ValueError( "Cannot modify key %s because key %s does not exist" % ( new_key.name, new_key.name ) )
+        self._keyes[new_key.name] = new_key
+
+    def add_constraint( self, constraint ):
+        """ Adds a constraint to the table
+
+        :param constraint: The constraint to add
+        :type constraint: mygrations.formats.mysql.definitions.constraint
+        """
+        if constraint.name in self._constraints:
+            raise ValueError( "Cannot add constraint %s because constraint %s already exists" % ( constraint.name, constraint.name ) )
+        self._constraints[constraint.name] = constraint
+
+    def remove_constraint( self, constraint ):
+        """ Removes an constraint from the table
+
+        :param constraint: The constraint to remove
+        :type constraint: string|mygrations.formats.mysql.definitions.constraint
+        """
+        if type( constraint ) != str:
+            constraint = constraint.name
+
+        if constraint not in self._constraints:
+            raise ValueError( "Cannot remove constraint %s because constraint %s does not exist" % ( constraint, constraint ) )
+        self._constraints.pop( constraint, None )
+
+    def change_constraint( self, new_constraint ):
+        """ Changes a constraint
+
+        This does not currently support renaming
+
+        :param new_constraint: The new constraint definition
+        :type new_constraint: mygrations.formats.mysql.definitions.constraint
+        """
+        if not new_constraint.name in self._constraints:
+            raise ValueError( "Cannot modify constraint %s because constraint %s does not exist" % ( new_constraint.name, new_constraint.name ) )
+        self._constraints[new_constraint.name] = new_constraint

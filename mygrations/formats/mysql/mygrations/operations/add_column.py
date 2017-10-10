@@ -24,6 +24,14 @@ class add_column:
         self.column = column
         self.position = position
 
+    def apply_to_table( self, table ):
+        """ Adds the column to the table
+
+        :param table: The table to add the column to
+        :param type: mygrations.formats.mysql.definitions.table
+        """
+        table.add_column( self.column, self.position )
+
     def __str__( self ):
         basic = 'ADD %s' % self.column
         if self.position == True:
