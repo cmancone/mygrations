@@ -67,3 +67,12 @@ class test_database( unittest.TestCase ):
         self.assertEquals( 3, len( db.tables ) )
         self.assertTrue( 'log_changes' in db.tables )
         self.assertEquals( new_table, db.tables['log_changes'] )
+
+    def test_simple( self ):
+
+        db1 = self._get_sample_db()
+        db1.remove_table( db1.tables['more_logs'] )
+
+        self.assertEquals( 1, len( db1.tables ) )
+        self.assertTrue( 'logs' in db1.tables )
+        self.assertFalse( 'more_logs' in db1.tables )

@@ -139,3 +139,14 @@ class database( object ):
             raise ValueError( 'Cannot add table %s to database because it already exists' % table.name )
 
         self._tables[table.name] = table
+
+    def remove_table( self, table ):
+        """ Removes a table from the database
+
+        :param table: The table to remove
+        :type table: mygrations.formats.mysql.definitions.table
+        """
+        if not table.name in self._tables:
+            raise ValueError( 'Cannot remove table %s from database because it does not exist' % table.name )
+
+        self._tables.pop( table.name, None )

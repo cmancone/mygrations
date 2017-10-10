@@ -177,8 +177,7 @@ class mygration:
         # go ahead and remove our tables
         for table_to_remove in tables_to_remove:
             operations.append( remove_table( self.db_from.tables[table_to_remove] ) )
-            ##########
-            ########## Need to update tracking_db
+            tracking_db.remove_table( table_to_remove )
 
         # then add back in our foreign key constraints
         if fk_operations:
@@ -241,7 +240,7 @@ class mygration:
 
         return ( errors_1215, operations )
 
-    def _process_updates( tracking_db, tables_to_update ):
+    def _process_updates( self, tracking_db, tables_to_update ):
         """ Runs through tables_to_update and resolves FK constraints to determine order to add them in
 
         tracking_db is passed in by reference and modified
