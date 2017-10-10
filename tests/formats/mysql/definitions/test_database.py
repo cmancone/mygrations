@@ -68,7 +68,7 @@ class test_database( unittest.TestCase ):
         self.assertTrue( 'log_changes' in db.tables )
         self.assertEquals( new_table, db.tables['log_changes'] )
 
-    def test_simple( self ):
+    def test_remove_table( self ):
 
         db1 = self._get_sample_db()
         db1.remove_table( db1.tables['more_logs'] )
@@ -76,3 +76,22 @@ class test_database( unittest.TestCase ):
         self.assertEquals( 1, len( db1.tables ) )
         self.assertTrue( 'logs' in db1.tables )
         self.assertFalse( 'more_logs' in db1.tables )
+
+    def test_exception_on_remove_invalid_table( self ):
+
+        db1 = self._get_sample_db()
+
+        new_table = create_parser()
+        new_table.parse( """CREATE TABLE `log_changes` (
+            `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+            `log_id` INT(10) UNSIGNED NOT NULL,
+            `type_id` INT(10) UNSIGNED NOT NULL,
+            `change` VARCHAR(255),
+            PRIMARY KEY (id),
+            KEY `log_changes_log_id` (`log_id`),
+            KEY `log_changes_type_id` (`type_id`)
+            );
+        """ )
+
+        with self.assertRaises(ValueError):
+            db1.remove_table( new_table )
