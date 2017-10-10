@@ -1,6 +1,10 @@
 import copy
 
 from mygrations.formats.mysql.definitions.database import database
+from mygrations.formats.mysql.mygrations.operations.alter_table import alter_table
+from mygrations.formats.mysql.mygrations.operations.alter_table import alter_table
+from mygrations.formats.mysql.mygrations.operations.add_constraint import add_constraint
+from mygrations.formats.mysql.mygrations.operations.remove_table import remove_table
 
 class mygration:
     """ Creates a migration plan to update a database to a given spec.
@@ -108,10 +112,11 @@ class mygration:
         # be added without triggering a 1215 error.  The simplest way to straighten this
         # all out is to cheat: "mygrate" the "to" database all by itself.  Without a "from"
         # the operations are more straight-forward, and we can figure out with less effort
-        # whether or not all FK constraints can be fulfilled.  We can then return errors
-        # if they aren't.  If they are all fulfilled then we know our final table will
-        # be fine, so if we can just split off any uncertain foreign key constraints
-        # and apply them all at the end when our database is done being updated.  Simple(ish)!
+        # whether or not all FK constraints can be fulfilled.  If they aren't all fulfilled,
+        # then just quit now before we do anything.  If they are all fulfilled then we
+        # know our final table will be fine, so if we can just split off any uncertain
+        # foreign key constraints and apply them all at the end when our database is done
+        # being updated.  Simple(ish)!
         if self.db_from:
             check = mygration( self.db_to )
             if check.errors_1215:
@@ -124,43 +129,60 @@ class mygration:
         # IMPORTANT! tracking db and tables_to_add are both passed in by reference
         # (like everything in python), but in this case I actually modify them by reference.
         # not my preference, but it makes it easier here
-        [ errors_1215, operations ] = self._process_adds( tracking_db, tables_to_add )
+        ( errors_1215, operations ) = self._process_adds( tracking_db, tables_to_add )
 
         # if we have errors we are done
         if errors_1215:
             return [ errors_1215, operations ]
 
         # now apply table updates.  This acts differently: it returns a dictionary with
-        # two sets of operations: onces to update the tables themselves, and ones to update
+        # two sets of operations: one to update the tables themselves, and one to update
         # the foreign keys.  The latter are applied after everything else has happened.
-        # split_operations = self._process_updates( tracking_db, tables_to_update )
-        #operations.extend( more_operations )
-        #if errors_1215:
-            #return [ errors_1215, operations ]
+        fk_operations = []
+        split_operations = self._process_updates( tracking_db, tables_to_update )
+        if split_operations['kitchen_sink']:
+            operations.extend( split_operations['kitchen_sink'] )
+        if split_operations['fks']:
+            fk_operations.extend( split_operations['fks'] )
 
-        # if we got here all of our tables are acceptable (aka have valid
-        # foreign key constraints) but may not have been processed, as
-        # there may be mutually-dependent foreign keys, or they may
-        # rely upon table modifications (which have not been processed
-        # yet).  Handle the table modifications next, then take another
-        # go at adding tables.
+        # now that we got some tables modified let's try adding tables again
+        # if we have any left.  Remember that tracking_db and tables_to_add
+        # are modified in-place
+        if tables_to_add:
+            ( errors_1215, more_operations ) = self._process_adds( tracking_db, tables_to_add )
+            if more_operations:
+                operations = operations.extend( more_operations )
+            if errors_1215:
+                if fk_operations:
+                    operations.extend( fk_operations )
+                retrun [ errors_1215, operations ]
 
-        # now we have the general todo list, but the reality
-        # is much more complicated than that: in particular FK checks.
-        # begin straightening it all out!
+        # At this point in time if we still have tables to add it is because
+        # they have mutually-dependent foreign key constraints.  The way to
+        # fix that is to be a bit smarter (but not too smart) and remove
+        # from the tables all foreign key constraints that can't be added yet.
+        # Then run the CREATE TABLE operations, and add the foreign key
+        # constraints afterward
+        for table_to_add in tables_to_add:
+            table = self.db_to.tables[table_to_add]
+            bad_constraints = tracking_db.unfulfilled_fks( new_table )
+            new_table_copy = copy.deepcopy( new_table )
+            create_fks = alter_table( table_to_add )
+            for constraint in bad_constraints:
+                create_fks.add_operation( add_constraint( constraint['foreign_key'] ) )
+                new_table_copy.remove_fk( constraint['foreign_key'] )
+            operations.append( new_table_copy.create() )
+            fk_operations.append( create_fks )
 
-        # with the straightened out, we just need to check and see what
-        # tables might differ
-        #operations = []
-        #for table in current_tables.intersection( new_tables ):
-            #for operation in self.db1.tables[table].to( self.db2.tables[table] ):
-                #print( operation )
+        # go ahead and remove our tables
+        for table_to_remove in tables_to_remove:
+            operations.append( remove_table( self.db_from.tables[table_to_remove] ) )
 
-        # tables to remove must be checked for violations of foreign keys
-        # tables to add must be added in proper order for foreign keys
-        # foreign keys should probably be added completely separately,
-        # although it would be nice to be smart
+        # then add back in our foreign key constraints
+        if fk_operations:
+            operations.extend( fk_operations )
 
+        # all done!!!
         return [ errors_1215, operations ]
 
     def _process_adds( self, tracking_db, tables_to_add ):
@@ -169,12 +191,11 @@ class mygration:
         tracking_db and tables_to_add are passed in by reference and modified
 
         :returns: A list of 1215 error messages and a list of mygration operations
-        :rtype: [ [string], [mygrations.formats.mysql.mygrations.operations.operation] ]
+        :rtype: ( [{'error': string, 'foreign_key': mygrations.formats.mysql.definitions.constraint}], [mygrations.formats.mysql.mygrations.operations.operation] )
         """
         errors_1215 = []
         operations = []
         good_tables = {}
-
 
         # keep looping through tables as long as we find some to process
         # the while loop will stop under two conditions: if all tables
@@ -212,12 +233,11 @@ class mygration:
                     continue
 
                 # otherwise it is no good: record as such
-                is_broken = True
                 tables_to_add.remove( new_table_name )
                 for error in broken_constraints.values():
                     errors_1215.append( error['error'] )
 
-        return [ errors_1215, operations ]
+        return ( errors_1215, operations )
 
     def _process_updates( tracking_db, tables_to_update ):
         """ Runs through tables_to_update and resolves FK constraints to determine order to add them in
@@ -230,7 +250,7 @@ class mygration:
         into different operations so the foreign key updates can be ran separately.
 
         :returns: a dict
-        :rtype: [mygrations.formats.mysql.mygrations.operations.operation]
+        :rtype: {'fks': list, 'kitchen_sink': list}
         """
 
         tables_to_update = tables_to_update[:]
@@ -240,15 +260,14 @@ class mygration:
             'kitchen_sink': []
         }
 
-        # keep looping through tables as long as we find some to process
-        # the while loop will stop under two conditions: if all tables
-        # are processed or if we stop adding tables, which happens if we
-        # have tables with mutualy-dependent foreign key constraints
-        last_number_to_update = 0
-        while tables_to_update and len( tables_to_update ) != last_number_to_update:
-            last_number_to_update = len( tables_to_update )
-            for update_table_name in tables_to_update:
-                target_table = self.db_to.tables[update_table_name]
-                source_table = self.db_from.tables[update_table_name]
+        for update_table_name in tables_to_update:
+            target_table = self.db_to.tables[update_table_name]
+            source_table = self.db_from.tables[update_table_name]
 
-                more_operations = source_table.to( target_table, True )
+            more_operations = source_table.to( target_table, True )
+            if 'fks' in more_operations:
+                operations.extend( more_operations['fks'] )
+            if 'kitchen_sink' in more_operations:
+                operations.extend( more_operations['kitchen_sink'] )
+
+        return operations

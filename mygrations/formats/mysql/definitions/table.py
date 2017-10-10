@@ -320,3 +320,15 @@ class table( object ):
             [key for key in a if key not in b],
             [key for key in a if key in b]
         )
+
+    def remove_fk( self, name ):
+        """
+        Removes a foreign key by name
+
+        :param name: The foreign key to remove (either its name or a constraint object)
+        :type name: string|mygrations.formats.mysql.definitions.constraint
+        """
+        if type( name ) != str:
+            name = name.name
+
+        self._indexes.pop( name, None )
