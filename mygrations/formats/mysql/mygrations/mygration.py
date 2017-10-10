@@ -177,6 +177,8 @@ class mygration:
         # go ahead and remove our tables
         for table_to_remove in tables_to_remove:
             operations.append( remove_table( self.db_from.tables[table_to_remove] ) )
+            ##########
+            ########## Need to update tracking_db
 
         # then add back in our foreign key constraints
         if fk_operations:
@@ -269,5 +271,9 @@ class mygration:
                 operations.extend( more_operations['fks'] )
             if 'kitchen_sink' in more_operations:
                 operations.extend( more_operations['kitchen_sink'] )
+
+            ###############
+            ######## We don't do anything with tracking_db here.  We need to be able
+            ######## to udpate it in-place
 
         return operations
