@@ -334,14 +334,12 @@ class table( object ):
         self._indexes.pop( name, None )
 
     def apply_operation( self, operation ):
-         """ Applies an operation to the table
+        """
+        Applies an operation to the table
 
         :param operation: The operation to apply
         :type operation: mygrations.formats.mysql.mygration.operations.*
         """
-        # the operations will actually just end up calling one of the public methods
-        # of this object, but I prefer this to having (effectively) a big SWITCH/CASE
-        # statmemt on the operation class
         operation.apply_to_table( self )
 
     def add_column( self, column, position ):

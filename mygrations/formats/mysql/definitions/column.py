@@ -8,6 +8,17 @@ class column( object ):
     _errors = None
     _warnings = None
 
+    def __init__( self, name='', length='255', null=True, column_type='VARCHAR', default=None, unsigned=None, character_set='', collate='', auto_increment=False ):
+        self._name = name
+        self._length = length
+        self._null = null
+        self._column_type = column_type
+        self._default = default
+        self._unsigned = unsigned
+        self._character_set = character_set
+        self._collate = collate
+        self._auto_increment = auto_increment
+
     @property
     def name( self ):
         """ Public getter.  Returns the name of the column.

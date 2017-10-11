@@ -73,8 +73,7 @@ class database( object ):
             return {}
 
         unfulfilled = {}
-        for constraint_name in table.constraints:
-            constraint = table.constraints[constraint_name]
+        for ( constraint_name, constraint ) in table.constraints.items():
             error = self.find_1215_errors( table, constraint )
             if error:
                 unfulfilled[constraint_name] = { "error": error, "foreign_key": constraint }
