@@ -6,6 +6,20 @@ class index( object ):
     _errors = None
     _warnings = None
 
+    def __init__( self, name, columns, index_type='INDEX' ):
+        """ Index constructor
+
+        :param name: The name of the index
+        :param columns: The columns in the index
+        :param index_type: The type of the index (INDEX, UNIQUE, or PRIMARY)
+        :type name: string
+        :type columns: [string]
+        :type index_type: string
+        """
+        self._name = name
+        self._index_type = index_type
+        self._columns = columns
+
     @property
     def name( self ):
         """ Public getter.  Returns the name of the column.

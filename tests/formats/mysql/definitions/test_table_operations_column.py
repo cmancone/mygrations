@@ -50,8 +50,14 @@ class test_table_operations_column( unittest.TestCase ):
 
     def test_add_column_after_non_existent( self ):
         table = self._get_default_table()
-        with self.assertRaises(ValueError):
+        with self.assertRaises( ValueError ):
             table.add_column( self._get_new_column(), 'asdfef' )
+
+    def test_cannot_add_duplicate_column( self ):
+        table = self._get_default_table()
+        table.add_column( self._get_new_column() )
+        with self.assertRaises( ValueError ):
+            table.add_column( self._get_new_column() )
 
     def test_remove_column( self ):
         table = self._get_default_table()

@@ -342,7 +342,7 @@ class table( object ):
         """
         operation.apply_to_table( self )
 
-    def add_column( self, column, position ):
+    def add_column( self, column, position=False ):
         """ Adds a column to the table
 
         The value of position matches self.position from mygrations.formats.mysql.mygration.operations.add_column
@@ -353,6 +353,9 @@ class table( object ):
         :type position: See mygrations.formats.mysql.mygration.operations.add_column
         """
         # putting it at the end is easy
+        if column.name in self._columns:
+            raise ValueError( "Cannot add column %s because %s already exists" % ( column.name, column.name ) )
+
         if not position:
             self._columns[column.name] = column
             return True
@@ -386,6 +389,10 @@ class table( object ):
         """
         if type( column_name ) != str:
             column_name = column_name.name
+
+        if not column_name in self._columns:
+            raise ValueError( "Cannot remove column %s because column %s does not exist" % ( column_name, column_name ) )
+
         self._columns.pop( column_name, None )
 
     def change_column( self, new_column ):
@@ -406,9 +413,9 @@ class table( object ):
         :param key: The key to add
         :type key: mygrations.formats.mysql.definitions.key
         """
-        if key.name in self._keyes:
+        if key.name in self._indexes:
             raise ValueError( "Cannot add key %s because key %s already exists" % ( key.name, key.name ) )
-        self._keyes[key.name] = key
+        self._indexes[key.name] = key
 
     def remove_key( self, key ):
         """ Removes an key from the table
@@ -419,9 +426,9 @@ class table( object ):
         if type( key ) != str:
             key = key.name
 
-        if key not in self._keyes:
+        if key not in self._indexes:
             raise ValueError( "Cannot remove key %s because key %s does not exist" % ( key, key ) )
-        self._keyes.pop( key, None )
+        self._indexes.pop( key, None )
 
     def change_key( self, new_key ):
         """ Changes a key
@@ -431,9 +438,9 @@ class table( object ):
         :param new_key: The new key definition
         :type new_key: mygrations.formats.mysql.definitions.key
         """
-        if not new_key.name in self._keyes:
+        if not new_key.name in self._indexes:
             raise ValueError( "Cannot modify key %s because key %s does not exist" % ( new_key.name, new_key.name ) )
-        self._keyes[new_key.name] = new_key
+        self._indexes[new_key.name] = new_key
 
     def add_constraint( self, constraint ):
         """ Adds a constraint to the table
