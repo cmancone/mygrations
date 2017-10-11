@@ -9,6 +9,14 @@ class constraint( object ):
     _on_delete = ''
     _on_update = ''
 
+    def __init__( self, name='', column='', foreign_table='', foreign_column='', on_delete='', on_update='' ):
+        self._name = name
+        self._column = column
+        self._foreign_table = foreign_table
+        self._foreign_column = foreign_column
+        self._on_delete = on_delete
+        self._on_update = on_update
+
     @property
     def name( self ):
         """ Public getter.  Returns the name of the column.
