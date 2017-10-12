@@ -81,6 +81,14 @@ class database( object ):
         return unfulfilled
 
     def find_1215_errors( self, table, constraint ):
+        """ Returns False or a string describing a 1215 error message found for the given table and constraint
+
+        :param table: The table being checked
+        :param constraint: The constraint to check the table against
+        :type table: mygrations.formats.mysql.definitions.table
+        :type constraint: mygrations.formats.mysql.definitions.constraint
+        :rtype: string|False
+        """
 
         if constraint.foreign_table not in self.tables:
             return "MySQL 1215 error for foreign key `%s`: `%s`.`%s` references `%s`.`%s`, but table `%s` does not exist" % ( constraint.name, table.name, constraint.column, constraint.foreign_table, constraint.foreign_column, constraint.foreign_table )
