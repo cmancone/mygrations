@@ -18,12 +18,14 @@ class mygration:
 
     The general steps are:
 
-    1. Add/update columns that exist in both, temporarily skipping FK constraints that aren't yet fulfilled
-    2. Remove any foreign keys that don't exist in the target database structure
-    3. Add new tables in order necessitated by FK constraints.  Temporarily skip any FK constraints that can't be fulfilled yet
-    4. Add in all FKs that were previously skipped
-    5. Remove any columns that do not exist in the target database structure, noting an error if a FK is violated
-    6. Remove any tables that do not exist in the target database structure, noting an error if a FK is violated
+    1. Check for foreign key errors: if the two database we are trying to migrate to doesn't support its own foreign key constraints, there is a show stopper
+    2. Loop through tables to be added, "creating" them as their foreign key constraints are filled, and ignoring any that have interlocking dependencies
+    3. Remove any FK constraints that are no longer used (done early to prevent trouble in the next step)
+    4. Modify tables as needed.  If modifying tables involves adding foreign key constraints that are not fulfilled, ignore those and add them later
+    5. See if we can add any remaining tables now that some table modifications have been applied
+    6. If there are still any outstanding tables to add, remove any foreign key constraints that are not fulfilled and add the tables without them
+    7. Apply all foreign key constraints that were previously ignored in steps 4 & 6
+    8. Remove any tables that need to be removed
     """
     def __init__( self, db_to, db_from = None ):
         """ Create a migration plan
