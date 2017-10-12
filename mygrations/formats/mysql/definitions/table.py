@@ -226,7 +226,7 @@ class table( object ):
             table.apply( operation )
 
         if split_operations is True then a dict of migration operations will be returned to separate
-        foreign key operations from everything else.  The dict will have up to two keys: [ 'fks', 'kitchen_sink' ]
+        foreign key operations from everything else.  The dict will have up to three keys: [ 'removed_fks', 'fks', 'kitchen_sink' ]
 
         'fks' contains the alter statement operation needed to add/change/remove foreign keys
         'kitchen_sink' contains everything else
@@ -277,6 +277,11 @@ class table( object ):
                 continue
             primary_alter.add_operation( change_key( comparison_table.indexes[overlap_key] ) )
 
+        # removed foreign key constraints get their own alter because that should always happen first
+        removed_constraints_alter = alter_table( self.name )
+        for removed_constraint in removed_constraints:
+            removed_constraints_alter.add_operation( remove_constraint( self.constraints[removed_constraint] ) )
+
         # adding/changing/removing foreign keys gets their own alter
         constraints = alter_table( self.name )
         for added_constraint in added_constraints:
@@ -285,12 +290,12 @@ class table( object ):
             if str( self.constraints[overlap_constraint] ) == str( comparison_table.constraints[overlap_constraint] ):
                 continue
             constraints.add_operation( change_constraint( comparison_table.constraints[overlap_constraint] ) )
-        for removed_constraint in removed_constraints:
-            constraints.add_operation( remove_constraint( self.constraints[removed_constraint] ) )
 
         # now put it all together
         if split_operations:
             operations = {}
+            if removed_constraints_alter:
+                operations['removed_fks'] = removed_constraints_alter
             if primary_alter:
                 operations['kitchen_sink'] = primary_alter
             if constraints:
@@ -298,6 +303,8 @@ class table( object ):
         else:
             operations = []
             for operation in constraints:
+                primary_alter.add_operation( operation )
+            for operation in removed_constraints_alter:
                 primary_alter.add_operation( operation )
             if primary_alter:
                 operations.append( primary_alter )

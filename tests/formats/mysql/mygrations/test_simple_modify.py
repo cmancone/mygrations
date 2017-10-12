@@ -154,5 +154,6 @@ CONSTRAINT `task_id_rts` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DE
 
         mygrate = mygration( db2, db1 )
 
-        self.assertEquals( 1, len( mygrate ) )
-        self.assertEquals( 'ALTER TABLE `tasks` ADD CONSTRAINT `task_id_2_fk` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, DROP FOREIGN KEY `account_id_tasks_fk`, ADD CONSTRAINT `account_id_tasks_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, DROP FOREIGN KEY `task_id_fk`', str( mygrate.operations[0] ) )
+        self.assertEquals( 2, len( mygrate ) )
+        self.assertEquals( 'ALTER TABLE `tasks` DROP FOREIGN KEY `task_id_fk`', str( mygrate.operations[0] ) )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD CONSTRAINT `task_id_2_fk` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, DROP FOREIGN KEY `account_id_tasks_fk`, ADD CONSTRAINT `account_id_tasks_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE', str( mygrate.operations[1] ) )

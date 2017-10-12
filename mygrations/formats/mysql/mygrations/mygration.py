@@ -139,6 +139,10 @@ class mygration:
         # the foreign keys.  The latter are applied after everything else has happened.
         fk_operations = []
         split_operations = self._process_updates( tracking_db, tables_to_update )
+        # remove fks first to avoid 1215 errors caused by trying to remove a column
+        # that is being used in a FK constraint that hasn't yet been removed
+        if split_operations['removed_fks']:
+            operations.extend( split_operations['removed_fks'] )
         if split_operations['kitchen_sink']:
             operations.extend( split_operations['kitchen_sink'] )
         if split_operations['fks']:
@@ -176,14 +180,14 @@ class mygration:
             operations.append( new_table_copy.create() )
             fk_operations.append( create_fks )
 
-        # go ahead and remove our tables
+        # process any remaining foreign key constraints
+        if fk_operations:
+            operations.extend( fk_operations )
+
+        # finally remove any tables
         for table_to_remove in tables_to_remove:
             operations.append( remove_table( table_to_remove ) )
             tracking_db.remove_table( table_to_remove )
-
-        # then add back in our foreign key constraints
-        if fk_operations:
-            operations.extend( fk_operations )
 
         # all done!!!
         return [ errors_1215, operations ]
@@ -249,8 +253,9 @@ class mygration:
 
         This doesn't return a list of 1215 errors because those would have been
         Taken care of the first run through when the "to" database was mygrated
-        by itself.  Instead, this separates alters and foreign key updates
-        into different operations so the foreign key updates can be ran separately.
+        by itself.  Instead, this separates alters and addition/modification of
+        foreign key updates into different operations so the foreign key updates
+        can be processed separately.
 
         :returns: a dict
         :rtype: {'fks': list, 'kitchen_sink': list}
@@ -259,6 +264,7 @@ class mygration:
         tables_to_update = tables_to_update[:]
 
         operations = {
+            'removed_fks':  [],
             'fks':          [],
             'kitchen_sink': []
         }
@@ -268,6 +274,10 @@ class mygration:
             source_table = self.db_from.tables[update_table_name]
 
             more_operations = source_table.to( target_table, True )
+            if 'removed_fks' in more_operations:
+                operations['removed_fks'].append( more_operations['removed_fks'] )
+                for operation in more_operations['removed_fks']:
+                    tracking_db.apply_operation( update_table_name, operation )
             if 'fks' in more_operations:
                 operations['fks'].append( more_operations['fks'] )
                 for operation in more_operations['fks']:
