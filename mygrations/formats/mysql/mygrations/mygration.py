@@ -269,12 +269,12 @@ class mygration:
 
             more_operations = source_table.to( target_table, True )
             if 'fks' in more_operations:
-                operations.extend( more_operations['fks'] )
+                operations['fks'].extend( more_operations['fks'] )
                 for operation in more_operations['fks']:
-                    database.apply_operation( update_table_name, operation )
+                    tracking_db.apply_operation( update_table_name, operation )
             if 'kitchen_sink' in more_operations:
-                operations.extend( more_operations['kitchen_sink'] )
+                operations['kitchen_sink'].extend( more_operations['kitchen_sink'] )
                 for operation in more_operations['kitchen_sink']:
-                    database.apply_operation( update_table_name, operation )
+                    tracking_db.apply_operation( update_table_name, operation )
 
         return operations

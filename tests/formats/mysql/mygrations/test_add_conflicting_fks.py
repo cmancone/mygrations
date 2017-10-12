@@ -61,5 +61,5 @@ CONSTRAINT `account_id_tasks_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts
 
         # similarly the ADD CONSTRAINT queries should be 3 and 4, but in mixed order
         add_constraints_ops = ops[3:]
-        self.assertTrue( 'ALTER TABLE `repeating_tasks` ADD CONSTRAINT `task_id_rts` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE' in add_constraint_ops )
-        self.assertTrue( 'ALTER TABLE `tasks` ADD CONSTRAINT `repeating_task_id_tasks_fk` FOREIGN KEY (`repeating_task_id`) REFERENCES `repeating_tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE' in add_constraint_ops )
+        self.assertTrue( 'ALTER TABLE `repeating_tasks` ADD CONSTRAINT `task_id_rts` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE' in add_constraints_ops )
+        self.assertTrue( 'ALTER TABLE `tasks` ADD CONSTRAINT `repeating_task_id_tasks_fk` FOREIGN KEY (`repeating_task_id`) REFERENCES `repeating_tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE' in add_constraints_ops )
