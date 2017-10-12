@@ -2,7 +2,6 @@ import copy
 
 from mygrations.formats.mysql.definitions.database import database
 from mygrations.formats.mysql.mygrations.operations.alter_table import alter_table
-from mygrations.formats.mysql.mygrations.operations.alter_table import alter_table
 from mygrations.formats.mysql.mygrations.operations.add_constraint import add_constraint
 from mygrations.formats.mysql.mygrations.operations.remove_table import remove_table
 
@@ -147,7 +146,10 @@ class mygration:
 
         # now that we got some tables modified let's try adding tables again
         # if we have any left.  Remember that tracking_db and tables_to_add
-        # are modified in-place
+        # are modified in-place.  The point here is that there may be some
+        # tables to add that we were not able to add before because they
+        # relied on adding a column to a table before a foreign key could
+        # be supported.
         if tables_to_add:
             ( errors_1215, more_operations ) = self._process_adds( tracking_db, tables_to_add )
             if more_operations:
@@ -164,19 +166,19 @@ class mygration:
         # Then run the CREATE TABLE operations, and add the foreign key
         # constraints afterward
         for table_to_add in tables_to_add:
-            table = self.db_to.tables[table_to_add]
+            new_table = self.db_to.tables[table_to_add]
             bad_constraints = tracking_db.unfulfilled_fks( new_table )
             new_table_copy = copy.deepcopy( new_table )
             create_fks = alter_table( table_to_add )
-            for constraint in bad_constraints:
+            for constraint in bad_constraints.values():
                 create_fks.add_operation( add_constraint( constraint['foreign_key'] ) )
-                new_table_copy.remove_fk( constraint['foreign_key'] )
+                new_table_copy.remove_constraint( constraint['foreign_key'] )
             operations.append( new_table_copy.create() )
             fk_operations.append( create_fks )
 
         # go ahead and remove our tables
         for table_to_remove in tables_to_remove:
-            operations.append( remove_table( self.db_from.tables[table_to_remove] ) )
+            operations.append( remove_table( table_to_remove ) )
             tracking_db.remove_table( table_to_remove )
 
         # then add back in our foreign key constraints
