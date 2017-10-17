@@ -25,6 +25,7 @@ class table( object ):
     _errors = None
     _warnings = None
     _auto_increment = 1
+    _indexed_columns = None
 
     def __init__( self, name ):
         self._name = name
@@ -311,6 +312,25 @@ class table( object ):
 
         return operations
 
+    def column_is_indexed( self, column ):
+        """ Returns True/False to denote whether or not the column has a useable index
+
+        :param column: The column to check
+        :type column: string|mygrations.formats.mysql.definitions.column
+        """
+        if type( column ) != str:
+            column = column.name
+
+        if column not in self._columns:
+            return False
+
+        # best way to do this is with a set.  We'll keep a record of all indexed columns
+        # the column is indexed if an index has that column in the first position
+        if self._indexed_columns is None:
+            self._indexed_columns = set( [ index.columns[0] for index in self._indexes.values() ] )
+
+        return column in self._indexed_columns
+
     def _differences(self, a, b):
         """
         Calculates the difference between two OrderedDicts.
@@ -412,6 +432,9 @@ class table( object ):
             raise ValueError( "Cannot add key %s because key %s already exists" % ( key.name, key.name ) )
         self._indexes[key.name] = key
 
+        if self._indexed_columns is not None:
+            self._indexed_columns.add( key.columns[0].name )
+
     def remove_key( self, key ):
         """ Removes an key from the table
 
@@ -425,6 +448,9 @@ class table( object ):
             raise ValueError( "Cannot remove key %s because key %s does not exist" % ( key, key ) )
         self._indexes.pop( key, None )
 
+        if self._indexed_columns is not None:
+            self._indexed_columns.discard( key.columns[0].name )
+
     def change_key( self, new_key ):
         """ Changes a key
 
@@ -435,7 +461,14 @@ class table( object ):
         """
         if not new_key.name in self._indexes:
             raise ValueError( "Cannot modify key %s because key %s does not exist" % ( new_key.name, new_key.name ) )
+
+        if self._indexed_columns is not None:
+            self._indexed_columns.discard( self._indexes[new_key.name].columns[0].name )
+
         self._indexes[new_key.name] = new_key
+
+        if self._indexed_columns is not None:
+            self._indexed_columns.add( new_key.columns[0].name )
 
     def add_constraint( self, constraint ):
         """ Adds a constraint to the table

@@ -81,13 +81,13 @@ class database( object ):
         return unfulfilled
 
     def find_1215_errors( self, table, constraint ):
-        """ Returns False or a string describing a 1215 error message found for the given table and constraint
+        """ Returns None or a string describing a 1215 error message found for the given table and constraint
 
         :param table: The table being checked
         :param constraint: The constraint to check the table against
         :type table: mygrations.formats.mysql.definitions.table
         :type constraint: mygrations.formats.mysql.definitions.constraint
-        :rtype: string|False
+        :rtype: string|None
         """
 
         if constraint.foreign_table not in self.tables:
@@ -124,17 +124,10 @@ class database( object ):
             return "MySQL 1215 error for foreign key `%s`: invalid SET NULL. `%s`.`%s` is not allowed to be null but the foreign key attempts to set the value to null %s" % ( constraint.name, table.name, table_column.name, ' and '.join( message_parts ) )
 
         # if the column the constraint is on doesn't have an index, then 1215
-        index_found = False
-        for index in foreign_table.indexes.values():
-            if index.columns[0] != foreign_column.name:
-                continue
-            index_found = True
-            break
-
-        if not index_found:
+        if not foreign_table.column_is_indexed( foreign_column ):
             return "MySQL 1215 error for foreign key `%s`: missing index. `%s`.`%s` references `%s`.`%s` but `%s`.`%s` does not have an index and therefore cannot be used in a foreign key constraint" % ( constraint.name, table.name, table_column.name, foreign_table.name, foreign_column.name, foreign_table.name, foreign_column.name )
 
-        return False
+        return None
 
     def add_table( self, table ):
         """ Adds a table to the database
