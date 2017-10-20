@@ -433,7 +433,7 @@ class table( object ):
         self._indexes[key.name] = key
 
         if self._indexed_columns is not None:
-            self._indexed_columns.add( key.columns[0].name )
+            self._indexed_columns.add( key.columns[0] )
 
     def remove_key( self, key ):
         """ Removes an key from the table
@@ -446,10 +446,12 @@ class table( object ):
 
         if key not in self._indexes:
             raise ValueError( "Cannot remove key %s because key %s does not exist" % ( key, key ) )
+
+        indexed_column = self._indexes[key].columns[0]
         self._indexes.pop( key, None )
 
         if self._indexed_columns is not None:
-            self._indexed_columns.discard( key.columns[0].name )
+            self._indexed_columns.discard( indexed_column )
 
     def change_key( self, new_key ):
         """ Changes a key
@@ -463,12 +465,12 @@ class table( object ):
             raise ValueError( "Cannot modify key %s because key %s does not exist" % ( new_key.name, new_key.name ) )
 
         if self._indexed_columns is not None:
-            self._indexed_columns.discard( self._indexes[new_key.name].columns[0].name )
+            self._indexed_columns.discard( self._indexes[new_key.name].columns[0] )
 
         self._indexes[new_key.name] = new_key
 
         if self._indexed_columns is not None:
-            self._indexed_columns.add( new_key.columns[0].name )
+            self._indexed_columns.add( new_key.columns[0] )
 
     def add_constraint( self, constraint ):
         """ Adds a constraint to the table

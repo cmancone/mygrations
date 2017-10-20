@@ -22,8 +22,11 @@ class test_table_operations_key( unittest.TestCase ):
 
     def test_add_key( self ):
         table = self._get_default_table()
+        self.assertTrue( table.column_is_indexed( 'account_id' ) )
+
         table.add_key( index( 'task_tasks', ['task', 'subject'] ) )
         self.assertTrue( 'task_tasks' in table.indexes )
+        self.assertTrue( table.column_is_indexed( 'task' ) )
 
     def test_cannot_add_duplicate_key( self ):
         table = self._get_default_table()
@@ -32,8 +35,11 @@ class test_table_operations_key( unittest.TestCase ):
 
     def test_remove_key( self ):
         table = self._get_default_table()
+        self.assertTrue( table.column_is_indexed( 'account_id' ) )
+
         table.remove_key( 'tasks_account_id' )
         self.assertFalse( 'tasks_account_id' in table.indexes )
+        self.assertFalse( table.column_is_indexed( 'account_id' ) )
 
     def test_cannot_remove_missing_key( self ):
         table = self._get_default_table()
@@ -42,8 +48,11 @@ class test_table_operations_key( unittest.TestCase ):
 
     def test_change_key( self ):
         table = self._get_default_table()
+        self.assertTrue( table.column_is_indexed( 'account_id' ) )
+
         table.change_key( index( 'tasks_account_id', [ 'account_id', 'task' ] ) )
         self.assertEquals( 'KEY `tasks_account_id` (`account_id`,`task`)', str( table.indexes['tasks_account_id'] ) )
+        self.assertTrue( table.column_is_indexed( 'account_id' ) )
 
     def test_cannot_change_missing_key( self ):
         table = self._get_default_table()
