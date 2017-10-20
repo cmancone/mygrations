@@ -4,12 +4,14 @@ class database( object ):
     _warnings = None
     _tables = None
     _rows = None
+    _errors_1215 = None
 
     def __init__( self ):
         self._warnings = []
         self._errors = []
         self._tables = {}
         self._rows = []
+        self._errors_1215 = None
 
     @property
     def tables( self ):
@@ -18,7 +20,7 @@ class database( object ):
         :returns: A dict of table definitions, by table name
         :rtype: dict
         """
-        return {} if self._tables is None else self._tables
+        return self._tables
 
     @property
     def errors( self ):
@@ -27,7 +29,7 @@ class database( object ):
         :returns: A list of parsing errors
         :rtype: list
         """
-        return [] if self._errors is None else self._errors
+        return self._errors
 
     @property
     def warnings( self ):
@@ -36,7 +38,18 @@ class database( object ):
         :returns: A list of parsing/table warnings
         :rtype: list
         """
-        return [] if self._warnings is None else self._warnings
+        return self._warnings
+
+    @property
+    def errors_1215( self ):
+        """ Public getter.  Returns a list of 1215 errors found for the database
+
+        :returns: A list of MySQL 1215 error messages
+        :rtype: [string]
+        """
+        if self._errors_1215 is None:
+            self._find_all_1215_errors()
+        return self._errors_1215
 
     def store_rows_with_tables( self ):
         """ Processes table rows and adds them to the appropriate tables
@@ -79,6 +92,22 @@ class database( object ):
                 unfulfilled[constraint_name] = { "error": error, "foreign_key": constraint }
 
         return unfulfilled
+
+    def _find_all_1215_errors( self ):
+        """ Returns a list of any 1215 error messages for this database
+
+        :return: A list of 1215 error messages
+        :rtype: [string]
+        """
+        errors = []
+        for table in self.tables.values():
+            for constraint in table.constraints.values():
+                error = self.find_1215_errors( table, constraint )
+                if error:
+                    errors.append( error )
+
+        return errors
+
 
     def find_1215_errors( self, table, constraint ):
         """ Returns None or a string describing a 1215 error message found for the given table and constraint
@@ -138,6 +167,7 @@ class database( object ):
         if table.name in self._tables:
             raise ValueError( 'Cannot add table %s to database because it already exists' % table.name )
 
+        self._errors_1215 = None
         self._tables[table.name] = table
 
     def remove_table( self, table ):
@@ -149,6 +179,7 @@ class database( object ):
         if not table.name in self._tables:
             raise ValueError( 'Cannot remove table %s from database because it does not exist' % table.name )
 
+        self._errors_1215 = None
         self._tables.pop( table.name, None )
 
     def apply_operation( self, table_name, operation ):
@@ -166,4 +197,5 @@ class database( object ):
             raise ValueError( 'Cannot apply operation to table %s because that table does not exist' % table_name )
 
         # the table applies the operation
+        self._errors_1215 = None
         self._tables[table_name].apply_operation( operation )

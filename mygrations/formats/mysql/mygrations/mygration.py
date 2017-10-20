@@ -38,7 +38,16 @@ class mygration:
 
         self.db_to = db_to
         self.db_from = db_from
-        [ self._errors_1215, self._operations ] = self._process()
+        self._operations = []
+
+        # first things first: stop if we have any FK errors in the database
+        # we are migrating to
+        print( self.db_to.errors_1215 )
+        self._errors_1215 = []
+        #self._errors_1215 = self.db_to.errors_1215()
+
+        if not self._errors_1215:
+            self._operations = self._process()
 
     @property
     def operations( self ):
@@ -95,6 +104,21 @@ class mygration:
     def _process( self ):
         """ Figures out the operations (and proper order) need to get to self.db_to
 
+        This particular method is no longer used but is kept around for future
+        reference.  This was my original attempt, the goal of which was to make the
+        system smart enough to determine the proper order of operations to avoid
+        violating FK constraints.  See these:
+
+        https://codereview.stackexchange.com/q/177780/140581
+        https://softwareengineering.stackexchange.com/q/359107/243180
+
+        However, based primarly on concerns about performance, I've decided to
+        let it be dumb and simply perform all operations with FK
+        checking off, and then turn it back on when done.  I'm going to leave this
+        here though because I may resurrect it with a flag to enable migrations
+        with FK checks on.  When I do that though it will be time to figure out
+        proper topological sorting
+
         Excessively commented because there are a lot of details and this is a critical
         part of the process
         """
@@ -118,10 +142,10 @@ class mygration:
         # know our final table will be fine, so if we can just split off any uncertain
         # foreign key constraints and apply them all at the end when our database is done
         # being updated.  Simple(ish)!
-        if self.db_from:
-            check = mygration( self.db_to )
-            if check.errors_1215:
-                return [ check.errors_1215, [] ]
+        #if self.db_from:
+            #check = mygration( self.db_to )
+            #if check.errors_1215:
+                #return [ check.errors_1215, [] ]
 
         # First figure out the status of individual tables
         db_from_tables = self.db_from.tables if self.db_from else {}
@@ -133,8 +157,8 @@ class mygration:
         ( errors_1215, operations ) = self._process_adds( tracking_db, tables_to_add )
 
         # if we have errors we are done
-        if errors_1215:
-            return [ errors_1215, operations ]
+        #if errors_1215:
+            #return [ errors_1215, operations ]
 
         # now apply table updates.  This acts differently: it returns a dictionary with
         # two sets of operations: one to update the tables themselves, and one to update
@@ -163,7 +187,7 @@ class mygration:
             if errors_1215:
                 if fk_operations:
                     operations.extend( fk_operations )
-                retrun [ errors_1215, operations ]
+                return operations
 
         # At this point in time if we still have tables to add it is because
         # they have mutually-dependent foreign key constraints.  The way to
@@ -192,7 +216,7 @@ class mygration:
             tracking_db.remove_table( table_to_remove )
 
         # all done!!!
-        return [ errors_1215, operations ]
+        return operations
 
     def _process_adds( self, tracking_db, tables_to_add ):
         """ Runs through tables_to_add and resolves FK constraints to determine order to add tables in
