@@ -38,16 +38,16 @@ class mygration:
 
         self.db_to = db_to
         self.db_from = db_from
-        self._operations = []
 
         # first things first: stop if we have any FK errors in the database
         # we are migrating to
-        print( self.db_to.errors_1215 )
         self._errors_1215 = []
-        #self._errors_1215 = self.db_to.errors_1215()
+        self._errors_1215 = self.db_to.errors_1215
 
         if not self._errors_1215:
             self._operations = self._process()
+        else:
+            self._operations = None
 
     @property
     def operations( self ):
@@ -56,8 +56,14 @@ class mygration:
         If db_from doesn't exist then it will be a list of operations to
         create db_to.
 
+        If there are 1215 errors that will prevent the migration, then
+        operations will return None
+
+        If the two databases are exactly the same then operations will
+        be an empty list
+
         :returns: A list of table operations
-        :rtype: [mygrations.formats.mysql.mygrations.operations.operation]
+        :rtype: None|[mygrations.formats.mysql.mygrations.operations.operation]
         """
         return self._operations
 

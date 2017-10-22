@@ -48,7 +48,7 @@ class database( object ):
         :rtype: [string]
         """
         if self._errors_1215 is None:
-            self._find_all_1215_errors()
+            self._errors_1215 = self._find_all_1215_errors()
         return self._errors_1215
 
     def store_rows_with_tables( self ):

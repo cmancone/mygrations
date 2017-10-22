@@ -27,7 +27,7 @@ class comment_parser( parser ):
                 >>> import comment_parser
                 >>> parser = comment_parser( '--Some SQL\nINSERT INTO some_table (1,2)' )
                 >>> without_comment = parser.parse()
-                >>> print parser.comment
+                >>> print( parser.comment )
                 Some SQL
                 >>> print( without_comment )
                 INSERT INTO some_table (1,2)
