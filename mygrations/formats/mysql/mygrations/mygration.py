@@ -4,6 +4,8 @@ from mygrations.formats.mysql.definitions.database import database
 from mygrations.formats.mysql.mygrations.operations.alter_table import alter_table
 from mygrations.formats.mysql.mygrations.operations.add_constraint import add_constraint
 from mygrations.formats.mysql.mygrations.operations.remove_table import remove_table
+from mygrations.formats.mysql.mygrations.operations.disable_checks import disable_checks
+from mygrations.formats.mysql.mygrations.operations.enable_checks import enable_checks
 
 class mygration:
     """ Creates a migration plan to update a database to a given spec.
@@ -119,7 +121,7 @@ class mygration:
         :return: Operations needed to complete the migration
         :rtype: [mygrations.formats.mysql.mygrations.operations]
         """
-        operations = []
+        operations = [ disable_checks() ]
 
         # what tables have been added/changed/removed
         db_from_tables = self.db_from.tables if self.db_from else {}
@@ -128,8 +130,17 @@ class mygration:
         for table_name in tables_to_add:
             operations.append( self.db_to.tables[table_name].create() )
 
+        for table_name in tables_to_update:
+            target_table = self.db_to.tables[table_name]
+            source_table = self.db_from.tables[table_name]
+            operations.append( source_table.to( target_table ) )
+
         for table_name in tables_to_remove:
             operations.append( remove_table( table_name ) )
+
+        operations.append( enable_checks() )
+
+        return operations
 
     def _old_process( self ):
         """ Figures out the operations (and proper order) need to get to self.db_to
