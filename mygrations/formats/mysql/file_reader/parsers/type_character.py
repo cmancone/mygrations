@@ -23,14 +23,23 @@ class type_character( parser, column ):
     has_comma = False
 
     # name varchar(255) NOT NULL DEFAULT '' CHARACTER SET uf8 COLLATE utf8
+    # hackish? maybe (i.e. yes) the repeated COLLATE and CHARACTER SETS take care of uncertain
+    # ordering.  I could also use `children` which is order-agnostic, but I'm being lazy
     rules = [
         { 'type': 'regexp', 'value': '[^\(\s\)]+', 'name': 'name' },
         { 'type': 'regexp', 'value': '\w+', 'name': 'type' },
         { 'type': 'literal', 'value': '(' },
         { 'type': 'regexp', 'value': '\d+', 'name': 'length' },
         { 'type': 'literal', 'value': ')' },
+        { 'type': 'regexp', 'value': 'COLLATE ([^\(\s\),]+)', 'name': 'collate', 'optional': True },
+        { 'type': 'regexp', 'value': 'CHARACTER SET ([^\(\s\),]+)', 'name': 'character_set', 'optional': True },
+        { 'type': 'regexp', 'value': 'COLLATE ([^\(\s\),]+)', 'name': 'collate', 'optional': True },
         { 'type': 'literal', 'value': 'NOT NULL', 'optional': True },
+        { 'type': 'regexp', 'value': 'COLLATE ([^\(\s\),]+)', 'name': 'collate', 'optional': True },
+        { 'type': 'regexp', 'value': 'CHARACTER SET ([^\(\s\),]+)', 'name': 'character_set', 'optional': True },
+        { 'type': 'regexp', 'value': 'COLLATE ([^\(\s\),]+)', 'name': 'collate', 'optional': True },
         { 'type': 'regexp', 'value': 'DEFAULT ([^\(\s\),]+)', 'optional': True, 'name': 'default' },
+        { 'type': 'regexp', 'value': 'COLLATE ([^\(\s\),]+)', 'name': 'collate', 'optional': True },
         { 'type': 'regexp', 'value': 'CHARACTER SET ([^\(\s\),]+)', 'name': 'character_set', 'optional': True },
         { 'type': 'regexp', 'value': 'COLLATE ([^\(\s\),]+)', 'name': 'collate', 'optional': True },
         { 'type': 'literal', 'value': ',', 'optional': True, 'name': 'ending_comma' }
