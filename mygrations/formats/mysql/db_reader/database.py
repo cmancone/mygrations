@@ -59,7 +59,7 @@ class database( database_definition ):
         """
 
         cursor.execute( 'SHOW CREATE TABLE %s' % table_name )
-        if not cursor.rowcount():
+        if not cursor.rowcount:
             raise ValueError( "Failed to execute SHOW CREATE TABLE command on table %s" % table_name )
 
         ( tbl_name, create_table ) = cursor.fetchone()
