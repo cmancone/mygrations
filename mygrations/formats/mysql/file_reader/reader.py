@@ -14,6 +14,15 @@ class reader( object ):
         self._matched = False
 
     @property
+    def matched( self ):
+        """ Public getter.  Returns whether or not the content was successfully parsed
+
+        :returns: Whether or not parsing was successful
+        :rtype: bool
+        """
+        return self._matched
+
+    @property
     def errors( self ):
         """ Public getter.  Returns a list of parsing errors
 
@@ -140,5 +149,5 @@ class reader( object ):
             for warning in parser.warnings:
                 self._warnings.append( '%s%s' % ( warning, self._filename_notice() ) )
 
-        self.matched = True
+        self._matched = True
         return data
