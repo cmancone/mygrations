@@ -42,7 +42,9 @@ class type_text( parser, column ):
         self._character_set = self._values['character_set'].strip( "'" ) if 'character_set' in self._values else ''
         self._collate = self._values['collate'].strip( "'" ) if 'collate' in self._values else ''
 
-        if not self._column_type.lower() in self.allowed_types:
+        if self._column_type.lower() == 'datetime':
+            pass
+        elif not self._column_type.lower() in self.allowed_types:
             self._errors.append( 'Column of type %s must have a length for column %s' % ( self._column_type, self._name ) )
         elif 'default' in self._values:
             self._errors.append( 'Column of type %s is not allowed to have a default value for column %s' % ( self._column_type, self._name ) )
