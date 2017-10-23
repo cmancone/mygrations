@@ -25,7 +25,7 @@ class insert_parser( parser, rows ):
 
     def process( self ):
 
-        self._table = self._values['table']
+        self._table = self._values['table'].strip( '`' )
         self._columns = self._values['columns']
         self._raw_rows = []
         self._num_explicit_columns = len( self._columns ) if self._columns else 0
