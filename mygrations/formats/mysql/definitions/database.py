@@ -101,6 +101,9 @@ class database( object ):
         """
         errors = []
         for table in self.tables.values():
+            if not table.constraints:
+                continue
+
             for constraint in table.constraints.values():
                 error = self.find_1215_errors( table, constraint )
                 if error:
