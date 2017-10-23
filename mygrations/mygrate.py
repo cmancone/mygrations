@@ -12,7 +12,7 @@ class mygrate( object ):
     def __init__( self, command, options = {} ):
 
         # store the name of the command we are executing, and any options that go with it
-        self.command = command if command else 'import'
+        self.command = command if command else 'check'
 
         self.options = options
 

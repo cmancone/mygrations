@@ -7,13 +7,12 @@ from mygrations.formats.mysql.mygrations.mygration import mygration
 
 def execute( options ):
 
-    obj = import_files( options )
+    obj = check( options )
     obj.execute()
 
-class import_files( base ):
+class check( base ):
 
     def execute( self ):
-
         files_database = database_parser( self.config['files_directory'] )
 
         # any errors or warnings?
@@ -24,17 +23,8 @@ class import_files( base ):
 
             return False
 
-        # use the credentials to load up a database connection
-        conn = MySQLdb.connect( **self.credentials )
-
-        live_database = database_reader( conn )
-
         mygrate = mygration( files_database, live_database )
         if mygrate.errors_1215:
             print( '1215 Errors encountered' )
             for error in mygrate.errors_1215:
                 print( error )
-
-        else:
-            for op in mygrate.operations:
-                print( op )
