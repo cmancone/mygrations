@@ -15,7 +15,7 @@ class alter_table:
         return True if len( self._operations ) else False
 
     def __str__( self ):
-        return 'ALTER TABLE `%s` %s' % ( self.table, ', '.join( [ str( x ) for x in self._operations ] ) )
+        return 'ALTER TABLE `%s` %s;' % ( self.table, ', '.join( [ str( x ) for x in self._operations ] ) )
 
     def __iter__( self ):
         return self._operations.__iter__()

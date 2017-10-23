@@ -33,7 +33,7 @@ class test_table_difference( unittest.TestCase ):
         # if we subtract b from a we should get some drop column queries in one alter statement
         operations = b.to( a )
         self.assertEquals( 1, len( operations ) )
-        self.assertEquals( 'ALTER TABLE `tasks` DROP KEY `tasks_account_id`, DROP KEY `task`', str( operations[0] ) )
+        self.assertEquals( 'ALTER TABLE `tasks` DROP KEY `tasks_account_id`, DROP KEY `task`;', str( operations[0] ) )
 
     def test_add_keys( self ):
         ( a, b ) = self._get_parsers()
@@ -41,7 +41,7 @@ class test_table_difference( unittest.TestCase ):
         # if we subtract b from a we should get some drop column queries in one alter statement
         operations = a.to( b )
         self.assertEquals( 1, len( operations ) )
-        self.assertEquals( 'ALTER TABLE `tasks` ADD KEY `tasks_account_id` (`account_id`), ADD KEY `task` (`task`,`account_id`)', str( operations[0] ) )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD KEY `tasks_account_id` (`account_id`), ADD KEY `task` (`task`,`account_id`);', str( operations[0] ) )
 
     def test_change_keys( self ):
         a = create_parser()
@@ -67,7 +67,7 @@ class test_table_difference( unittest.TestCase ):
         # if we subtract b from a we should get some drop column queries in one alter statement
         operations = a.to( b )
         self.assertEquals( 1, len( operations ) )
-        self.assertEquals( 'ALTER TABLE `tasks` DROP KEY `tasks_account_id`, ADD KEY `tasks_account_id` (`account_id`,`id`,`task`)', str( operations[0] ) )
+        self.assertEquals( 'ALTER TABLE `tasks` DROP KEY `tasks_account_id`, ADD KEY `tasks_account_id` (`account_id`,`id`,`task`);', str( operations[0] ) )
 
     def test_add_remove_change( self ):
         a = create_parser()
@@ -97,7 +97,7 @@ class test_table_difference( unittest.TestCase ):
         # if we subtract b from a we should get some drop column queries in one alter statement
         operations = a.to( b )
         self.assertEquals( 1, len( operations ) )
-        self.assertEquals( 'ALTER TABLE `tasks` ADD KEY `task_id` (`task`,`id`), DROP KEY `tasks_task`, DROP KEY `tasks_account_id`, ADD KEY `tasks_account_id` (`account_id`,`id`,`task`)', str( operations[0] ) )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD KEY `task_id` (`task`,`id`), DROP KEY `tasks_task`, DROP KEY `tasks_account_id`, ADD KEY `tasks_account_id` (`account_id`,`id`,`task`);', str( operations[0] ) )
 
     def test_unique_keys( self ):
         a = create_parser()
@@ -126,7 +126,7 @@ class test_table_difference( unittest.TestCase ):
 
         operations = a.to( b )
         self.assertEquals( 1, len( operations ) )
-        self.assertEquals( 'ALTER TABLE `tasks` ADD UNIQUE KEY `added` (`task`), DROP KEY `uniq_task`, DROP KEY `uniq_account_id`, ADD UNIQUE KEY `uniq_account_id` (`account_id`,`id`)', str( operations[0] ) )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD UNIQUE KEY `added` (`task`), DROP KEY `uniq_task`, DROP KEY `uniq_account_id`, ADD UNIQUE KEY `uniq_account_id` (`account_id`,`id`);', str( operations[0] ) )
 
     def test_primary_key( self ):
         a = create_parser()
@@ -148,8 +148,8 @@ class test_table_difference( unittest.TestCase ):
 
         operations = a.to( b )
         self.assertEquals( 1, len( operations ) )
-        self.assertEquals( 'ALTER TABLE `tasks` ADD PRIMARY KEY (`id`)', str( operations[0] ) )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD PRIMARY KEY (`id`);', str( operations[0] ) )
 
         operations = b.to( a )
         self.assertEquals( 1, len( operations ) )
-        self.assertEquals( 'ALTER TABLE `tasks` DROP PRIMARY KEY', str( operations[0] ) )
+        self.assertEquals( 'ALTER TABLE `tasks` DROP PRIMARY KEY;', str( operations[0] ) )

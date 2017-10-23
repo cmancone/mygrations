@@ -46,7 +46,7 @@ PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
         ops = [ str( op ) for op in mygrate.operations ]
         self.assertEquals( 'SET FOREIGN_KEY_CHECKS=0;', ops[0] )
         self.assertEquals( table3, ops[1] )
-        self.assertEquals( 'ALTER TABLE `tasks` ADD `subject` TEXT AFTER `name`', ops[2] )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD `subject` TEXT AFTER `name`;', ops[2] )
         self.assertEquals( 'SET FOREIGN_KEY_CHECKS=1;', ops[3] )
 
     def test_add_column_and_mutually_dependent_fk( self ):
@@ -79,7 +79,7 @@ CONSTRAINT `task_id_rts` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DE
         self.assertEquals( table2, ops[1] )
 
         # and then tasks will be modified
-        self.assertEquals( 'ALTER TABLE `tasks` ADD `subject` TEXT AFTER `name`, ADD CONSTRAINT `repeating_task_id_tasks_fk` FOREIGN KEY (`repeating_task_id`) REFERENCES `repeating_tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE', ops[2] )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD `subject` TEXT AFTER `name`, ADD CONSTRAINT `repeating_task_id_tasks_fk` FOREIGN KEY (`repeating_task_id`) REFERENCES `repeating_tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;', ops[2] )
         self.assertEquals( 'SET FOREIGN_KEY_CHECKS=1;', ops[3] )
 
     def test_all_key_adjustments( self ):
@@ -101,7 +101,7 @@ CONSTRAINT `task_id_rts` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DE
         ops = [ str( op ) for op in mygrate.operations ]
 
         self.assertEquals( 'SET FOREIGN_KEY_CHECKS=0;', ops[0] )
-        self.assertEquals( 'ALTER TABLE `tasks` ADD KEY `cool_key` (`name`), DROP KEY `repeating_task_id_tasks`, DROP KEY `account_id_tasks`, ADD KEY `account_id_tasks` (`account_id`,`name`)', ops[1] )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD KEY `cool_key` (`name`), DROP KEY `repeating_task_id_tasks`, DROP KEY `account_id_tasks`, ADD KEY `account_id_tasks` (`account_id`,`name`);', ops[1] )
         self.assertEquals( 'SET FOREIGN_KEY_CHECKS=1;', ops[2] )
 
     def test_all_column_adjustments( self ):
@@ -122,7 +122,7 @@ CONSTRAINT `task_id_rts` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DE
         ops = [ str( op ) for op in mygrate.operations ]
 
         self.assertEquals( 'SET FOREIGN_KEY_CHECKS=0;', ops[0] )
-        self.assertEquals( 'ALTER TABLE `tasks` ADD `subject` TEXT AFTER `name`, CHANGE `name` `name` CHAR(16), DROP repeating_task_id, DROP KEY `repeating_task_id_tasks`', ops[1] )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD `subject` TEXT AFTER `name`, CHANGE `name` `name` CHAR(16), DROP repeating_task_id, DROP KEY `repeating_task_id_tasks`;', ops[1] )
         self.assertEquals( 'SET FOREIGN_KEY_CHECKS=1;', ops[2] )
 
     def test_all_constraint_adjustments( self ):
@@ -160,7 +160,7 @@ CONSTRAINT `task_id_rts` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DE
         ops = [ str( op ) for op in mygrate.operations ]
 
         self.assertEquals( 'SET FOREIGN_KEY_CHECKS=0;', ops[0] )
-        self.assertEquals( 'ALTER TABLE `tasks` ADD CONSTRAINT `task_id_2_fk` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, DROP FOREIGN KEY `account_id_tasks_fk`, ADD CONSTRAINT `account_id_tasks_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, DROP FOREIGN KEY `task_id_fk`', ops[1] )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD CONSTRAINT `task_id_2_fk` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, DROP FOREIGN KEY `account_id_tasks_fk`, ADD CONSTRAINT `account_id_tasks_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, DROP FOREIGN KEY `task_id_fk`;', ops[1] )
         self.assertEquals( 'SET FOREIGN_KEY_CHECKS=1;', ops[2] )
 
     def test_no_operations_on_1215( self ):

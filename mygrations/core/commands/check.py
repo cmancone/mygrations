@@ -20,11 +20,13 @@ class check( base ):
             print( 'Errors found in *.sql files' )
             for error in files_database.errors:
                 print( error )
-
             return False
 
-        mygrate = mygration( files_database, live_database )
-        if mygrate.errors_1215:
+        errors_1215 = files_database.errors_1215
+        if errors_1215:
             print( '1215 Errors encountered' )
-            for error in mygrate.errors_1215:
+            for error in errors_1215:
                 print( error )
+            return False
+
+        print( "No problems found" )
