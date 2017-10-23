@@ -163,20 +163,20 @@ CONSTRAINT `task_id_rts` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DE
         self.assertEquals( 'ALTER TABLE `tasks` ADD CONSTRAINT `task_id_2_fk` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, DROP FOREIGN KEY `account_id_tasks_fk`, ADD CONSTRAINT `account_id_tasks_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, DROP FOREIGN KEY `task_id_fk`', ops[1] )
         self.assertEquals( 'SET FOREIGN_KEY_CHECKS=1;', ops[2] )
 
-    #def test_no_operations_on_1215( self ):
+    def test_no_operations_on_1215( self ):
 
-        #table1 = """CREATE TABLE `tasks` (`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
-            #`account_id` INT(10) NOT NULL,
-            #`repeating_task_id` INT(10) UNSIGNED NOT NULL,
-            #`name` VARCHAR(255) NOT NULL DEFAULT '',
-            #PRIMARY KEY (`id`),
-            #KEY `account_id_tasks` (`account_id`),
-            #KEY `repeating_task_id_tasks` (`repeating_task_id`),
-            #CONSTRAINT `account_id_tasks_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-            #) ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
+        table1 = """CREATE TABLE `tasks` (`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+            `account_id` INT(10) NOT NULL,
+            `repeating_task_id` INT(10) UNSIGNED NOT NULL,
+            `name` VARCHAR(255) NOT NULL DEFAULT '',
+            PRIMARY KEY (`id`),
+            KEY `account_id_tasks` (`account_id`),
+            KEY `repeating_task_id_tasks` (`repeating_task_id`),
+            CONSTRAINT `account_id_tasks_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
 
-        #db = database_reader( [ table1, self.accounts_table ] )
-        #mygrate = mygration( db )
+        db = database_reader( [ table1, self.accounts_table ] )
+        mygrate = mygration( db )
 
-        #self.assertEquals( [ 'MySQL 1215 error for foreign key `account_id_tasks_fk`: unsigned mistmatch. `accounts`.`id` is unsigned but `tasks`.`account_id` is not' ], mygrate.errors_1215 )
-        #self.assertEquals( None, mygrate.operations )
+        self.assertEquals( [ 'MySQL 1215 error for foreign key `account_id_tasks_fk`: unsigned mistmatch. `accounts`.`id` is unsigned but `tasks`.`account_id` is not' ], mygrate.errors_1215 )
+        self.assertEquals( None, mygrate.operations )
