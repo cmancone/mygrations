@@ -108,6 +108,30 @@ class mygration:
         )
 
     def _process( self ):
+        """ Figures out the operations needed to get to self.db_to
+
+        Returns a list of operations that will migrate db_from to db_to
+
+        For performance reasons the migrations are done with foreign key
+        checks off: the first operation turns them off, and the last operation
+        turns them on.
+
+        :return: Operations needed to complete the migration
+        :rtype: [mygrations.formats.mysql.mygrations.operations]
+        """
+        operations = []
+
+        # what tables have been added/changed/removed
+        db_from_tables = self.db_from.tables if self.db_from else {}
+        ( tables_to_add, tables_to_remove, tables_to_update ) = self._differences( db_from_tables, self.db_to.tables )
+
+        for table_name in tables_to_add:
+            operations.append( self.db_to.tables[table_name].create() )
+
+        for table_name in tables_to_remove:
+            operations.append( remove_table( table_name ) )
+
+    def _old_process( self ):
         """ Figures out the operations (and proper order) need to get to self.db_to
 
         This particular method is no longer used but is kept around for future
