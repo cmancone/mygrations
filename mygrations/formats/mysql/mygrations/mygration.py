@@ -133,7 +133,7 @@ class mygration:
         for table_name in tables_to_update:
             target_table = self.db_to.tables[table_name]
             source_table = self.db_from.tables[table_name]
-            operations.append( source_table.to( target_table ) )
+            operations.extend( source_table.to( target_table ) )
 
         for table_name in tables_to_remove:
             operations.append( remove_table( table_name ) )
