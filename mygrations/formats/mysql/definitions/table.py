@@ -174,7 +174,7 @@ class table( object ):
             try:
                 id_index = columns.index( 'id' )
                 row_id = int( values[id_index] )
-            except ValuerError:
+            except ValueError:
                 row_id = self._auto_increment
 
             self._auto_increment = max( self._auto_increment, row_id + 1 )
