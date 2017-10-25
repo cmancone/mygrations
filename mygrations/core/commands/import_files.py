@@ -37,4 +37,4 @@ class import_files( base ):
 
         else:
             for op in mygrate.operations:
-                print( op )
+                live_database.apply_to_source( op )

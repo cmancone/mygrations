@@ -186,7 +186,7 @@ class database( object ):
         self._tables.pop( table.name, None )
 
     def apply_operation( self, table_name, operation ):
-        """ Applies an operation to the database
+        """ Updates the database object according to the operation
 
         :param table_name: The table that the operation is being applied to
         :param operation: The operation to apply
@@ -202,3 +202,16 @@ class database( object ):
         # the table applies the operation
         self._errors_1215 = None
         self._tables[table_name].apply_operation( operation )
+
+    def apply_to_source( self, operation ):
+        """ Updates the actual source of the database object: usually the database or a .sql file
+
+        This method and :meth:`mygrations.formats.mysql.defintions.database.apply_operation` sound very similar.
+        The difference is that the latter operates on the in-memory structure store only, and makes
+        no actual changes.  Instead it is primarily used for internal purposes.  This method actually
+        makes changes.
+
+        :param operation: The operation to apply
+        :type operation: mygrations.formats.mysql.mygration.operations.*
+        """
+        raise NotImplementedError("Someone forgot to finish something")
