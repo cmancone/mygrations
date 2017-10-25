@@ -26,6 +26,7 @@ class table( object ):
     _warnings = None
     _auto_increment = 1
     _indexed_columns = None
+    _tracking_rows = False
 
     def __init__( self, name ):
         self._name = name
@@ -56,6 +57,21 @@ class table( object ):
         """
 
         return self._options
+
+    @property
+    def tracking_rows( self ):
+        """ Public getter.  Returns True/False to denote whether or not this table is tracking row records
+
+        To be clear on the distinction: just about any table might have rows.  However,
+        that doesn't mean that the mygration system should be syncing rows for that table.
+        self.tracking_rows == True denotes that the mygration system thinks that we
+        should probably be syncing rows for this table.
+
+        :returns: Whether or not the mygration system is tracking rows on the table
+        :rtype: bool
+        """
+
+        return self._tracking_rows
 
     @property
     def columns( self ):
@@ -156,6 +172,7 @@ class table( object ):
         if rows._errors:
             return False
 
+        self._tracking_rows = True
         if self._rows is None:
             self._rows = OrderedDict()
 

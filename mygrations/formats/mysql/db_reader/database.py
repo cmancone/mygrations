@@ -92,3 +92,22 @@ class database( database_definition ):
             # will actually be tracking database rows.  Instead
             # I will sort out table records later
             self._tables[table.name] = table
+
+    def read_rows( self, table ):
+        """ Extracts the rows for the table from the database and stores them in the table object
+
+        :param table: The table to read rows for
+        :type table: string|mygrations.formats.mysql.definitions.table
+        """
+        if type( table ) != str:
+            table = table.name
+
+        if not table.name in self.tables:
+            raise ValueError( "Cannot read rows for table %s because that table is not found in the database object" )
+
+        cursor = conn.cursor()
+
+        cursor.execute( 'SELECT * FROM %s ORDER BY id ASC' % table )
+
+        cursor.close()
+
