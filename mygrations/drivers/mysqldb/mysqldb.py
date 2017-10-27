@@ -36,7 +36,6 @@ class mysqldb( object ):
         table_names = []
         for (table_name,) in cursor:
             table_names.append( table_name )
-        cursor.close()
 
         definitions = OrderedDict()
         for table_name in table_names:
