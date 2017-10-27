@@ -16,7 +16,7 @@ class mysqldb( object ):
         :type credentials: dict|mygrations.helpers.db_credentials
         """
         if issubclass( type( credentials ), dict ):
-            self.conn = MySQLdb.connect( **self.credentials )
+            self.conn = MySQLdb.connect( **credentials )
         else:
             self.conn = credentials
 
