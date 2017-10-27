@@ -52,10 +52,10 @@ class mysqldb( object ):
         return definitions
 
     def rows( self, table_name ):
-        """ Returns the rows in the table as a list of dicts
+        """ Returns the rows in the table as a tuple of dicts
 
         :returns: The rows in the table
-        :rtype: [dict]
+        :rtype: (dict)
         """
 
         # still sticking to full caching client-side without

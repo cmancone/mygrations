@@ -77,7 +77,8 @@ class database( database_definition ):
         if type( table ) != str:
             table = table.name
 
-        if not table.name in self.tables:
+        if not table in self.tables:
             raise ValueError( "Cannot read rows for table %s because that table is not found in the database object" )
 
-        print( self.conn.rows( table ) )
+        for row in self.conn.rows( table ):
+            self.tables[table].add_raw_row( row )

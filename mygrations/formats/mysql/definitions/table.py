@@ -74,6 +74,16 @@ class table( object ):
         return self._tracking_rows
 
     @property
+    def rows( self ):
+        """ Public getter.  Returns an ordered dictionary of rows by id
+
+        :returns: Table rows
+        :rtype: OrderedDict
+        """
+
+        return self._rows
+
+    @property
     def columns( self ):
         """ Public getter.  Returns an ordered dictionary of table columns
 
@@ -201,6 +211,37 @@ class table( object ):
             self._rows[row_id] = OrderedDict( zip( columns, values ) )
 
         return True
+
+    def add_raw_row( self, row ):
+        """ Adds a row into the table as a dictionary instead of a row object
+
+        A bit of repetition here.  This is similar to what happens inside the main
+        loop of self.add_rows, but different enough that I'm not trying to combine
+        them right this second.
+
+        :param row: The row to add
+        :type row: A dictionary
+        :returns: An error string if an error is encountered, otherwise True/False
+        :rtype: bool | string
+        """
+        self._tracking_rows = True
+        if self._rows is None:
+            self._rows = OrderedDict()
+
+        row_id = row['id'] if 'id' in row else self._auto_increment
+        self._auto_increment = max( self._auto_increment, row_id + 1 )
+        if row_id in self._rows:
+            return 'Duplicate row id found for table %s and row %s' % ( self._name, row )
+
+        # make sure we have a value for every column in the row, and build an OrderedDict
+        converted_row = OrderedDict()
+        for column in self._columns.keys():
+            if column in row:
+                converted_row[column] = row[column]
+            else:
+                converted_row[column] = self._columns[column].default
+
+        self._rows[row_id] = converted_row
 
     def column_before( self, column_name ):
         """ Returns the name of the column that comes before a given row.

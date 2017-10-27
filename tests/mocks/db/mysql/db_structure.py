@@ -12,8 +12,10 @@ class db_structure:
         self.table_rows = table_rows
         self.executed = False
 
-    def cursor( self ):
+    def cursor( self, cursor_type = None ):
         """ Mock for the db `cursor` method.  Returns the equivalent of the default cursor
+
+        cursor_type is ignored but included for consisitency with API standard
 
         :returns: self
         :rtype: self
@@ -33,9 +35,9 @@ class db_structure:
         if normalized == 'show tables':
             self._load_show_tables_result()
         elif normalized[:17] == 'show create table':
-            self._load_show_create_result( query )
+            self._load_show_create_result( normalized )
         else:
-            self._load_select_all_result( query )
+            self._load_select_all_result( normalized )
 
         self.executed = True
         self.iterator_index = -1
@@ -67,7 +69,15 @@ class db_structure:
         :param query: The query executed
         :type query: string
         """
-        pass
+        m = re.match( 'select \* from (\S+)', query )
+        if not m:
+            raise ValueError( "Cannot mock cursor.execute for query %s because I was expecting a select query but cannot find the table name" % query )
+
+        table_name = m.groups()[0].strip( '`' )
+        if not table_name in self.table_rows:
+            raise ValueError( "Cannot mock cursor.execute for query %s because table %s was not set to have any rows" % ( query, table_name ) )
+
+        self.results = self.table_rows[table_name]
 
     def __iter__( self ):
         """ Initializes iteration through the result set
