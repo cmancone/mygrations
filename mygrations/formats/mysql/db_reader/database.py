@@ -29,7 +29,7 @@ class database( database_definition ):
         :param conn: mygrations db wrapper
         :type conn: mygrations.drivers.mysqldb.mysqldb
         """
-        for ( table, create_table ) in self.conn.tables().items():
+        for ( table, create_table ) in conn.tables().items():
             try:
                 reader = sql_reader()
                 reader.parse( create_table )
@@ -80,10 +80,4 @@ class database( database_definition ):
         if not table.name in self.tables:
             raise ValueError( "Cannot read rows for table %s because that table is not found in the database object" )
 
-        cursor = conn.cursor()
-        cursor.execute( 'SELECT * FROM %s ORDER BY id ASC' % table )
-        cursor.close()
-        conn.use_result()
-
-        if not cursor.rowcount:
-            return
+        print( self.conn.rows( table ) )
