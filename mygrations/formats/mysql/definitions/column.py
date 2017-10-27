@@ -123,7 +123,7 @@ class column( object ):
         :returns: string, or None
         :rtype: string|None
         """
-        return None if self._character_set is None else self._collate.upper()
+        return None if self._collate is None else self._collate.upper()
 
     @property
     def auto_increment( self ):
