@@ -1,6 +1,7 @@
 import unittest
 
 from mygrations.formats.mysql.db_reader.database import database as database_reader
+from mygrations.drivers.mysqldb.mysqldb import mysqldb
 from tests.mocks.db.mysql.db_structure import db_structure
 
 class test_database( unittest.TestCase ):
@@ -25,7 +26,7 @@ class test_database( unittest.TestCase ):
         }
 
         mock_db = db_structure( tables, {} )
-        database = database_reader( mock_db )
+        database = database_reader( mysqldb( mock_db ) )
 
         # our parser should have a table!
         self.assertTrue( 'logs' in database.tables )

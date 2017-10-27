@@ -1,9 +1,8 @@
-import MySQLdb
-
 from .base import base
 from mygrations.formats.mysql.file_reader.database import database as database_parser
 from mygrations.formats.mysql.db_reader.database import database as database_reader
 from mygrations.formats.mysql.mygrations.mygration import mygration
+from mygrations.drivers.mysqldb.mysqldb import mysqldb
 
 def execute( options ):
 
@@ -25,9 +24,7 @@ class import_files( base ):
             return False
 
         # use the credentials to load up a database connection
-        conn = MySQLdb.connect( **self.credentials )
-
-        live_database = database_reader( conn )
+        live_database = database_reader( mysqldb( self.credentials ) )
 
         # we have to tell the live database to load records
         # for any tables we are tracking records for.
