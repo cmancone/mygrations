@@ -22,5 +22,5 @@ class insert_values( parser ):
 
     def process( self ):
 
-        self.values = self._values['values'].replace( '\\\\', '\\' ).replace( "\\'", "'" )
+        self.values = [ str( val ).replace( '\\\\', '\\' ).replace( "\\'", "'" ) for val in self._values['values'] ]
         self.has_comma = True if 'ending_comma' in self._values else False

@@ -12,6 +12,9 @@ from ..mygrations.operations.add_constraint import add_constraint
 from ..mygrations.operations.change_constraint import change_constraint
 from ..mygrations.operations.remove_constraint import remove_constraint
 from ..mygrations.operations.create_table import create_table
+from ..mygrations.operations.row_delete import row_delete
+from ..mygrations.operations.row_insert import row_insert
+from ..mygrations.operations.row_update import row_update
 
 class table( object ):
 
@@ -370,6 +373,45 @@ class table( object ):
 
         return operations
 
+    def to_rows( self, from_table = None ):
+        """ Compares two tables to eachother and returns a list of operations which can bring the rows of this table in line with the other
+
+        It's important to note (and probably important to think through and change eventually)
+        that this method has the opposite meaning of `mygrations.formats.mysql.definitions.table.to()`
+        That method is called on the `from` table and operations on the (required) `to` table.
+        This method is called on the `to` table and can (optionally) be passed in a `from` table.
+
+        :param from_table: A table to find differences with (or None)
+        :type from_table: mygrations.formats.mysql.definitions.table
+        :returns: A list of operations to apply to table
+        :rtype: list[mygrations.formats.mysql.mygrations.operations.*]
+        """
+        if from_table and not from_table.tracking_rows:
+            raise ValueError( "Refusing to compare rows with a table that is not tracking rows.  Technically I can, but this is probably a sign that you are doing something wrong" )
+
+        ( inserted_ids, deleted_ids, updated_ids ) = self._differences( from_table.rows if from_table else {}, self.rows )
+
+        operations = []
+        for row_id in inserted_ids:
+            operations.append( row_insert( row_id, self.rows[row_id] ) )
+
+        for row_id in deleted_ids:
+            operations.append( row_delete( row_id ) )
+
+        for row_id in updated_ids:
+            # try to be smart and not update if we don't have to
+            ( inserted_cols, deleted_cols, updated_cols ) = self._differences( self.rows[row_id], from_table.rows[row_id] )
+            differences = False
+            for col in updated_cols:
+                if self.rows[row_id][col] != from_table.rows[row_id][col]:
+                    differences = True
+                    break
+
+            if differences:
+                operations.append( row_update( row_id, self.rows[row_id] ) )
+
+        return operations
+
     def column_is_indexed( self, column ):
         """ Returns True/False to denote whether or not the column has a useable index
 
@@ -389,21 +431,21 @@ class table( object ):
 
         return column in self._indexed_columns
 
-    def _differences(self, a, b):
+    def _differences(self, from_list, to_list):
         """
         Calculates the difference between two OrderedDicts.
 
         https://codereview.stackexchange.com/a/176303/140581
 
-        :param a: OrderedDict
-        :param b: OrderedDict
+        :param from_list: OrderedDict
+        :param to_list: OrderedDict
         :return: (added, removed, overlap)
         """
 
         return (
-            [key for key in b if key not in a],
-            [key for key in a if key not in b],
-            [key for key in a if key in b]
+            [key for key in to_list if key not in from_list],
+            [key for key in from_list if key not in to_list],
+            [key for key in from_list if key in to_list]
         )
 
     def apply_operation( self, operation ):
