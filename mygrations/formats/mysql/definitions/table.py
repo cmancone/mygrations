@@ -393,7 +393,7 @@ class table( object ):
 
         operations = []
         for row_id in inserted_ids:
-            operations.append( row_insert( row_id, self.rows[row_id] ) )
+            operations.append( row_insert( self.name, self.rows[row_id] ) )
 
         for row_id in deleted_ids:
             operations.append( row_delete( row_id ) )

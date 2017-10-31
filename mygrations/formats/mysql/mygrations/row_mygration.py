@@ -88,7 +88,7 @@ class row_mygration:
         :rtype: [mygrations.formats.mysql.mygrations.operations]
         """
         operations = []
-        tracking_tables = [ table.name for table in self.db_to.tables.value() if table.tracking_rows ]
+        tracking_tables = [ table.name for table in self.db_to.tables.values() if table.tracking_rows ]
         for table_name in tracking_tables:
             from_table = self.db_from[table_name] if ( self.db_from and table_name in self.db_from ) else None
             more_operations = self.db_to.tables[table_name].to_rows( from_table )
