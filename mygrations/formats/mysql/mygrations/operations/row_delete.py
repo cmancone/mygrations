@@ -9,4 +9,4 @@ class row_delete:
         self.row_id = row_id
 
     def __str__( self ):
-        return 'DELETE FROM `%s` WHERE id=%s' % (self.table_name, self.row_id)
+        return 'DELETE FROM `%s` WHERE id=%s;' % (self.table_name, self.row_id)

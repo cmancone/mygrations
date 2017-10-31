@@ -11,4 +11,4 @@ class row_insert:
     def __str__( self ):
         cols = ', '.join( [ '`%s`' % val for val in self.data.keys() ] )
         vals = ', '.join( [ "'%s'" % str( val ).replace( '\\', '\\\\' ).replace( "'", "\\'" ) for val in self.data.values() ] )
-        return 'INSERT INTO `%s` (%s) VALUES (%s)' % ( self.table_name, cols, vals )
+        return 'INSERT INTO `%s` (%s) VALUES (%s);' % ( self.table_name, cols, vals )
