@@ -90,7 +90,7 @@ class row_mygration:
         operations = []
         tracking_tables = [ table.name for table in self.db_to.tables.values() if table.tracking_rows ]
         for table_name in tracking_tables:
-            from_table = self.db_from[table_name] if ( self.db_from and table_name in self.db_from ) else None
+            from_table = self.db_from.tables[table_name] if ( self.db_from and table_name in self.db_from.tables ) else None
             more_operations = self.db_to.tables[table_name].to_rows( from_table )
             if not more_operations:
                 continue

@@ -396,7 +396,7 @@ class table( object ):
             operations.append( row_insert( self.name, self.rows[row_id] ) )
 
         for row_id in deleted_ids:
-            operations.append( row_delete( row_id ) )
+            operations.append( row_delete( self.name, row_id ) )
 
         for row_id in updated_ids:
             # try to be smart and not update if we don't have to
@@ -408,7 +408,7 @@ class table( object ):
                     break
 
             if differences:
-                operations.append( row_update( row_id, self.rows[row_id] ) )
+                operations.append( row_update( self.name, self.rows[row_id] ) )
 
         return operations
 
