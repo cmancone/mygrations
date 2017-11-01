@@ -160,8 +160,13 @@ CONSTRAINT `task_id_rts` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DE
         ops = [ str( op ) for op in mygrate.operations ]
 
         self.assertEquals( 'SET FOREIGN_KEY_CHECKS=0;', ops[0] )
-        self.assertEquals( 'ALTER TABLE `tasks` ADD CONSTRAINT `task_id_2_fk` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, DROP FOREIGN KEY `account_id_tasks_fk`, ADD CONSTRAINT `account_id_tasks_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE, DROP FOREIGN KEY `task_id_fk`;', ops[1] )
-        self.assertEquals( 'SET FOREIGN_KEY_CHECKS=1;', ops[2] )
+        # foreign key constraints are dropped first in their own operation.  This helps
+        # with a couple issues, including the fact that you can't drop a key if a foreign
+        # key is using it, and that modifying a foreign key requires dropping it and then
+        # re-adding it, but the re-adding *has* to happen in a separate alter command
+        self.assertEquals( 'ALTER TABLE `tasks` DROP FOREIGN KEY `task_id_fk`, DROP FOREIGN KEY `account_id_tasks_fk`;', ops[1] )
+        self.assertEquals( 'ALTER TABLE `tasks` ADD CONSTRAINT `task_id_2_fk` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, ADD CONSTRAINT `account_id_tasks_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE RESTRICT ON UPDATE CASCADE;', ops[2] )
+        self.assertEquals( 'SET FOREIGN_KEY_CHECKS=1;', ops[3] )
 
     def test_no_operations_on_1215( self ):
 

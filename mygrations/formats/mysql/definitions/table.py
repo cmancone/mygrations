@@ -306,9 +306,9 @@ class table( object ):
         :rtype: list[mygrations.formats.mysql.mygrations.operations.*] | dict
         """
         # start with the columns, obviously
-        ( added_columns, removed_columns, overlap_columns ) = self._differences ( self.columns, comparison_table.columns )
-        ( added_keys, removed_keys, overlap_keys ) = self._differences ( self.indexes, comparison_table.indexes )
-        ( added_constraints, removed_constraints, overlap_constraints ) = self._differences ( self.constraints, comparison_table.constraints )
+        ( added_columns, removed_columns, overlap_columns ) = self._differences( self.columns, comparison_table.columns )
+        ( added_keys, removed_keys, overlap_keys ) = self._differences( self.indexes, comparison_table.indexes )
+        ( added_constraints, removed_constraints, overlap_constraints ) = self._differences( self.constraints, comparison_table.constraints )
 
         # keeping in mind the overall algorithm, we're going to separate out all changes into three alter statments
         # these are broken up according to the way that the system has to process them to make sure that foreign
@@ -351,7 +351,12 @@ class table( object ):
         for overlap_constraint in overlap_constraints:
             if str( self.constraints[overlap_constraint] ) == str( comparison_table.constraints[overlap_constraint] ):
                 continue
-            constraints.add_operation( change_constraint( comparison_table.constraints[overlap_constraint] ) )
+
+            # foreign key constraints are modified by first dropping the constraint and
+            # then adding the new one.  However, these two operations cannot happen in the
+            # same alter command.  Kinda a pain.  Oh well.
+            removed_constraints_alter.add_operation( remove_constraint( self.constraints[overlap_constraint] ) )
+            constraints.add_operation( add_constraint( comparison_table.constraints[overlap_constraint] ) )
 
         # now put it all together
         if split_operations:
@@ -366,8 +371,8 @@ class table( object ):
             operations = []
             for operation in constraints:
                 primary_alter.add_operation( operation )
-            for operation in removed_constraints_alter:
-                primary_alter.add_operation( operation )
+            if removed_constraints_alter:
+                operations.append( removed_constraints_alter )
             if primary_alter:
                 operations.append( primary_alter )
 
