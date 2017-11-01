@@ -67,3 +67,22 @@ class test_table_decimal_false_positives( unittest.TestCase ):
         """ )
 
         self.assertEquals( 1, len( from_table.to( to_table ) ) )
+
+    def test_float_false_positives( self ):
+        from_table = create_parser()
+        from_table.parse( """CREATE TABLE `decimal_false_positive` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `price` float NOT NULL DEFAULT '0.00',
+  PRIMARY KEY (`id`),
+) ENGINE=InnoDB;
+        """ )
+
+        to_table = create_parser()
+        to_table.parse( """CREATE TABLE `decimal_false_positive` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `price` float NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+) ENGINE=InnoDB;
+        """ )
+
+        self.assertEquals( 0, len( from_table.to( to_table ) ) )
