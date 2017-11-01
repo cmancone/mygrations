@@ -214,8 +214,21 @@ class column( object ):
         :rtype: bool
         """
         # if any of these attributes change then it really isn't the same
-        for attr in [ 'name', 'length', 'null', 'column_type', 'default', 'unsigned' ]:
+        for attr in [ 'name', 'length', 'null', 'column_type', 'unsigned' ]:
             if getattr( self, attr ) != getattr( column, attr ):
+                return False
+
+        # default needs a special check because it can run into issues for decimal columns
+        if self.column_type == 'DECIMAL':
+            split = self.length.split(',')
+            if len( split ) == 2:
+                ndecimals = int( split[1] )
+                if ( self.default is None and column.default is not None ) or ( self.default is not None and column.default is None ):
+                    return False
+                if round( float( self.default ), ndecimals ) != round( float( column.default ), ndecimals ):
+                    return False
+        else:
+            if self.default != column.default:
                 return False
 
         # if collate or character_set are different and *both* have a value,
