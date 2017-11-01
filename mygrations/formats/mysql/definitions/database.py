@@ -132,6 +132,9 @@ class database( object ):
         table_column = table.columns[constraint.column]
         foreign_column = foreign_table.columns[constraint.foreign_column]
 
+        if not table.column_is_indexed( table.columns[table_column.name] ):
+            return "MySQL 1215 error for foreign key `%s`: missing index. `%s`.`%s` does not have an index and therefore cannot be used in a foreign key constraint" % ( constraint.name, table.name, table_column.name )
+
         # we have a few attributes that must must match exactly and have easy-to-produce errors
         for attr in [ 'column_type', 'length', 'character_set', 'collate' ]:
             table_value = getattr( table_column, attr )
