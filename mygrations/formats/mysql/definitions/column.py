@@ -204,3 +204,30 @@ class column( object ):
             parts.append( "COLLATE '%s'" % self.collate )
 
         return ' '.join( parts )
+
+    def is_really_the_same_as( self, column ):
+        """ Takes care of a pesky false-positive when checking columns
+
+        :param column: The column to comprehensively check for a difference with
+        :type column: mygrations.formats.mysql.definitions.column
+        :returns: True if the column really is the same, even for apparent differences
+        :rtype: bool
+        """
+        # if any of these attributes change then it really isn't the same
+        for attr in [ 'name', 'length', 'null', 'column_type', 'default', 'unsigned' ]:
+            if getattr( self, attr ) != getattr( column, attr ):
+                return False
+
+        # if collate or character_set are different and *both* have a value,
+        # then these aren't really the same
+        for attr in [ 'collate', 'character_set' ]:
+            my_val = getattr( self, attr )
+            that_val = getattr( column, attr )
+            if my_val and that_val and my_val != that_val:
+                return False
+
+        # if we got here then these columns are the same. Either all attributes have the same
+        # values, or collate and/or character_set differ, but they differ by one not having
+        # a value.  This is the false-positive we are trying to check for
+        # (see tests.formats.mysql.definitions.test_table_text_false_positives)
+        return True

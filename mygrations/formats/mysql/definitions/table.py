@@ -324,6 +324,13 @@ class table( object ):
             # it's really easy to tell if a column changed
             if str( self.columns[overlap_column] ) == str( comparison_table.columns[overlap_column] ):
                 continue
+
+            # FALSE POSITIVE CHECK:
+            # if one column has collate/character set and the other doesn't, and that is the only difference,
+            # then ignore this difference
+            if self.columns[overlap_column].is_really_the_same_as( comparison_table.columns[overlap_column] ):
+                continue
+
             primary_alter.add_operation( change_column( comparison_table.columns[overlap_column] ) )
 
         for removed_column in removed_columns:
