@@ -2,6 +2,7 @@ from .base import base
 from mygrations.formats.mysql.file_reader.database import database as database_parser
 from mygrations.formats.mysql.db_reader.database import database as database_reader
 from mygrations.formats.mysql.mygrations.mygration import mygration
+from mygrations.formats.mysql.mygrations.row_mygration import row_mygration
 from mygrations.drivers.mysqldb.mysqldb import mysqldb
 
 def execute( options ):
@@ -47,5 +48,11 @@ class plan( base ):
             for error in mygrate.errors_1215:
                 print( error )
 
-        for op in mygrate.operations:
-            print( op )
+        if mygrate.operations:
+            for op in mygrate.operations:
+                print( op )
+
+        rows = row_mygration( files_database, live_database )
+        if rows.operations:
+            for op in rows.operations:
+                print( op )
