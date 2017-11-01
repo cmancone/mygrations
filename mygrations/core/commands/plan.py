@@ -48,11 +48,12 @@ class plan( base ):
             for error in mygrate.errors_1215:
                 print( error )
 
-        if mygrate.operations:
-            for op in mygrate.operations:
-                print( op )
+        else:
+            if mygrate.operations:
+                for op in mygrate.operations:
+                    print( op )
 
-        rows = row_mygration( files_database, live_database )
-        if rows.operations:
-            for op in rows.operations:
-                print( op )
+            rows = row_mygration( files_database, live_database )
+            if rows.operations:
+                for op in rows.operations:
+                    print( op )
