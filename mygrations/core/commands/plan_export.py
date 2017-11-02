@@ -50,8 +50,9 @@ class plan_export( base ):
         for table_name in self.modified_tables.keys():
             print( '\033[1;33m\033[41m%s\033[0m' % table_name )
             table = live_database.tables[table_name]
-            print( table )
+            print( table.nice() )
 
             if table.tracking_rows:
+                print( '\n' )
                 for row in table.rows.values():
                     print( row_insert( table.name, row ) )

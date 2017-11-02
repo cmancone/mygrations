@@ -47,6 +47,9 @@ class create_parser( parser, table ):
         self._warnings = []
         self._primary = ''
 
+        # ignore the AUTO_INCREMENT option: there is no reason for us to ever manage that
+        self._options = [ opt for opt in self._options if opt.name != 'AUTO_INCREMENT' ]
+
         for definition in self._definitions:
             if isinstance( definition, column ):
                 self._columns[definition.name] = definition

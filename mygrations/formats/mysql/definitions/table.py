@@ -271,13 +271,18 @@ class table( object ):
     def __str__( self ):
         return str( self.create() )
 
-    def create( self ):
+    def nice( self ):
+        return str( self.create( True ) )
+
+    def create( self, nice = False ):
         """ Returns a create table operation that can create this table
 
+        :param nice: Whether or not to return a nicely formatted CREATE TABLE command
+        :type nice: bool
         :returns: A create table operation
         :rtype: mygrations.operations.create_table
         """
-        return create_table( self )
+        return create_table( self, nice )
 
     def to( self, comparison_table, split_operations = False ):
         """ Compares two tables to eachother and returns a list of operations which can bring the structure of the second in line with the first
