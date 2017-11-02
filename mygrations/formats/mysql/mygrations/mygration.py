@@ -29,17 +29,20 @@ class mygration:
     7. Apply all foreign key constraints that were previously ignored in steps 4 & 6
     8. Remove any tables that need to be removed
     """
-    def __init__( self, db_to, db_from = None ):
+    def __init__( self, db_to, db_from = None, disable_checks = True ):
         """ Create a migration plan
 
         :param db_to: The target database structure to migrate to
         :param db_from: The current database structure to migrate from
+        :param disable_checks: Whether or not to add an operations to disable/re-enable FK checks
         :type db_to: mygrations.formats.mysql.definitions.database
         :type db_from: mygrations.formats.mysql.definitions.database
+        :type disable_checks: True
         """
 
         self.db_to = db_to
         self.db_from = db_from
+        self._disable_fk_checks = disable_checks
 
         # first things first: stop if we have any FK errors in the database
         # we are migrating to
@@ -121,7 +124,9 @@ class mygration:
         :return: Operations needed to complete the migration
         :rtype: [mygrations.formats.mysql.mygrations.operations]
         """
-        operations = [ disable_checks() ]
+        operations = []
+        if self._disable_fk_checks:
+            operations.append( disable_checks() )
 
         # what tables have been added/changed/removed
         db_from_tables = self.db_from.tables if self.db_from else {}
@@ -138,7 +143,8 @@ class mygration:
         for table_name in tables_to_remove:
             operations.append( remove_table( table_name ) )
 
-        operations.append( enable_checks() )
+        if self._disable_fk_checks:
+            operations.append( enable_checks() )
 
         return operations
 

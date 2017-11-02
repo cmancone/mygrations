@@ -4,6 +4,8 @@ from mygrations.formats.mysql.db_reader.database import database as database_rea
 from mygrations.formats.mysql.mygrations.mygration import mygration
 from mygrations.formats.mysql.mygrations.row_mygration import row_mygration
 from mygrations.drivers.mysqldb.mysqldb import mysqldb
+from mygrations.formats.mysql.mygrations.operations.disable_checks import disable_checks
+from mygrations.formats.mysql.mygrations.operations.enable_checks import enable_checks
 
 def execute( options ):
 
@@ -42,13 +44,14 @@ class plan( base ):
 
             live_database.read_rows( table )
 
-        mygrate = mygration( files_database, live_database )
+        mygrate = mygration( files_database, live_database, False )
         if mygrate.errors_1215:
             print( '1215 Errors encountered' )
             for error in mygrate.errors_1215:
                 print( error )
 
         else:
+            print( disable_checks() )
             if mygrate.operations:
                 for op in mygrate.operations:
                     print( op )
@@ -57,3 +60,4 @@ class plan( base ):
             if rows.operations:
                 for op in rows.operations:
                     print( op )
+            print( enable_checks() )
