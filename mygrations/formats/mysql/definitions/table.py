@@ -415,7 +415,7 @@ class table( object ):
             ( inserted_cols, deleted_cols, updated_cols ) = self._differences( self.rows[row_id], from_table.rows[row_id] )
             differences = False
             for col in updated_cols:
-                if self.rows[row_id][col] != from_table.rows[row_id][col]:
+                if not self._loose_equal( self.rows[row_id][col], from_table.rows[row_id][col] ):
                     differences = True
                     break
 
@@ -618,3 +618,22 @@ class table( object ):
         if not new_constraint.name in self._constraints:
             raise ValueError( "Cannot modify constraint %s because constraint %s does not exist" % ( new_constraint.name, new_constraint.name ) )
         self._constraints[new_constraint.name] = new_constraint
+
+    def _loose_equal( self, val1, val2 ):
+        """ Performs a looser comparison, as values might have different types depending on whether they came out of a database or file
+
+        Returns true if the two values are equal, even if one is a string and the other an int.
+
+        :param val1: The first value to compare
+        :param val2: The second value to compare
+        :type val1: string|int
+        :type val2: string|int
+        :return: Whether or not they are considered a match
+        :rtype: bool
+        """
+        # if we don't have a type mistmatch then this is easy
+        if type( val1 ) == type( val2 ):
+            return val1 == val2
+
+        # otherwise see if we can cheat and just convert to strings
+        return str( val1 ) == str( val2 )
