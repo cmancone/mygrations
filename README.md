@@ -11,7 +11,7 @@ When you need to change a table structure you don't generate additional migratio
 ## Installation
 
 1. Requires Python3
-2. Requires [MySQLdb For python3](https://pypi.python.org/pypi/mysqlclient).  (For ubuntu: `sudo apt-get install python-mysqldb`)
+2. Requires [MySQLdb For python3](https://pypi.python.org/pypi/mysqlclient).  (For ubuntu: `sudo apt-get install python3-mysqldb`)
 
 To install `mygrations`:
 
