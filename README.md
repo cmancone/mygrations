@@ -46,6 +46,7 @@ Standard migration systems dedicate a file to each change of a database table.  
 
 Since `mygrations` works directly with the database structure it doesn't need to keep a history of which migrations it has run.  Instead, it brings your database up-to-spec no matter what state it is in: no more hassle if your migration table somehow gets out of sync with your migration files.
 
+
 **7. Automatic migration builder**
 
 Since the migration files are just simple `CREATE TABLE` commands, `mygrations` can create the migration files for you from your database.  Although you probably won't have to do that very often because the migrations files are very easy to build anyway.  A simple `SHOW CREATE TABLE` command from MySQL is all you need.

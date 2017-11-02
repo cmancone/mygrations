@@ -2,7 +2,10 @@ import importlib
 
 commands = {
     'import':       'import_files',
-    'export':       'export_files'
+    'check':        'check',
+    'plan':         'plan',
+    'plan_export':  'plan_export'
+    #'export':       'export_files'
 }
 
 def allowed( command ):
