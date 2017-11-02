@@ -99,6 +99,4 @@ class database( database_definition ):
             self._tables[table.name] = table
 
         for (table_name,rows) in reader.rows.items():
-            if not table_name in self._rows:
-                self._rows = []
             self._rows.extend( rows )

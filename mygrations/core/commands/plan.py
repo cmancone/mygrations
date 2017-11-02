@@ -49,15 +49,20 @@ class plan( base ):
             print( '1215 Errors encountered' )
             for error in mygrate.errors_1215:
                 print( error )
+            return False
 
-        else:
-            print( disable_checks() )
-            if mygrate.operations:
-                for op in mygrate.operations:
-                    print( op )
+        ops = []
+        if mygrate.operations:
+            ops.extend( mygrate.operations )
 
-            rows = row_mygration( files_database, live_database )
-            if rows.operations:
-                for op in rows.operations:
-                    print( op )
-            print( enable_checks() )
+        rows = row_mygration( files_database, live_database )
+        if rows.operations:
+            ops.extend( mygrate.operations )
+
+        if not ops:
+            return True
+
+        print( disable_checks() )
+        for op in ops:
+            print( op )
+        print( enable_checks() )
