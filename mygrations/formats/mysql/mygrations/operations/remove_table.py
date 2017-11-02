@@ -7,5 +7,15 @@ class remove_table:
         else:
             self.table_name = table_name
 
+    @property
+    def table_name( self ):
+        """ Public getter.  Returns the name of the table.
+
+        :returns: The table name
+        :rtype: string
+        """
+
+        return self.table_name
+
     def __str__( self ):
         return 'DROP TABLE %s;' % self.table_name

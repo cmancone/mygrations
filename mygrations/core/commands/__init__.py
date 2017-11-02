@@ -3,7 +3,8 @@ import importlib
 commands = {
     'import':       'import_files',
     'check':        'check',
-    'plan':         'plan'
+    'plan':         'plan',
+    'plan_export':  'plan_export'
     #'export':       'export_files'
 }
 

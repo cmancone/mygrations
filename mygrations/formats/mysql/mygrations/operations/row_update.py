@@ -6,11 +6,21 @@ class row_update:
             raise KeyError( 'Missing `id` column needed for update' )
 
         if type( table_name ) != str:
-            self.table_name = table_name.name
+            self._table_name = table_name.name
         else:
-            self.table_name = table_name
+            self._table_name = table_name
         self.data = data
+
+    @property
+    def table_name( self ):
+        """ Public getter.  Returns the name of the table.
+
+        :returns: The table name
+        :rtype: string
+        """
+
+        return self._table_name
 
     def __str__( self ):
         updates = ', '.join( [ "`%s`='%s'" % ( key, val ) for ( key, val ) in self.data.items() if key != 'id' ] )
-        return 'UPDATE `%s` SET %s WHERE id=%s;' % ( self.table_name, updates, self.data['id'] )
+        return 'UPDATE `%s` SET %s WHERE id=%s;' % ( self._table_name, updates, self.data['id'] )

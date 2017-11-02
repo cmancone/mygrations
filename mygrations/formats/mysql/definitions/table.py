@@ -43,9 +43,9 @@ class table( object ):
 
     @property
     def name( self ):
-        """ Public getter.  Returns the name of the column.
+        """ Public getter.  Returns the name of the table.
 
-        :returns: The column name
+        :returns: The table name
         :rtype: string
         """
 

@@ -93,7 +93,7 @@ class mygration:
     def __iter__( self ):
         return self._operations.__iter__()
 
-    def _differences(self, a, b):
+    def _differences(self, from_dict, to_dict):
         """
         Calculates the difference between two OrderedDicts.
 
@@ -107,9 +107,9 @@ class mygration:
         """
 
         return (
-            [key for key in b if key not in a],
-            [key for key in a if key not in b],
-            [key for key in a if key in b]
+            [key for key in to_dict if key not in from_dict],
+            [key for key in from_dict if key not in to_dict],
+            [key for key in from_dict if key in to_dict]
         )
 
     def _process( self ):

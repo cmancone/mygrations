@@ -57,7 +57,7 @@ class plan( base ):
 
         rows = row_mygration( files_database, live_database )
         if rows.operations:
-            ops.extend( mygrate.operations )
+            ops.extend( rows.operations )
 
         if not ops:
             return True

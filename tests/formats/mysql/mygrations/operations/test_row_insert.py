@@ -7,3 +7,4 @@ class test_row_insert( unittest.TestCase ):
         op = row_insert( 'a_table', OrderedDict( [ ('id', 5), ('name', 'bob'), ('age', 2) ] ) )
 
         self.assertEquals( "INSERT INTO `a_table` (`id`, `name`, `age`) VALUES ('5', 'bob', '2');", str( op ) )
+        self.assertEquals( 'a_table', op.table_name )

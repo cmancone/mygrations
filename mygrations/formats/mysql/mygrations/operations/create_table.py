@@ -9,6 +9,16 @@ class create_table:
         """
         self.table = table
 
+    @property
+    def table_name( self ):
+        """ Public getter.  Returns the name of the table.
+
+        :returns: The table name
+        :rtype: string
+        """
+
+        return self.table.name
+
     def __str__( self ):
         body = [ str( self.table.columns[col] ) for col in self.table.columns ]
         body.extend( [ str( self.table.indexes[index] ) for index in self.table.indexes ] )
