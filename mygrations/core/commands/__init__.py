@@ -4,7 +4,8 @@ commands = {
     'import':       'import_files',
     'check':        'check',
     'plan':         'plan',
-    'plan_export':  'plan_export'
+    'plan_export':  'plan_export',
+    'version':      'version'
     #'export':       'export_files'
 }
 

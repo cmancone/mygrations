@@ -18,7 +18,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='mygrations',
-    version='0.10.0',
+    version='0.11.0',
     description='A general purpose migration tool for managing MySQL updates',
     long_description=long_description,
     url='https://github.com/cmancone/mygrations',

@@ -72,11 +72,12 @@ To be clear, you don't put your database credentials in your `mygrate.conf` file
 
 Currently the system supports 3 modes:
 
-| Mode            | Action                                                                                       |
-| --------------- | -------------------------------------------------------------------------------------------- |
-| check (default) | Read all `*.sql` file and report any SQL errors or MySQL 1215 errors                         |
-| plan            | Dump a list of MySQL commands that will bring the database up-to-spec with the `*.sql` files |
-| plan_export     | Dump a list of data showing how to update the `*.sql` files to match the database            |
+| Mode              | Action                                                                                       |
+| ----------------- | -------------------------------------------------------------------------------------------- |
+| version (default) | Display the version and license information and exit                                         |
+| check             | Read all `*.sql` file and report any SQL errors or MySQL 1215 errors                         |
+| plan              | Dump a list of MySQL commands that will bring the database up-to-spec with the `*.sql` files |
+| plan_export       | Dump a list of data showing how to update the `*.sql` files to match the database            |
 
 Each should be executed by running the mygration command with the desired mode as the first parameter, in the same directory as your `mygrate.conf` file:
 
