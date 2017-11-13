@@ -15,6 +15,8 @@ class mygrate( object ):
         self.command = command if command else 'check'
 
         self.options = options
+        if self.options['version']:
+            self.command = 'version'
 
         # make sure we have an actual command
         if not commands.allowed( self.command ):
