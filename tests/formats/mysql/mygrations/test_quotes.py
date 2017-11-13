@@ -4,7 +4,7 @@ from mygrations.formats.mysql.db_reader.database import database as database_rea
 from mygrations.formats.mysql.file_reader.database import database as file_reader
 from mygrations.drivers.mysqldb.mysqldb import mysqldb
 from tests.mocks.db.mysql.db_structure import db_structure
-from mygrations.formats.mysql.mygrations.mygration import mygration
+from mygrations.formats.mysql.mygrations.row_mygration import row_mygration
 
 
 class test_quotes( unittest.TestCase ):
@@ -46,6 +46,6 @@ class test_quotes( unittest.TestCase ):
         """
         files_db = file_reader( [ table1 ] )
 
-        mygrate = mygration( files_db, db_db )
+        mygrate = row_mygration( files_db, db_db )
         for op in mygrate:
             print( str( op ) )

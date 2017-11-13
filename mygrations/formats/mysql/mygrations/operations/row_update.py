@@ -22,5 +22,5 @@ class row_update:
         return self._table_name
 
     def __str__( self ):
-        updates = ', '.join( [ "`%s`='%s'" % ( key, val ) for ( key, val ) in self.data.items() if key != 'id' ] )
+        updates = ', '.join( [ "`%s`='%s'" % ( key, str(val).replace( '\\', '\\\\' ) ) for ( key, val ) in self.data.items() if key != 'id' ] )
         return 'UPDATE `%s` SET %s WHERE id=%s;' % ( self._table_name, updates, self.data['id'] )
