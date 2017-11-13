@@ -19,11 +19,21 @@ class plan( base ):
         files_database = database_parser( self.config['files_directory'] )
 
         # any errors or warnings?
-        if files_database.errors:
+        quit_early = False
+        if files_database.errors and not self.options['force']:
             print( 'Errors found in *.sql files' )
+            quit_early = True
             for error in files_database.errors:
                 print( error )
 
+        # or 1215 errors?
+        if files_database.errors_1215 and not self.options['force']:
+            print( '1215 errors encountered' )
+            quit_early = True
+            for error in files_database.errors_1215:
+                print( error )
+
+        if quit_early:
             return False
 
         # use the credentials to load up a database connection
@@ -45,11 +55,6 @@ class plan( base ):
             live_database.read_rows( table )
 
         mygrate = mygration( files_database, live_database, False )
-        if mygrate.errors_1215:
-            print( '1215 Errors encountered' )
-            for error in mygrate.errors_1215:
-                print( error )
-            return False
 
         ops = []
         if mygrate.operations:

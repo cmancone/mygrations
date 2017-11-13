@@ -82,3 +82,7 @@ class database( database_definition ):
 
         for row in self.conn.rows( table ):
             self.tables[table].add_raw_row( row )
+
+        # if the table is empty the system won't realize that we loaded rows for it
+        # for bookeeping purposes, mark the table as read
+        self.tables[table].mark_tracking_rows()
