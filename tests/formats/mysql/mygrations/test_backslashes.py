@@ -7,10 +7,10 @@ from tests.mocks.db.mysql.db_structure import db_structure
 from mygrations.formats.mysql.mygrations.row_mygration import row_mygration
 
 
-class test_quotes( unittest.TestCase ):
+class test_backslashes( unittest.TestCase ):
 
     def test_diffs_with_quotes( self ):
-        """ Things that need quotes can cause trouble """
+        """ Things that need backslashes can cause trouble """
 
         # stick close to our use case: get the comparison table from the "database"
         tables = {
@@ -49,6 +49,4 @@ class test_quotes( unittest.TestCase ):
         mygrate = row_mygration( files_db, db_db )
         ops = [ str( op ) for op in mygrate ]
         self.assertEquals( 1, len( ops ) )
-
-        for op in mygrate:
-            print( str( op ) )
+        self.assertTrue( "`message`='bob\\\\test'" in ops[0] )
