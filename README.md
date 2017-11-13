@@ -4,14 +4,14 @@ A general purpose migration tool for managing MySQL updates.  Written in python 
 
 ## About
 
-`mygrations` manages database migrations with a declarative approach.  Each table in your database has one SQL file which contains a `CREATE TABLE` command that gives the table definition.  This command isn't used directly to create your table.  Rather, it defines the table structure that `mygrations` will create.  When it comes time to migrate your database, `mygrations` parses the SQL to determine the structure of the table you are trying to build.  It then compares this to the actual table structure in MySQl to determine all of the changes that need to happen to bring the database up to spec.  Finally, it generates and applies any necessary `ALTER TABLE` commands or creates the table if it doesn't exist.
+`mygrations` manages database migrations with a declarative approach.  Rather than having many migration files, each table in your database has one SQL file which contains a `CREATE TABLE` command that gives the table definition.  This file defines the table structure that you want your table to have (potentially with records as well).  When it comes time to migrate your database, `mygrations` parses the SQL in these files to determine what the structure of your database should be.  It then compares this to the actual table structure in MySQL to determine all of the changes that need to happen to bring the database up to spec.  Finally, it generates any necessary `ALTER TABLE`, `CREATE TABLE`, or `DROP TABLE` commands to update the database.
 
 When you need to change a table structure you don't generate additional migration files, but instead simply edit the `CREATE TABLE` command inside the original table definition file.  When migrating multiple tables related via foreign key constraints you simply have to define your foreign keys in the `CREATE TABLE` command normally.  `mygrations` will take note of the foreign keys and and automatically calculate and resolve dependencies while migrating.
 
 ## Installation
 
 1. Requires Python3
-2. Requires [MySQLdb For python3](https://pypi.python.org/pypi/mysqlclient).  (For ubuntu: `sudo apt-get install python-mysqldb`)
+2. Requires [MySQLdb For python3](https://pypi.python.org/pypi/mysqlclient).  (For ubuntu: `sudo apt-get install python3-mysqldb`)
 
 To install `mygrations`:
 
@@ -22,7 +22,7 @@ Then you just need to download and install the mygrations runner.  Something lik
 ```bash
 wget 'https://raw.githubusercontent.com/cmancone/mygrations/master/mygrate.py'
 chmod a+x mygrate.py
-sudo mv mygrate.py /usr/bin/local
+sudo mv mygrate.py /usr/local/bin/mygrate.py
 ```
 
 Your mileage may vary.
