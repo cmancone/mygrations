@@ -61,6 +61,19 @@ class table( object ):
 
         return self._options
 
+    def mark_tracking_rows( self ):
+        """ Marks the table as having had its rows read, for bookeeping purposes
+
+        The reason this is here is because we keep track of whether or not we are "tracking" rows
+        for the current table.  This is for bookeeping purposes, largely as a safe-guard attempt
+        to try to identify any more subtle bugs that might creep in.  Normally self._tracking_rows
+        gets set to True when we add rows to a table, but if a table is empty then rows will never
+        get added, and instead this method must be called to mark the rows as "tracked".
+        """
+        self._tracking_rows = True
+        if self._rows is None:
+            self._rows = OrderedDict()
+
     @property
     def tracking_rows( self ):
         """ Public getter.  Returns True/False to denote whether or not this table is tracking row records
@@ -209,7 +222,10 @@ class table( object ):
 
             self._auto_increment = max( self._auto_increment, row_id + 1 )
             if row_id in self._rows:
-                return 'Duplicate row id found for table %s and row %s' % ( self._name, values )
+                return 'Duplicate row id found for table %s and row %s' % ( self.name, values )
+
+            if not row_id:
+                return 'Invalid row id of %s found for table %s' % ( row_id, self.name )
 
             self._rows[row_id] = OrderedDict( zip( columns, values ) )
 
@@ -404,7 +420,7 @@ class table( object ):
         :rtype: list[mygrations.formats.mysql.mygrations.operations.*]
         """
         if from_table and not from_table.tracking_rows:
-            raise ValueError( "Refusing to compare rows with a table that is not tracking rows.  Technically I can, but this is probably a sign that you are doing something wrong" )
+            raise ValueError( "Refusing to compare rows for table %s that is not tracking rows.  Technically I can, but this is probably a sign that you are doing something wrong" % ( self.name ) )
 
         ( inserted_ids, deleted_ids, updated_ids ) = self._differences( from_table.rows if from_table else {}, self.rows )
 
