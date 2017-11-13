@@ -47,5 +47,8 @@ class test_quotes( unittest.TestCase ):
         files_db = file_reader( [ table1 ] )
 
         mygrate = row_mygration( files_db, db_db )
+        ops = [ str( op ) for op in mygrate ]
+        self.assertEquals( 1, len( ops ) )
+
         for op in mygrate:
             print( str( op ) )
