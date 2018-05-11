@@ -54,6 +54,8 @@ class create_parser( parser, table ):
             if isinstance( definition, column ):
                 self._columns[definition.name] = definition
             elif isinstance( definition, index ):
+                if definition.name in self._indexes:
+                    self._errors.append( "Found more than one index named '%s' for table '%s'" % ( definition.name, self._name ) )
                 self._indexes[definition.name] = definition
 
                 if definition.index_type == 'PRIMARY':
@@ -62,6 +64,8 @@ class create_parser( parser, table ):
                     else:
                         self._primary = definition
             elif isinstance( definition, constraint ):
+                if definition.name in self._constraints:
+                    self._errors.append( "Found more than one constraint named '%s' for table '%s'" % ( definition.name, self._name ) )
                 self._constraints[definition.name] = definition
 
             if definition.errors:
