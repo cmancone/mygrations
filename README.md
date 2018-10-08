@@ -83,7 +83,7 @@ Each should be executed by running the mygration command with the desired mode a
 
 ```mygrate.py [mode]```
 
-Since the system is still in testing, it does not yet have an option to automatically apply the mygration plan.  After checking the results of `myrate.py plan` you can either copy and paste the commands into a MySQL client, or try something like this:
+Since the system is still in testing, it does not yet have an option to automatically apply the mygration plan.  After checking the results of `mygrate.py plan` you can either copy and paste the commands into a MySQL client, or try something like this:
 
 ```mygrate.py plan | mysql -u username -p -D database```
 
