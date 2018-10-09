@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/cmancone/mygrations.svg?branch=master)](https://travis-ci.org/cmancone/mygrations)
+
 # mygrations
 
 A general purpose migration tool for managing MySQL updates.  Written in python but intended for use in other systems as well, especially PHP.
