@@ -8,7 +8,7 @@ class index_key( parser, index ):
 
     # KEY account_id (account_id,name)
     rules = [
-        { 'type': 'literal', 'value': 'KEY' },
+        { 'type': 'regexp', 'name': 'index_name', 'value': '(KEY)|(INDEX)' },
         { 'type': 'regexp', 'name': 'name', 'value': '[^\(\s\)]+' },
         { 'type': 'literal', 'value': '(' },
         { 'type': 'delimited', 'name': 'columns', 'separator': ',', 'quote': '`' },
