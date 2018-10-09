@@ -8,7 +8,8 @@ class index_unique( parser, index ):
 
     # UNIQUE account_id (account_id)
     rules = [
-        { 'type': 'literal', 'value': 'UNIQUE KEY' },
+        { 'type': 'literal', 'value': 'UNIQUE' },
+        { 'type': 'regexp', 'name': 'index_name', 'value': '(KEY)|(INDEX)' },
         { 'type': 'regexp', 'name': 'name', 'value': '[^\(]+' },
         { 'type': 'literal', 'value': '(' },
         { 'type': 'delimited', 'name': 'columns', 'separator': ',', 'quote': '`' },
