@@ -4,4 +4,4 @@ python:
 install:
     - pip3 install mysqlclient
 script:
-    - test.py
+    - ./test.py
