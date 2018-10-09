@@ -1,7 +1,7 @@
 language: python
 python:
     - "3.6"
-before_install:
-    - sudo apt-get install -y python3-mysqldb
+install:
+    - pip3 install mysqlclient
 script:
     - test.py
