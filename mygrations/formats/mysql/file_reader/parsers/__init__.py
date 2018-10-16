@@ -11,4 +11,7 @@ from .type_text import type_text
 from .table_option import table_option
 from .insert_values import insert_values
 
-__all__ = [ "constraint_foreign", "index_key", "index_primary", "index_unique", "type_character", "type_decimal", "type_enum", "type_numeric", "type_plain", "type_text", "table_option", "insert_values" ]
+__all__ = [
+    "constraint_foreign", "index_key", "index_primary", "index_unique", "type_character", "type_decimal", "type_enum",
+    "type_numeric", "type_plain", "type_text", "table_option", "insert_values"
+]

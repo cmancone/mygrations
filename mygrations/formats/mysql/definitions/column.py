@@ -1,4 +1,4 @@
-class column( object ):
+class column(object):
 
     definition_type = 'column'
     _unsigned = None
@@ -8,7 +8,18 @@ class column( object ):
     _errors = None
     _warnings = None
 
-    def __init__( self, name='', length='255', null=True, column_type='VARCHAR', default=None, unsigned=None, character_set='', collate='', auto_increment=False ):
+    def __init__(
+        self,
+        name='',
+        length='255',
+        null=True,
+        column_type='VARCHAR',
+        default=None,
+        unsigned=None,
+        character_set='',
+        collate='',
+        auto_increment=False
+    ):
         self._name = name
         self._length = length
         self._null = null
@@ -20,7 +31,7 @@ class column( object ):
         self._auto_increment = auto_increment
 
     @property
-    def name( self ):
+    def name(self):
         """ Public getter.  Returns the name of the column.
 
         :returns: The column name
@@ -30,7 +41,7 @@ class column( object ):
         return self._name
 
     @property
-    def length( self ):
+    def length(self):
         """ Public getter.  Returns the length of the column as a string.
 
         Some examples of the length for various column definitions:
@@ -51,7 +62,7 @@ class column( object ):
         return self._length
 
     @property
-    def null( self ):
+    def null(self):
         """ Public getter.  Returns True/False to denote if the column is allowed to be null
 
         :returns: Whether or not null is an allowed value for the column
@@ -60,7 +71,7 @@ class column( object ):
         return self._null
 
     @property
-    def column_type( self ):
+    def column_type(self):
         """ Public getter.  Returns a string denoting the type of the column.  Always returns in uppercase
 
         Some examples of the length for various column definitions:
@@ -80,7 +91,7 @@ class column( object ):
         return self._column_type.upper()
 
     @property
-    def default( self ):
+    def default(self):
         """ Public getter.  Returns the default value for the column as a string, or None for a default value of null
 
         Returns None to represent a default value of null.
@@ -91,7 +102,7 @@ class column( object ):
         return self._default
 
     @property
-    def unsigned( self ):
+    def unsigned(self):
         """ Public getter.  Returns True, False, or None to denote the status of the UNSIGNED property
 
         ==================  ====================
@@ -108,7 +119,7 @@ class column( object ):
         return self._unsigned
 
     @property
-    def character_set( self ):
+    def character_set(self):
         """ Public getter.  Returns None or a value to denote the CHARACTER_SET property
 
         :returns: string, or None
@@ -117,7 +128,7 @@ class column( object ):
         return None if self._character_set is None else self._character_set.upper()
 
     @property
-    def collate( self ):
+    def collate(self):
         """ Public getter.  Returns None or a value to denote the COLLATE property
 
         :returns: string, or None
@@ -126,7 +137,7 @@ class column( object ):
         return None if self._collate is None else self._collate.upper()
 
     @property
-    def auto_increment( self ):
+    def auto_increment(self):
         """ Public getter.  Returns True, False, or None to denote the status of the AUTO_INCREMENT property
 
         ==================  ====================
@@ -143,7 +154,7 @@ class column( object ):
         return self._auto_increment
 
     @property
-    def errors( self ):
+    def errors(self):
         """ Public getter.  Returns a list of parsing errors
 
         :returns: A list of parsing errors
@@ -152,7 +163,7 @@ class column( object ):
         return [] if self._errors is None else self._errors
 
     @property
-    def warnings( self ):
+    def warnings(self):
         """ Public getter.  Returns a list of parsing/table warnings
 
         :returns: A list of parsing/table warnings
@@ -160,7 +171,7 @@ class column( object ):
         """
         return [] if self._warnings is None else self._warnings
 
-    def __str__( self ):
+    def __str__(self):
         """ Returns the MySQL command that would create the column
 
         i.e. column_name type(len) default ''
@@ -169,43 +180,43 @@ class column( object ):
         :rtype: string
         """
         parts = []
-        parts.append( '`%s`' % self.name )
+        parts.append('`%s`' % self.name)
 
         type_string = self.column_type
         if self.length:
-            if type( self.length ) == type( [] ):
-                length = "'%s'" % ( "','".join( self.length ) )
+            if type(self.length) == type([]):
+                length = "'%s'" % ("','".join(self.length))
             else:
                 length = self.length
             type_string += '(%s)' % length
-        parts.append( type_string )
+        parts.append(type_string)
 
         if self.unsigned:
-            parts.append( 'UNSIGNED' )
+            parts.append('UNSIGNED')
 
         if not self.null:
-            parts.append( 'NOT NULL' )
+            parts.append('NOT NULL')
 
         if self.default is not None:
             if self.default == '':
-                parts.append( "DEFAULT ''" )
+                parts.append("DEFAULT ''")
             elif self.default.isnumeric():
-                parts.append( "DEFAULT %s" % self.default )
+                parts.append("DEFAULT %s" % self.default)
             else:
-                parts.append( "DEFAULT '%s'" % self.default )
+                parts.append("DEFAULT '%s'" % self.default)
 
         if self.auto_increment:
-            parts.append( 'AUTO_INCREMENT' )
+            parts.append('AUTO_INCREMENT')
 
         if self.character_set:
-            parts.append( "CHARACTER SET '%s'" % self.character_set )
+            parts.append("CHARACTER SET '%s'" % self.character_set)
 
         if self.collate:
-            parts.append( "COLLATE '%s'" % self.collate )
+            parts.append("COLLATE '%s'" % self.collate)
 
-        return ' '.join( parts )
+        return ' '.join(parts)
 
-    def is_really_the_same_as( self, column ):
+    def is_really_the_same_as(self, column):
         """ Takes care of a pesky false-positive when checking columns
 
         :param column: The column to comprehensively check for a difference with
@@ -214,18 +225,19 @@ class column( object ):
         :rtype: bool
         """
         # if any of these attributes change then it really isn't the same
-        for attr in [ 'name', 'length', 'null', 'column_type', 'unsigned' ]:
-            if getattr( self, attr ) != getattr( column, attr ):
+        for attr in ['name', 'length', 'null', 'column_type', 'unsigned']:
+            if getattr(self, attr) != getattr(column, attr):
                 return False
 
         # default needs a special check because it can run into issues for decimal columns
         if self.column_type == 'DECIMAL':
             split = self.length.split(',')
-            if len( split ) == 2:
-                ndecimals = int( split[1] )
-                if ( self.default is None and column.default is not None ) or ( self.default is not None and column.default is None ):
+            if len(split) == 2:
+                ndecimals = int(split[1])
+                if (self.default is None
+                    and column.default is not None) or (self.default is not None and column.default is None):
                     return False
-                if round( float( self.default ), ndecimals ) != round( float( column.default ), ndecimals ):
+                if round(float(self.default), ndecimals) != round(float(column.default), ndecimals):
                     return False
         else:
             if self.default != column.default:
@@ -233,9 +245,9 @@ class column( object ):
 
         # if collate or character_set are different and *both* have a value,
         # then these aren't really the same
-        for attr in [ 'collate', 'character_set' ]:
-            my_val = getattr( self, attr )
-            that_val = getattr( column, attr )
+        for attr in ['collate', 'character_set']:
+            my_val = getattr(self, attr)
+            that_val = getattr(column, attr)
             if my_val and that_val and my_val != that_val:
                 return False
 

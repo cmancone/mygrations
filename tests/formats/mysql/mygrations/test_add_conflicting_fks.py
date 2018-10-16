@@ -3,10 +3,8 @@ import unittest
 from mygrations.formats.mysql.file_reader.database import database as database_reader
 from mygrations.formats.mysql.file_reader.create_parser import create_parser
 from mygrations.formats.mysql.mygrations.mygration import mygration
-
-class test_add_conflicting_fks( unittest.TestCase ):
-
-    def test_add_conflicting_separates_fks( self ):
+class test_add_conflicting_fks(unittest.TestCase):
+    def test_add_conflicting_separates_fks(self):
         """ 3 adds. """
 
         table1 = """CREATE TABLE `tasks` (`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -30,14 +28,14 @@ CONSTRAINT `task_id_rts` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DE
         table3 = """CREATE TABLE `accounts` (`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 `name` VARCHAR(255) NOT NULL DEFAULT '',
 PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
-        tables = [ table1, table2, table3 ]
-        db = database_reader( tables )
-        mygrate = mygration( db )
+        tables = [table1, table2, table3]
+        db = database_reader(tables)
+        mygrate = mygration(db)
 
-        ops = [ str( op ) for op in mygrate.operations ]
+        ops = [str(op) for op in mygrate.operations]
 
-        self.assertEquals( 'SET FOREIGN_KEY_CHECKS=0;', ops[0] )
-        self.assertTrue( table1 in ops )
-        self.assertTrue( table2 in ops )
-        self.assertTrue( table3 in ops )
-        self.assertEquals( 'SET FOREIGN_KEY_CHECKS=1;', ops[4] )
+        self.assertEquals('SET FOREIGN_KEY_CHECKS=0;', ops[0])
+        self.assertTrue(table1 in ops)
+        self.assertTrue(table2 in ops)
+        self.assertTrue(table3 in ops)
+        self.assertEquals('SET FOREIGN_KEY_CHECKS=1;', ops[4])

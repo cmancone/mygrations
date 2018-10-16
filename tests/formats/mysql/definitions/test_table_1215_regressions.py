@@ -1,12 +1,11 @@
 import unittest
 
 from mygrations.formats.mysql.file_reader.database import database as database_reader
-
-class test_table_1215_regressions( unittest.TestCase ):
-    def test_foreign_key_without_index( self ):
+class test_table_1215_regressions(unittest.TestCase):
+    def test_foreign_key_without_index(self):
         """ Discovered that the system was not raising an error for a foreign key that didn't have an index for the table it was attached to """
 
-        db = database_reader( [
+        db = database_reader([
             """CREATE TABLE `vendors` (`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT, PRIMARY KEY (`id`));""",
             """CREATE TABLE `payment_requests_external` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -38,7 +37,11 @@ class test_table_1215_regressions( unittest.TestCase ):
   PRIMARY KEY (`id`),
   KEY `account_id_pr_external` (`account_id`),
   CONSTRAINT `vendor_id_pr_external_fk` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;""" ] )
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;"""
+        ])
 
-        self.assertEquals( 1, len( db.errors_1215 ) )
-        self.assertEquals( 'MySQL 1215 error for foreign key `vendor_id_pr_external_fk`: missing index. `payment_requests_external`.`vendor_id` does not have an index and therefore cannot be used in a foreign key constraint', db.errors_1215[0] )
+        self.assertEquals(1, len(db.errors_1215))
+        self.assertEquals(
+            'MySQL 1215 error for foreign key `vendor_id_pr_external_fk`: missing index. `payment_requests_external`.`vendor_id` does not have an index and therefore cannot be used in a foreign key constraint',
+            db.errors_1215[0]
+        )

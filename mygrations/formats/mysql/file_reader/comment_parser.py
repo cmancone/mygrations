@@ -1,11 +1,10 @@
 from mygrations.core.parse.parser import parser
+class comment_parser(parser):
 
-class comment_parser( parser ):
-
-    rules = [ 'nope' ]
+    rules = ['nope']
     sql = ''
 
-    def __init__( self, rules = [] ):
+    def __init__(self, rules=[]):
 
         # we're not yet a rules-based parser (I may do that eventually), so
         # I don't want to run the normal parser __init__()
@@ -13,7 +12,7 @@ class comment_parser( parser ):
         self.warnings = []
         self.matched = False
 
-    def parse( self, sql ):
+    def parse(self, sql):
         """ res = paser.parse()
 
         Parses the SQL, storing the comment and returning an SQL string with the comment removed
@@ -33,7 +32,7 @@ class comment_parser( parser ):
                 INSERT INTO some_table (1,2)
         """
 
-        self.sql = sql.strip();
+        self.sql = sql.strip()
         self.comment = ''
 
         # what kind of comment are we dealing with?
@@ -42,32 +41,32 @@ class comment_parser( parser ):
 
             # which is really easy if there is no newline: the
             # whole thing is our comment and there is no data left
-            if not self.sql.count( '\n' ):
+            if not self.sql.count('\n'):
                 self.comment = self.sql
-                self._values = { 'commment': self.comment }
+                self._values = {'commment': self.comment}
                 self.matched = True
-                return '';
+                return ''
 
             # otherwise just find the newline and return the rest
             else:
-                index = self.sql.index( '\n' )
+                index = self.sql.index('\n')
                 self.comment = self.sql[:index]
-                self._values = { 'commment': self.comment }
+                self._values = {'commment': self.comment}
                 self.matched = True
-                return self.sql[index+1:].strip()
+                return self.sql[index + 1:].strip()
 
         # then we should be dealing with /* ... */.  Our line should
         # start with it or we have a problem
         if self.sql[:2] != '/*':
-            raise ValueError( 'SQL passed to comment parser did not start with a comment' )
+            raise ValueError('SQL passed to comment parser did not start with a comment')
 
-        if not self.sql.count( '*/' ):
-            self.errors.append( 'Could not find closing comment indicator, */' )
+        if not self.sql.count('*/'):
+            self.errors.append('Could not find closing comment indicator, */')
             return self.sql
 
         # otherwise this is very straight-forward
-        index = self.sql.index( '*/' )
+        index = self.sql.index('*/')
         self.comment = self.sql[2:index].strip()
-        self._values = { 'commment': self.comment }
+        self._values = {'commment': self.comment}
         self.matched = True
-        return self.sql[index+2:].strip()
+        return self.sql[index + 2:].strip()

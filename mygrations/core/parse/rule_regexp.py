@@ -1,7 +1,6 @@
 from .rule_base import rule_base
 import re
-
-class rule_regexp( rule_base ):
+class rule_regexp(rule_base):
     """ rule = rule_regexp( parser, rule, next_rule )
 
     rule_literal constructor.  Pass in the parser object that the rule is for, the rule
@@ -30,16 +29,16 @@ class rule_regexp( rule_base ):
 
     regexp = ''
 
-    def __init__( self, parser, rule, next_rule ):
+    def __init__(self, parser, rule, next_rule):
 
-        super().__init__( parser, rule, next_rule )
+        super().__init__(parser, rule, next_rule)
 
         self.regexp = self.rule['value']
 
-    def parse( self, string ):
+    def parse(self, string):
 
         # apply the regular expression!
-        result = re.match( self.regexp, string, re.IGNORECASE )
+        result = re.match(self.regexp, string, re.IGNORECASE)
 
         # if it didn't match then nothing channged
         if not result:

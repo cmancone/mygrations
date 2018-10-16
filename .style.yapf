@@ -1,0 +1,11 @@
+[style]
+based_on_style = pep8
+spaces_before_comment = 4
+blank_lines_around_top_level_definition = 0
+blank_line_before_nested_class_or_def = False
+blank_line_before_class_docstring = False
+blank_line_before_module_docstring = False
+dedent_closing_brackets = True
+coalesce_brackets = True
+column_limit = 120
+indent_width = 4

@@ -1,13 +1,12 @@
 import unittest
 
 from mygrations.formats.mysql.file_reader.reader import reader
-
-class test_reader( unittest.TestCase ):
-
-    def test_simple( self ):
+class test_reader(unittest.TestCase):
+    def test_simple(self):
 
         parser = reader()
-        returned = parser.parse( """
+        returned = parser.parse(
+            """
             /* I should find and ignore comments */
             -- Of any variety
                # really
@@ -21,21 +20,22 @@ class test_reader( unittest.TestCase ):
 
             INSERT INTO logs (`id`,`message`,`traceback`) VALUES (1,'blah','gah');
             INSERT INTO test (id,status) VALUES (1,'New'),(2,'Old');
-        """ )
+        """
+        )
 
         # we should have matched
-        self.assertTrue( parser.matched )
+        self.assertTrue(parser.matched)
 
         # and we should have matched everything
-        self.assertEquals( '', returned )
+        self.assertEquals('', returned)
 
         # our parser should have a table!
-        self.assertTrue( 'logs' in parser.tables )
+        self.assertTrue('logs' in parser.tables)
         # just check a few details
-        self.assertEquals( 'logs', parser.tables['logs'].name )
-        self.assertEquals( 3, len( parser.tables['logs'].columns ) )
+        self.assertEquals('logs', parser.tables['logs'].name)
+        self.assertEquals(3, len(parser.tables['logs'].columns))
 
         # and some records!
-        self.assertTrue( 'logs' in parser.rows )
-        self.assertTrue( 'test' in parser.rows )
-        self.assertEquals( [ 'id', 'message', 'traceback' ], parser.rows['logs'][0].columns )
+        self.assertTrue('logs' in parser.rows)
+        self.assertTrue('test' in parser.rows)
+        self.assertEquals(['id', 'message', 'traceback'], parser.rows['logs'][0].columns)

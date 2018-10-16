@@ -1,6 +1,5 @@
 from .rule_base import rule_base
-
-class rule_literal( rule_base ):
+class rule_literal(rule_base):
     """ rule = rule_children( parser, rule, next_rule )
 
     rule_literal constructor.  Pass in the parser object that the rule is for, the rule
@@ -32,9 +31,9 @@ class rule_literal( rule_base ):
 
     literal = ''
 
-    def __init__( self, parser, rule, next_rule ):
+    def __init__(self, parser, rule, next_rule):
 
-        super().__init__( parser, rule, next_rule )
+        super().__init__(parser, rule, next_rule)
 
         self.literal = self.rule['value']
 
@@ -42,10 +41,10 @@ class rule_literal( rule_base ):
         if not self.name:
             self.name = self.literal
 
-    def parse( self, string ):
+    def parse(self, string):
 
         # easy to check for a literal match at the beginning of string
-        val_len = len( self.literal )
+        val_len = len(self.literal)
         if string[:val_len].lower() != self.literal.lower():
             self.result = ''
             self.leftovers = string
