@@ -34,7 +34,6 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
     ],
-
     keywords='setuptools development migrations mysql',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
 

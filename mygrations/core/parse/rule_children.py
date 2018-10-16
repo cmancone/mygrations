@@ -1,6 +1,5 @@
 from .rule_base import rule_base
-
-class rule_children( rule_base ):
+class rule_children(rule_base):
     """ rule = rule_children( parser, rule, next_rule )
 
     rule_children constructor.  Pass in the parser object that the rule is for, the rule
@@ -35,19 +34,19 @@ class rule_children( rule_base ):
 
     classes = []
 
-    def __init__( self, parser, rule, next_rule ):
+    def __init__(self, parser, rule, next_rule):
 
-        super().__init__( parser, rule, next_rule )
+        super().__init__(parser, rule, next_rule)
 
         if not 'classes' in self.rule:
-            raise ValueError( 'Missing classes for children rule %s in %s' % ( rule, self.parser_class ) )
+            raise ValueError('Missing classes for children rule %s in %s' % (rule, self.parser_class))
 
         if not self.rule['classes']:
-            raise ValueError( 'Missing classes for children rule %s in %s' % ( rule, self.parser_class ) )
+            raise ValueError('Missing classes for children rule %s in %s' % (rule, self.parser_class))
 
         self.classes = self.rule['classes']
 
-    def parse( self, string ):
+    def parse(self, string):
 
         matches = []
 
@@ -58,7 +57,7 @@ class rule_children( rule_base ):
 
             c += 1
             if c > 1000:
-                raise ValueError( 'Max depth reached' )
+                raise ValueError('Max depth reached')
 
             shortest_leftover = False
             best_match = False
@@ -69,7 +68,7 @@ class rule_children( rule_base ):
 
                 # let the child parse the string
                 child_parser = child()
-                leftover = child_parser.parse( current_string )
+                leftover = child_parser.parse(current_string)
 
                 # if it didn't do anything then this child didn't match
                 if not child_parser.matched:
@@ -79,19 +78,19 @@ class rule_children( rule_base ):
                 # prioritize the child that matches the largest part of the
                 # string.  All else being equal, first come first serve
                 if best_match:
-                    if len( leftover ) < shortest_leftover:
-                        shortest_leftover = len( leftover )
+                    if len(leftover) < shortest_leftover:
+                        shortest_leftover = len(leftover)
                         best_match = child_parser
                         best_leftover = leftover
                 else:
-                    shortest_leftover = len( leftover )
+                    shortest_leftover = len(leftover)
                     best_match = child_parser
                     best_leftover = leftover
 
             # we have a match!
             if best_match:
                 string = best_leftover
-                matches.append( best_match )
+                matches.append(best_match)
 
             # If we didn't find anything then we are completely done
             else:

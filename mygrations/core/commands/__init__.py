@@ -1,23 +1,21 @@
 import importlib
 
 commands = {
-    'import':       'import_files',
-    'check':        'check',
-    'plan':         'plan',
-    'plan_export':  'plan_export',
-    'version':      'version'
+    'import': 'import_files',
+    'check': 'check',
+    'plan': 'plan',
+    'plan_export': 'plan_export',
+    'version': 'version'
     #'export':       'export_files'
 }
-
-def allowed( command ):
+def allowed(command):
 
     return command in commands
-
-def execute( command, options ):
+def execute(command, options):
 
     if not command in commands:
-        raise ValueError( "Unknown command %s" % command )
+        raise ValueError("Unknown command %s" % command)
 
-    module = importlib.import_module( '.%s' % commands[command], __name__ )
+    module = importlib.import_module('.%s' % commands[command], __name__)
 
-    module.execute( options )
+    module.execute(options)

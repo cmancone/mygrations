@@ -1,14 +1,13 @@
 import unittest
 
 from mygrations.formats.mysql.file_reader.create_parser import create_parser
-
-class test_constraint_foreign( unittest.TestCase ):
-
-    def test_complicated_table_parses( self ):
+class test_constraint_foreign(unittest.TestCase):
+    def test_complicated_table_parses(self):
 
         # parse a typical foreign key constraint
         parser = create_parser()
-        returned = parser.parse( """CREATE TABLE `tasks` (
+        returned = parser.parse(
+            """CREATE TABLE `tasks` (
             `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
             `account_id` int(10) DEFAULT NULL,
             `membership_id` int(10) DEFAULT NULL,
@@ -42,36 +41,39 @@ class test_constraint_foreign( unittest.TestCase ):
             CONSTRAINT `tasks_priority_id_ref_task_priorities_id` FOREIGN KEY (`priority_id`) REFERENCES `task_priorities` (`id`) ON UPDATE CASCADE,
             CONSTRAINT `tasks_type_id_ref_task_types_id` FOREIGN KEY (`task_type_id`) REFERENCES `task_types` (`id`) ON UPDATE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-        """ )
+        """
+        )
 
         # we should have matched
-        self.assertTrue( parser.matched )
+        self.assertTrue(parser.matched)
 
         # and we should have matched everything
-        self.assertEquals( 'tasks', parser.name )
-        self.assertEquals( '', returned )
-        self.assertEquals( 23, len( parser.columns ) )
-        self.assertEquals( 6, len( parser.indexes ) )
-        self.assertEquals( 3, len( parser.constraints ) )
-        self.assertEquals( 2, len( parser.options ) )
-        self.assertTrue( parser.semicolon )
-        self.assertEquals( 0, len( parser.errors ) )
-        self.assertEquals( [ 'id' ], parser.primary.columns )
+        self.assertEquals('tasks', parser.name)
+        self.assertEquals('', returned)
+        self.assertEquals(23, len(parser.columns))
+        self.assertEquals(6, len(parser.indexes))
+        self.assertEquals(3, len(parser.constraints))
+        self.assertEquals(2, len(parser.options))
+        self.assertTrue(parser.semicolon)
+        self.assertEquals(0, len(parser.errors))
+        self.assertEquals(['id'], parser.primary.columns)
 
-    def test_keeps_errors( self ):
+    def test_keeps_errors(self):
 
         # parse a typical foreign key constraint
         parser = create_parser()
-        returned = parser.parse( """CREATE TABLE `tasks` (
+        returned = parser.parse(
+            """CREATE TABLE `tasks` (
             `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
             `subject` varchar DEFAULT NULL,
             `task` text DEFAULT NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-        """ )
+        """
+        )
 
         # we should have matched
-        self.assertTrue( parser.matched )
+        self.assertTrue(parser.matched)
 
         # and we should have some errors
-        self.assertTrue( 'must have a length for column subject in table tasks' in parser.errors[0] )
-        self.assertTrue( 'not allowed to have a default value for column task in table tasks' in parser.errors[1] )
+        self.assertTrue('must have a length for column subject in table tasks' in parser.errors[0])
+        self.assertTrue('not allowed to have a default value for column task in table tasks' in parser.errors[1])

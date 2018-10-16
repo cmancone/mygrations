@@ -3,10 +3,8 @@ import glob
 
 from ..file_reader.reader import reader as sql_reader
 from mygrations.formats.mysql.definitions.database import database as database_definition
-
-class database( database_definition ):
-
-    def __init__( self, conn ):
+class database(database_definition):
+    def __init__(self, conn):
         """ Constructor.  Accepts a mygrations db wrapper
 
         :param conn: mygrations db wrapper
@@ -19,9 +17,9 @@ class database( database_definition ):
         self._rows = []
 
         # _load_tables will get the party started
-        self._load_tables( self.conn )
+        self._load_tables(self.conn)
 
-    def _load_tables( self, conn ):
+    def _load_tables(self, conn):
         """ Reads a database from the MySQL connection.
 
         Accepts a mygrations db wrapper
@@ -29,25 +27,25 @@ class database( database_definition ):
         :param conn: mygrations db wrapper
         :type conn: mygrations.drivers.mysqldb.mysqldb
         """
-        for ( table, create_table ) in conn.tables().items():
+        for (table, create_table) in conn.tables().items():
             try:
                 reader = sql_reader()
-                reader.parse( create_table )
+                reader.parse(create_table)
 
             except ValueError as e:
-                print( "Error in table %s: %s" % ( create_table, e ) )
+                print("Error in table %s: %s" % (create_table, e))
 
             # we shouldn't get any errors, of course, because
             # this is coming out of MySQL.  However, it may still
             # get some warnings (due to lint settings (maybe)).  Either way,
             # keep around the errors just because, even if it is
             # always empty.
-            self._errors.extend( reader.errors )
-            self._warnings.extend( reader.warnings )
+            self._errors.extend(reader.errors)
+            self._warnings.extend(reader.warnings)
 
-            for (table_name,table) in reader.tables.items():
+            for (table_name, table) in reader.tables.items():
                 if table.name in self._tables:
-                    self.errors.append( 'Found two definitions for table %s' % table.name )
+                    self.errors.append('Found two definitions for table %s' % table.name)
 
                 # our reader will return table objects
                 # from the file_reader namespace.  These expect
@@ -59,7 +57,7 @@ class database( database_definition ):
                 # I will sort out table records later
                 self._tables[table.name] = table
 
-    def read_rows( self, table ):
+    def read_rows(self, table):
         """ Extracts the rows for the table from the database and stores them in the table object
 
         This object connects to the actual database.  However, we only need to know
@@ -74,14 +72,14 @@ class database( database_definition ):
         :param table: The table to read rows for
         :type table: string|mygrations.formats.mysql.definitions.table
         """
-        if type( table ) != str:
+        if type(table) != str:
             table = table.name
 
         if not table in self.tables:
-            raise ValueError( "Cannot read rows for table %s because that table is not found in the database object" )
+            raise ValueError("Cannot read rows for table %s because that table is not found in the database object")
 
-        for row in self.conn.rows( table ):
-            self.tables[table].add_raw_row( row )
+        for row in self.conn.rows(table):
+            self.tables[table].add_raw_row(row)
 
         # if the table is empty the system won't realize that we loaded rows for it
         # for bookeeping purposes, mark the table as read
