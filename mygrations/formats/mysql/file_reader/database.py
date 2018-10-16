@@ -3,10 +3,8 @@ import glob
 
 from .reader import reader as sql_reader
 from mygrations.formats.mysql.definitions.database import database as database_definition
-
-class database( database_definition ):
-
-    def __init__( self, strings ):
+class database(database_definition):
+    def __init__(self, strings):
         """ Constructor.  Accepts a string or list of strings with different possible contents
 
         Strings can be one of the following:
@@ -29,15 +27,15 @@ class database( database_definition ):
         self._tables = {}
         self._rows = []
 
-        if isinstance( strings, str ):
-            strings = [ strings ]
+        if isinstance(strings, str):
+            strings = [strings]
 
         for string in strings:
-            self.process( string )
+            self.process(string)
 
         self.store_rows_with_tables()
 
-    def process( self, string ):
+    def process(self, string):
         """ Processes a string.
 
         Strings can be either SQL to parse, the location of an SQL file, or a directory containing SQL files
@@ -46,14 +44,14 @@ class database( database_definition ):
         :type string: string
         """
 
-        if os.path.isdir( string ):
-            self._process_directory( string )
-        elif os.path.isfile( string ):
-            self._read( string )
+        if os.path.isdir(string):
+            self._process_directory(string)
+        elif os.path.isfile(string):
+            self._read(string)
         else:
-            self._read( string )
+            self._read(string)
 
-    def _process_directory( self, directory ):
+    def _process_directory(self, directory):
         """ Processes a directory.
 
         Finds all SQL files in the directory and calls `_read()` on them,
@@ -67,10 +65,10 @@ class database( database_definition ):
         if directory[-1] != os.sep:
             directory += os.sep
 
-        for filename in glob.glob( '%s*.sql' % directory ):
-            self._read( filename )
+        for filename in glob.glob('%s*.sql' % directory):
+            self._read(filename)
 
-    def _read( self, contents ):
+    def _read(self, contents):
         """ Processes a file or string of SQL.
 
         Creates a reader object (which accepts files or a string of SQL)
@@ -83,20 +81,20 @@ class database( database_definition ):
 
         try:
             reader = sql_reader()
-            reader.parse( contents )
+            reader.parse(contents)
 
         except ValueError as e:
-            print( "Error in file %s: %s" % ( contents, e ) )
+            print("Error in file %s: %s" % (contents, e))
 
         # pull in all errors and warnings
-        self._errors.extend( reader.errors )
-        self._warnings.extend( reader.warnings )
+        self._errors.extend(reader.errors)
+        self._warnings.extend(reader.warnings)
 
         # keep rows and tables separate while we are reading
-        for (table_name,table) in reader.tables.items():
+        for (table_name, table) in reader.tables.items():
             if table.name in self._tables:
-                self.errors.append( 'Found two definitions for table %s' % table.name )
+                self.errors.append('Found two definitions for table %s' % table.name)
             self._tables[table.name] = table
 
-        for (table_name,rows) in reader.rows.items():
-            self._rows.extend( rows )
+        for (table_name, rows) in reader.rows.items():
+            self._rows.extend(rows)

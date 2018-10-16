@@ -1,70 +1,68 @@
 import unittest
 
 from mygrations.core.parse.rule_regexp import rule_regexp
+class test_parse_regexp(unittest.TestCase):
+    def get_rule(self, name, regexp):
 
-class test_parse_regexp( unittest.TestCase ):
+        return rule_regexp(False, {'name': name, 'value': regexp}, {})
 
-    def get_rule( self, name, regexp ):
+    def test_name_required(self):
 
-        return rule_regexp( False, { 'name': name, 'value': regexp }, {} )
+        with self.assertRaises(ValueError):
 
-    def test_name_required( self ):
+            self.get_rule('', '')
 
-        with self.assertRaises( ValueError ):
+    def test_value_required(self):
 
-            self.get_rule( '', '' )
+        with self.assertRaises(ValueError):
 
-    def test_value_required( self ):
+            self.get_rule('bob', '')
 
-        with self.assertRaises( ValueError ):
+    def test_can_init_with_name_and_value(self):
 
-            self.get_rule( 'bob', '' )
+        rule = self.get_rule('bob', '\S+')
+        self.assertEquals(rule.name, 'bob')
+        self.assertEquals(rule.regexp, '\S+')
 
-    def test_can_init_with_name_and_value( self ):
+    def test_match_beginning_only(self):
 
-        rule = self.get_rule( 'bob', '\S+' )
-        self.assertEquals( rule.name, 'bob' )
-        self.assertEquals( rule.regexp, '\S+' )
+        rule = self.get_rule('bob', '\d+')
+        self.assertFalse(rule.parse('hey 123'))
+        self.assertEquals('', rule.result)
 
-    def test_match_beginning_only( self ):
+    def test_leftovers_is_input_for_no_match(self):
 
-        rule = self.get_rule( 'bob', '\d+' )
-        self.assertFalse( rule.parse( 'hey 123' ) )
-        self.assertEquals( '', rule.result )
-
-    def test_leftovers_is_input_for_no_match( self ):
-
-        rule = self.get_rule( 'bob', '\d+' )
+        rule = self.get_rule('bob', '\d+')
         string = 'hey 123'
-        rule.parse( string )
+        rule.parse(string)
 
-        self.assertEquals( string, rule.leftovers )
+        self.assertEquals(string, rule.leftovers)
 
-    def test_no_leftovers_for_full_match( self ):
+    def test_no_leftovers_for_full_match(self):
 
-        rule = self.get_rule( 'bob', '\d+' )
+        rule = self.get_rule('bob', '\d+')
         string = '23483438'
 
-        self.assertTrue( rule.parse( string ) )
-        self.assertEquals( string, rule.result )
-        self.assertEquals( '', rule.leftovers )
+        self.assertTrue(rule.parse(string))
+        self.assertEquals(string, rule.result)
+        self.assertEquals('', rule.leftovers)
 
-    def test_return_group_only( self ):
+    def test_return_group_only(self):
 
-        rule = self.get_rule( 'bob', '\d+\s+(\w+)'  )
-
-        string = '999 bob'
-
-        self.assertTrue( rule.parse( string ) )
-        self.assertEquals( 'bob', rule.result )
-        self.assertEquals( '', rule.leftovers )
-
-    def test_calc_leftovers_trim( self ):
-
-        rule = self.get_rule( 'bob', '\d+' )
+        rule = self.get_rule('bob', '\d+\s+(\w+)')
 
         string = '999 bob'
 
-        self.assertTrue( rule.parse( string ) )
-        self.assertEquals( '999', rule.result )
-        self.assertEquals( 'bob', rule.leftovers )
+        self.assertTrue(rule.parse(string))
+        self.assertEquals('bob', rule.result)
+        self.assertEquals('', rule.leftovers)
+
+    def test_calc_leftovers_trim(self):
+
+        rule = self.get_rule('bob', '\d+')
+
+        string = '999 bob'
+
+        self.assertTrue(rule.parse(string))
+        self.assertEquals('999', rule.result)
+        self.assertEquals('bob', rule.leftovers)

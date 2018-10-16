@@ -1,9 +1,8 @@
 import unittest
 
 from mygrations.formats.mysql.file_reader.create_parser import create_parser
-
-class test_table_decimal_false_positives( unittest.TestCase ):
-    def test_decimal_false_positives( self ):
+class test_table_decimal_false_positives(unittest.TestCase):
+    def test_decimal_false_positives(self):
         """ false positives for change on default for decimal columns
 
         The default value for float and decimal columns can have the same issue for
@@ -12,77 +11,93 @@ class test_table_decimal_false_positives( unittest.TestCase ):
         detection of a column change and unnecessary database changes.
         """
         from_table = create_parser()
-        from_table.parse( """CREATE TABLE `decimal_false_positive` (
+        from_table.parse(
+            """CREATE TABLE `decimal_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `price` decimal(20,2) NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB;
-        """ )
+        """
+        )
 
         to_table = create_parser()
-        to_table.parse( """CREATE TABLE `decimal_false_positive` (
+        to_table.parse(
+            """CREATE TABLE `decimal_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `price` decimal(20,2) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB;
-        """ )
+        """
+        )
 
-        self.assertEquals( 0, len( from_table.to( to_table ) ) )
+        self.assertEquals(0, len(from_table.to(to_table)))
 
-    def test_decimal_false_positives_just_because( self ):
+    def test_decimal_false_positives_just_because(self):
         """ This probably isn't a realistic test, but let's go for it while we're here """
         from_table = create_parser()
-        from_table.parse( """CREATE TABLE `decimal_false_positive` (
+        from_table.parse(
+            """CREATE TABLE `decimal_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `price` decimal(20,2) NOT NULL DEFAULT '1.007',
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB;
-        """ )
+        """
+        )
 
         to_table = create_parser()
-        to_table.parse( """CREATE TABLE `decimal_false_positive` (
+        to_table.parse(
+            """CREATE TABLE `decimal_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `price` decimal(20,2) NOT NULL DEFAULT '1.008',
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB;
-        """ )
+        """
+        )
 
-        self.assertEquals( 0, len( from_table.to( to_table ) ) )
+        self.assertEquals(0, len(from_table.to(to_table)))
 
-    def test_decimal_real_positives( self ):
+    def test_decimal_real_positives(self):
         from_table = create_parser()
-        from_table.parse( """CREATE TABLE `decimal_false_positive` (
+        from_table.parse(
+            """CREATE TABLE `decimal_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `price` decimal(20,2) NOT NULL DEFAULT '1.00',
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB;
-        """ )
+        """
+        )
 
         to_table = create_parser()
-        to_table.parse( """CREATE TABLE `decimal_false_positive` (
+        to_table.parse(
+            """CREATE TABLE `decimal_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `price` decimal(20,2) NOT NULL DEFAULT '1.01',
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB;
-        """ )
+        """
+        )
 
-        self.assertEquals( 1, len( from_table.to( to_table ) ) )
+        self.assertEquals(1, len(from_table.to(to_table)))
 
-    def test_float_false_positives( self ):
+    def test_float_false_positives(self):
         from_table = create_parser()
-        from_table.parse( """CREATE TABLE `decimal_false_positive` (
+        from_table.parse(
+            """CREATE TABLE `decimal_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `price` float NOT NULL DEFAULT '0.00',
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB;
-        """ )
+        """
+        )
 
         to_table = create_parser()
-        to_table.parse( """CREATE TABLE `decimal_false_positive` (
+        to_table.parse(
+            """CREATE TABLE `decimal_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `price` float NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB;
-        """ )
+        """
+        )
 
-        self.assertEquals( 0, len( from_table.to( to_table ) ) )
+        self.assertEquals(0, len(from_table.to(to_table)))

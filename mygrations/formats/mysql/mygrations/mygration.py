@@ -6,7 +6,6 @@ from mygrations.formats.mysql.mygrations.operations.add_constraint import add_co
 from mygrations.formats.mysql.mygrations.operations.remove_table import remove_table
 from mygrations.formats.mysql.mygrations.operations.disable_checks import disable_checks
 from mygrations.formats.mysql.mygrations.operations.enable_checks import enable_checks
-
 class mygration:
     """ Creates a migration plan to update a database to a given spec.
 
@@ -29,7 +28,8 @@ class mygration:
     7. Apply all foreign key constraints that were previously ignored in steps 4 & 6
     8. Remove any tables that need to be removed
     """
-    def __init__( self, db_to, db_from = None, disable_checks = True ):
+
+    def __init__(self, db_to, db_from=None, disable_checks=True):
         """ Create a migration plan
 
         :param db_to: The target database structure to migrate to
@@ -55,7 +55,7 @@ class mygration:
             self._operations = None
 
     @property
-    def operations( self ):
+    def operations(self):
         """ Public getter.  Returns list of operations to bring db_from to db_to
 
         If db_from doesn't exist then it will be a list of operations to
@@ -73,7 +73,7 @@ class mygration:
         return self._operations
 
     @property
-    def errors_1215( self ):
+    def errors_1215(self):
         """ Public getter.  Returns list of 1215 errors (as strings)
 
         :returns: A list of 1215 error messages
@@ -81,16 +81,16 @@ class mygration:
         """
         return self._errors_1215
 
-    def __len__( self ):
-        return len( self._operations )
+    def __len__(self):
+        return len(self._operations)
 
-    def __bool__( self ):
-        return True if len( self._operations ) else False
+    def __bool__(self):
+        return True if len(self._operations) else False
 
-    def __str__( self ):
-        return "\n".join( [ str( x ) for x in self._operations ] )
+    def __str__(self):
+        return "\n".join([str(x) for x in self._operations])
 
-    def __iter__( self ):
+    def __iter__(self):
         return self._operations.__iter__()
 
     def _differences(self, from_dict, to_dict):
@@ -106,13 +106,10 @@ class mygration:
         :return: (added, removed, overlap)
         """
 
-        return (
-            [key for key in to_dict if key not in from_dict],
-            [key for key in from_dict if key not in to_dict],
-            [key for key in from_dict if key in to_dict]
-        )
+        return ([key for key in to_dict if key not in from_dict], [key for key in from_dict if key not in to_dict],
+                [key for key in from_dict if key in to_dict])
 
-    def _process( self ):
+    def _process(self):
         """ Figures out the operations needed to get to self.db_to
 
         Returns a list of operations that will migrate db_from to db_to
@@ -126,29 +123,29 @@ class mygration:
         """
         operations = []
         if self._disable_fk_checks:
-            operations.append( disable_checks() )
+            operations.append(disable_checks())
 
         # what tables have been added/changed/removed
         db_from_tables = self.db_from.tables if self.db_from else {}
-        ( tables_to_add, tables_to_remove, tables_to_update ) = self._differences( db_from_tables, self.db_to.tables )
+        (tables_to_add, tables_to_remove, tables_to_update) = self._differences(db_from_tables, self.db_to.tables)
 
         for table_name in tables_to_add:
-            operations.append( self.db_to.tables[table_name].create() )
+            operations.append(self.db_to.tables[table_name].create())
 
         for table_name in tables_to_update:
             target_table = self.db_to.tables[table_name]
             source_table = self.db_from.tables[table_name]
-            operations.extend( source_table.to( target_table ) )
+            operations.extend(source_table.to(target_table))
 
         for table_name in tables_to_remove:
-            operations.append( remove_table( table_name ) )
+            operations.append(remove_table(table_name))
 
         if self._disable_fk_checks:
-            operations.append( enable_checks() )
+            operations.append(enable_checks())
 
         return operations
 
-    def _old_process( self ):
+    def _old_process(self):
         """ Figures out the operations (and proper order) need to get to self.db_to
 
         This particular method is no longer used but is kept around for future
@@ -173,7 +170,7 @@ class mygration:
         # Our primary output is a list of operations, but there is more that we need
         # to make all of this happen.  We need a database to keep track of the
         # state of the database we are building after each operation is "applied"
-        tracking_db = copy.deepcopy( self.db_from ) if self.db_from else database()
+        tracking_db = copy.deepcopy(self.db_from) if self.db_from else database()
 
         # a little bit of extra processing will simplify our algorithm by a good chunk.
         # The situation is much more complicated when we have a database we are migrating
@@ -190,36 +187,36 @@ class mygration:
         # foreign key constraints and apply them all at the end when our database is done
         # being updated.  Simple(ish)!
         #if self.db_from:
-            #check = mygration( self.db_to )
-            #if check.errors_1215:
-                #return [ check.errors_1215, [] ]
+        #check = mygration( self.db_to )
+        #if check.errors_1215:
+        #return [ check.errors_1215, [] ]
 
         # First figure out the status of individual tables
         db_from_tables = self.db_from.tables if self.db_from else {}
-        ( tables_to_add, tables_to_remove, tables_to_update ) = self._differences( db_from_tables, self.db_to.tables )
+        (tables_to_add, tables_to_remove, tables_to_update) = self._differences(db_from_tables, self.db_to.tables)
 
         # IMPORTANT! tracking db and tables_to_add are both passed in by reference
         # (like everything in python), but in this case I actually modify them by reference.
         # not my preference, but it makes it easier here
-        ( errors_1215, operations ) = self._process_adds( tracking_db, tables_to_add )
+        (errors_1215, operations) = self._process_adds(tracking_db, tables_to_add)
 
         # if we have errors we are done
         #if errors_1215:
-            #return [ errors_1215, operations ]
+        #return [ errors_1215, operations ]
 
         # now apply table updates.  This acts differently: it returns a dictionary with
         # two sets of operations: one to update the tables themselves, and one to update
         # the foreign keys.  The latter are applied after everything else has happened.
         fk_operations = []
-        split_operations = self._process_updates( tracking_db, tables_to_update )
+        split_operations = self._process_updates(tracking_db, tables_to_update)
         # remove fks first to avoid 1215 errors caused by trying to remove a column
         # that is being used in a FK constraint that hasn't yet been removed
         if split_operations['removed_fks']:
-            operations.extend( split_operations['removed_fks'] )
+            operations.extend(split_operations['removed_fks'])
         if split_operations['kitchen_sink']:
-            operations.extend( split_operations['kitchen_sink'] )
+            operations.extend(split_operations['kitchen_sink'])
         if split_operations['fks']:
-            fk_operations.extend( split_operations['fks'] )
+            fk_operations.extend(split_operations['fks'])
 
         # now that we got some tables modified let's try adding tables again
         # if we have any left.  Remember that tracking_db and tables_to_add
@@ -228,12 +225,12 @@ class mygration:
         # relied on adding a column to a table before a foreign key could
         # be supported.
         if tables_to_add:
-            ( errors_1215, more_operations ) = self._process_adds( tracking_db, tables_to_add )
+            (errors_1215, more_operations) = self._process_adds(tracking_db, tables_to_add)
             if more_operations:
-                operations = operations.extend( more_operations )
+                operations = operations.extend(more_operations)
             if errors_1215:
                 if fk_operations:
-                    operations.extend( fk_operations )
+                    operations.extend(fk_operations)
                 return operations
 
         # At this point in time if we still have tables to add it is because
@@ -244,28 +241,28 @@ class mygration:
         # constraints afterward
         for table_to_add in tables_to_add:
             new_table = self.db_to.tables[table_to_add]
-            bad_constraints = tracking_db.unfulfilled_fks( new_table )
-            new_table_copy = copy.deepcopy( new_table )
-            create_fks = alter_table( table_to_add )
+            bad_constraints = tracking_db.unfulfilled_fks(new_table)
+            new_table_copy = copy.deepcopy(new_table)
+            create_fks = alter_table(table_to_add)
             for constraint in bad_constraints.values():
-                create_fks.add_operation( add_constraint( constraint['foreign_key'] ) )
-                new_table_copy.remove_constraint( constraint['foreign_key'] )
-            operations.append( new_table_copy.create() )
-            fk_operations.append( create_fks )
+                create_fks.add_operation(add_constraint(constraint['foreign_key']))
+                new_table_copy.remove_constraint(constraint['foreign_key'])
+            operations.append(new_table_copy.create())
+            fk_operations.append(create_fks)
 
         # process any remaining foreign key constraints
         if fk_operations:
-            operations.extend( fk_operations )
+            operations.extend(fk_operations)
 
         # finally remove any tables
         for table_to_remove in tables_to_remove:
-            operations.append( remove_table( table_to_remove ) )
-            tracking_db.remove_table( table_to_remove )
+            operations.append(remove_table(table_to_remove))
+            tracking_db.remove_table(table_to_remove)
 
         # all done!!!
         return operations
 
-    def _process_adds( self, tracking_db, tables_to_add ):
+    def _process_adds(self, tracking_db, tables_to_add):
         """ Runs through tables_to_add and resolves FK constraints to determine order to add tables in
 
         tracking_db and tables_to_add are passed in by reference and modified
@@ -282,18 +279,18 @@ class mygration:
         # are processed or if we stop adding tables, which happens if we
         # have tables with mutualy-dependent foreign key constraints
         last_number_to_add = 0
-        while tables_to_add and len( tables_to_add ) != last_number_to_add:
-            last_number_to_add = len( tables_to_add )
+        while tables_to_add and len(tables_to_add) != last_number_to_add:
+            last_number_to_add = len(tables_to_add)
             for new_table_name in tables_to_add:
                 new_table = self.db_to.tables[new_table_name]
-                bad_constraints = tracking_db.unfulfilled_fks( new_table )
+                bad_constraints = tracking_db.unfulfilled_fks(new_table)
 
                 # if we found no problems then we can add this table to our
                 # tracking db and add the "CREATE TABLE" operation to our list of operations
                 if not bad_constraints:
-                    tables_to_add.remove( new_table_name )
-                    operations.append( new_table.create() )
-                    tracking_db.add_table( new_table )
+                    tables_to_add.remove(new_table_name)
+                    operations.append(new_table.create())
+                    tracking_db.add_table(new_table)
                     continue
 
                 # the next question is whether this is a valid constraint
@@ -307,19 +304,19 @@ class mygration:
                 # eventually, or if there is a mistake with a foreign key that
                 # we can't fix.  To tell the difference we just check if the
                 # database we are migrating to can fulfill these foreign keys.
-                broken_constraints = self.db_to.unfulfilled_fks( new_table )
+                broken_constraints = self.db_to.unfulfilled_fks(new_table)
                 if not broken_constraints:
                     good_tables[new_table_name] = True
                     continue
 
                 # otherwise it is no good: record as such
-                tables_to_add.remove( new_table_name )
+                tables_to_add.remove(new_table_name)
                 for error in broken_constraints.values():
-                    errors_1215.append( error['error'] )
+                    errors_1215.append(error['error'])
 
-        return ( errors_1215, operations )
+        return (errors_1215, operations)
 
-    def _process_updates( self, tracking_db, tables_to_update ):
+    def _process_updates(self, tracking_db, tables_to_update):
         """ Runs through tables_to_update and resolves FK constraints to determine order to add them in
 
         tracking_db is passed in by reference and modified
@@ -336,28 +333,24 @@ class mygration:
 
         tables_to_update = tables_to_update[:]
 
-        operations = {
-            'removed_fks':  [],
-            'fks':          [],
-            'kitchen_sink': []
-        }
+        operations = {'removed_fks': [], 'fks': [], 'kitchen_sink': []}
 
         for update_table_name in tables_to_update:
             target_table = self.db_to.tables[update_table_name]
             source_table = self.db_from.tables[update_table_name]
 
-            more_operations = source_table.to( target_table, True )
+            more_operations = source_table.to(target_table, True)
             if 'removed_fks' in more_operations:
-                operations['removed_fks'].append( more_operations['removed_fks'] )
+                operations['removed_fks'].append(more_operations['removed_fks'])
                 for operation in more_operations['removed_fks']:
-                    tracking_db.apply_operation( update_table_name, operation )
+                    tracking_db.apply_operation(update_table_name, operation)
             if 'fks' in more_operations:
-                operations['fks'].append( more_operations['fks'] )
+                operations['fks'].append(more_operations['fks'])
                 for operation in more_operations['fks']:
-                    tracking_db.apply_operation( update_table_name, operation )
+                    tracking_db.apply_operation(update_table_name, operation)
             if 'kitchen_sink' in more_operations:
-                operations['kitchen_sink'].append( more_operations['kitchen_sink'] )
+                operations['kitchen_sink'].append(more_operations['kitchen_sink'])
                 for operation in more_operations['kitchen_sink']:
-                    tracking_db.apply_operation( update_table_name, operation )
+                    tracking_db.apply_operation(update_table_name, operation)
 
         return operations

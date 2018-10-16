@@ -1,9 +1,8 @@
 import unittest
 
 from mygrations.formats.mysql.file_reader.create_parser import create_parser
-
-class test_table_text_false_positives( unittest.TestCase ):
-    def test_row_false_positives( self ):
+class test_table_text_false_positives(unittest.TestCase):
+    def test_row_false_positives(self):
         """ Complicated false positives for changes on text columns
 
         Even if you don't specify a COLLATE or CHARACTER SET on a text column, MySQL
@@ -32,47 +31,56 @@ class test_table_text_false_positives( unittest.TestCase ):
         we don't all into this false-positive trap.
         """
         from_table = create_parser()
-        from_table.parse( """CREATE TABLE `collate_false_positive` (
+        from_table.parse(
+            """CREATE TABLE `collate_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `msg` text COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-        """ )
+        """
+        )
 
         to_table = create_parser()
-        to_table.parse( """CREATE TABLE `collate_false_positive` (
+        to_table.parse(
+            """CREATE TABLE `collate_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `msg` text NOT NULL,
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-        """ )
+        """
+        )
 
-        self.assertEquals( 0, len( from_table.to( to_table ) ) )
+        self.assertEquals(0, len(from_table.to(to_table)))
 
-    def test_false_positive_didnt_break_real_positives( self ):
+    def test_false_positive_didnt_break_real_positives(self):
         """ Make sure that the above false-positive correction didn't break real-positive detections """
 
         from_table = create_parser()
-        from_table.parse( """CREATE TABLE `collate_false_positive` (
+        from_table.parse(
+            """CREATE TABLE `collate_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `msg` text COLLATE utf8_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-        """ )
+        """
+        )
 
         to_table = create_parser()
-        to_table.parse( """CREATE TABLE `collate_false_positive` (
+        to_table.parse(
+            """CREATE TABLE `collate_false_positive` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `msg` text COLLATE latin2_general_ci NOT NULL,
   PRIMARY KEY (`id`),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-        """ )
+        """
+        )
 
-        ops = [ str( val ) for val in from_table.to( to_table ) ]
-        self.assertEquals( "ALTER TABLE `collate_false_positive` CHANGE `msg` `msg` TEXT NOT NULL COLLATE 'LATIN2_GENERAL_CI';", ops[0] )
+        ops = [str(val) for val in from_table.to(to_table)]
+        self.assertEquals(
+            "ALTER TABLE `collate_false_positive` CHANGE `msg` `msg` TEXT NOT NULL COLLATE 'LATIN2_GENERAL_CI';", ops[0]
+        )
 
-
-    def test_table_false_positives( self ):
+    def test_table_false_positives(self):
         """ This same basic bug happens at the table-level in a different way
 
         Even if you don't specify a COLLATE or CHARACTER SET on the table, MySQL

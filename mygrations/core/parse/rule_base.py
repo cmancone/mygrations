@@ -1,4 +1,4 @@
-class rule_base( object ):
+class rule_base(object):
     """ rule = rule_base( parser, rule, next_rule )
 
     Base class for rule parsers: the smallest part of our rule based parsing.  Each rule parser
@@ -27,8 +27,7 @@ class rule_base( object ):
     result = ''
     leftovers = ''
 
-
-    def __init__( self, parser, rule, next_rule ):
+    def __init__(self, parser, rule, next_rule):
         """ rule = rule_base( parser, rule, next_rule )
 
         rule constructor.  Pass in the parser object that the rule is for, the rule
@@ -56,14 +55,14 @@ class rule_base( object ):
 
         # name is requied more often than not
         if self.require_name and not self.name:
-            raise ValueError( "name required for rule %s in class %s" % ( self.rule, self.parser_class ) )
+            raise ValueError("name required for rule %s in class %s" % (self.rule, self.parser_class))
 
         # ditto rule
         if self.require_value:
             if not 'value' in self.rule or not self.rule['value']:
-                raise ValueError( 'missing value in rule %s for class %s' % ( self.rule, self.parser_class ) )
+                raise ValueError('missing value in rule %s for class %s' % (self.rule, self.parser_class))
 
-    def parse( self, string ):
+    def parse(self, string):
         """ rule.parse( string )
 
         Parse the string according to the rule class and configuration.  Returns True/False to denote
@@ -77,4 +76,4 @@ class rule_base( object ):
         # why is this here?  Because python abstract classes are stange, and I don't feel like bothering with them.
         # this accomplishes the exact same thing, just at run-time instead of compile-time.  Not a big deal
         # in this case.
-        raise ValueError( "You forgot to extend rule_base.parse" )
+        raise ValueError("You forgot to extend rule_base.parse")

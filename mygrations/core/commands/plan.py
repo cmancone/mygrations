@@ -6,38 +6,35 @@ from mygrations.formats.mysql.mygrations.row_mygration import row_mygration
 from mygrations.drivers.mysqldb.mysqldb import mysqldb
 from mygrations.formats.mysql.mygrations.operations.disable_checks import disable_checks
 from mygrations.formats.mysql.mygrations.operations.enable_checks import enable_checks
+def execute(options):
 
-def execute( options ):
-
-    obj = plan( options )
+    obj = plan(options)
     obj.execute()
+class plan(base):
+    def execute(self):
 
-class plan( base ):
-
-    def execute( self ):
-
-        files_database = database_parser( self.config['files_directory'] )
+        files_database = database_parser(self.config['files_directory'])
 
         # any errors or warnings?
         quit_early = False
         if files_database.errors and not self.options['force']:
-            print( 'Errors found in *.sql files' )
+            print('Errors found in *.sql files')
             quit_early = True
             for error in files_database.errors:
-                print( error )
+                print(error)
 
         # or 1215 errors?
         if files_database.errors_1215 and not self.options['force']:
-            print( '1215 errors encountered' )
+            print('1215 errors encountered')
             quit_early = True
             for error in files_database.errors_1215:
-                print( error )
+                print(error)
 
         if quit_early:
             return False
 
         # use the credentials to load up a database connection
-        live_database = database_reader( mysqldb( self.credentials ) )
+        live_database = database_reader(mysqldb(self.credentials))
 
         # we have to tell the live database to load records
         # for any tables we are tracking records for.
@@ -52,22 +49,22 @@ class plan( base ):
             if not table.name in live_database.tables:
                 continue
 
-            live_database.read_rows( table )
+            live_database.read_rows(table)
 
-        mygrate = mygration( files_database, live_database, False )
+        mygrate = mygration(files_database, live_database, False)
 
         ops = []
         if mygrate.operations:
-            ops.extend( mygrate.operations )
+            ops.extend(mygrate.operations)
 
-        rows = row_mygration( files_database, live_database )
+        rows = row_mygration(files_database, live_database)
         if rows.operations:
-            ops.extend( rows.operations )
+            ops.extend(rows.operations)
 
         if not ops:
             return True
 
-        print( disable_checks() )
+        print(disable_checks())
         for op in ops:
-            print( op )
-        print( enable_checks() )
+            print(op)
+        print(enable_checks())

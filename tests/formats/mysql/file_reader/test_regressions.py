@@ -2,14 +2,14 @@ import unittest
 
 from mygrations.formats.mysql.file_reader.reader import reader
 from mygrations.formats.mysql.file_reader.database import database
-
-class test_regressions( unittest.TestCase ):
+class test_regressions(unittest.TestCase):
     """ Some tests based off failing CREATE TABLE commands from our database when things were first being finished """
 
-    def test_payment_request_types( self ):
+    def test_payment_request_types(self):
 
         parser = reader()
-        returned = parser.parse( """CREATE TABLE `payment_request_types` (
+        returned = parser.parse(
+            """CREATE TABLE `payment_request_types` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
   `slug` VARCHAR(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
@@ -18,20 +18,22 @@ class test_regressions( unittest.TestCase ):
   KEY `order_by_payment_request_types` (`order_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-INSERT INTO payment_request_types (id,name,slug,order_by) VALUES (1,'Standard','standard',1),(2,'Special Circumstances','emergency',2);""" )
+INSERT INTO payment_request_types (id,name,slug,order_by) VALUES (1,'Standard','standard',1),(2,'Special Circumstances','emergency',2);"""
+        )
 
         # we should have matched
-        self.assertTrue( parser.matched )
+        self.assertTrue(parser.matched)
 
         # and we should have matched everything
-        self.assertEquals( '', returned )
+        self.assertEquals('', returned)
 
         # we should not have any errors
-        self.assertEquals( [], parser.errors )
+        self.assertEquals([], parser.errors)
 
-    def test_employee_contract_list( self ):
+    def test_employee_contract_list(self):
 
-        db = database( """CREATE TABLE `employee_contract_list` (
+        db = database(
+            """CREATE TABLE `employee_contract_list` (
  `id` int(10) NOT NULL AUTO_INCREMENT,
  `account_id` int(10) unsigned NOT NULL,
  `name` varchar(255) NOT NULL,
@@ -56,6 +58,7 @@ INSERT INTO `employee_contract_list` (`id`, `account_id`, `name`, `display`, `ta
 (9, 1, 'fed_w4', 'Federal W-4', 'employee_fed_w4s', 'fed_w4_id', 'hr/tax_forms/complete_fed_w4'),
 (10, 1, 'ga_w4', 'Georgia W-4', 'employee_ga_w4s', 'ga_w4_id', 'hr/tax_forms/complete_ga_w4'),
 (11, 1, 'al_a4', 'Alabama A-4', 'employee_al_a4s', 'al_w4_id', 'hr/tax_forms/complete_al_a4'),
-(12, 1, 'fed_i9', 'Federal I-9', 'employee_fed_i9s', 'fed_i9_id', 'hr/tax_forms/complete_fed_i9');""" )
+(12, 1, 'fed_i9', 'Federal I-9', 'employee_fed_i9s', 'fed_i9_id', 'hr/tax_forms/complete_fed_i9');"""
+        )
 
-        self.assertEquals( [], db.errors )
+        self.assertEquals([], db.errors)

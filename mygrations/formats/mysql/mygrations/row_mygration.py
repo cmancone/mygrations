@@ -4,14 +4,14 @@ from mygrations.formats.mysql.definitions.database import database
 from mygrations.formats.mysql.mygrations.operations.row_insert import row_insert
 from mygrations.formats.mysql.mygrations.operations.row_delete import row_delete
 from mygrations.formats.mysql.mygrations.operations.row_update import row_update
-
 class row_mygration:
     """ Creates a migration plan to sync the rows of a database for tables being tracked.
 
     This doesn't sync rows for all tables but only those tables marked as
     tracking_rows
     """
-    def __init__( self, db_to, db_from = None ):
+
+    def __init__(self, db_to, db_from=None):
         """ Create a migration plan
 
         The row migrator assumes that both databases have already read rows into the
@@ -44,7 +44,7 @@ class row_mygration:
         self._errors_1215 = []
 
     @property
-    def operations( self ):
+    def operations(self):
         """ Public getter.  Returns list of operations to bring rows in db_from to match db_to
 
         If db_from doesn't exist then it will be a list of operations to
@@ -59,7 +59,7 @@ class row_mygration:
         return self._operations
 
     @property
-    def errors_1215( self ):
+    def errors_1215(self):
         """ Public getter.  Returns list of 1215 errors (as strings)
 
         :returns: A list of 1215 error messages
@@ -67,19 +67,19 @@ class row_mygration:
         """
         return self._errors_1215
 
-    def __len__( self ):
-        return len( self._operations )
+    def __len__(self):
+        return len(self._operations)
 
-    def __bool__( self ):
-        return True if len( self._operations ) else False
+    def __bool__(self):
+        return True if len(self._operations) else False
 
-    def __str__( self ):
-        return "\n".join( [ str( x ) for x in self._operations ] )
+    def __str__(self):
+        return "\n".join([str(x) for x in self._operations])
 
-    def __iter__( self ):
+    def __iter__(self):
         return self._operations.__iter__()
 
-    def _process( self ):
+    def _process(self):
         """ Figures out the row operations needed to get to self.db_to
 
         Returns a list of operations that will migrate rows in db_from to db_to
@@ -88,13 +88,15 @@ class row_mygration:
         :rtype: [mygrations.formats.mysql.mygrations.operations]
         """
         operations = []
-        tracking_tables = [ table.name for table in self.db_to.tables.values() if table.tracking_rows ]
+        tracking_tables = [table.name for table in self.db_to.tables.values() if table.tracking_rows]
         for table_name in tracking_tables:
-            from_table = self.db_from.tables[table_name] if ( self.db_from and table_name in self.db_from.tables ) else None
-            more_operations = self.db_to.tables[table_name].to_rows( from_table )
+            from_table = self.db_from.tables[table_name] if (
+                self.db_from and table_name in self.db_from.tables
+            ) else None
+            more_operations = self.db_to.tables[table_name].to_rows(from_table)
             if not more_operations:
                 continue
 
-            operations.extend( more_operations )
+            operations.extend(more_operations)
 
         return operations

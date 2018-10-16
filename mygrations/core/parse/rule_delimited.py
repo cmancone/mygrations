@@ -1,6 +1,5 @@
 from .rule_base import rule_base
-
-class rule_delimited( rule_base ):
+class rule_delimited(rule_base):
     """ rule = rule_delimited( parser, rule, next_rule )
 
     rule_delimited constructor.  Pass in the parser object that the rule is for, the rule
@@ -37,41 +36,53 @@ class rule_delimited( rule_base ):
     separator = ''
     quote = ''
 
-    def __init__( self, parser, rule, next_rule ):
+    def __init__(self, parser, rule, next_rule):
 
-        super().__init__( parser, rule, next_rule )
+        super().__init__(parser, rule, next_rule)
 
         if not 'separator' in rule or not rule['separator']:
-            raise ValueError( 'Missing separator for rule %s' % rule )
+            raise ValueError('Missing separator for rule %s' % rule)
 
         # assumption: delimiteds are always followed up by a literal
         if not self.next_rule or self.next_rule['type'] != 'literal':
-            raise ValueError( "Delimited rules must be followed by a literal for rule %s in class %s, next: %s" % ( self.rule, self.parser_class, self.next_rule ) )
+            raise ValueError(
+                "Delimited rules must be followed by a literal for rule %s in class %s, next: %s" %
+                (self.rule, self.parser_class, self.next_rule)
+            )
 
         if not 'value' in self.next_rule or not self.next_rule['value']:
-            raise ValueError( "Delimited rules must be followed by a literal rule with a value for rule %s in class %s, next: %s" % ( self.rule, self.parser_class, self.next_rule ) )
+            raise ValueError(
+                "Delimited rules must be followed by a literal rule with a value for rule %s in class %s, next: %s" %
+                (self.rule, self.parser_class, self.next_rule)
+            )
 
         self.separator = self.rule['separator']
         self.quote = self.rule['quote'] if 'quote' in self.rule else ''
 
         # separator and quote must be a single character
-        if len( self.separator ) > 1:
-            raise ValueError( "separator for delimited rule must be one character only for rule %s in class %s" % ( self.rule, self.parser_class ) )
+        if len(self.separator) > 1:
+            raise ValueError(
+                "separator for delimited rule must be one character only for rule %s in class %s" %
+                (self.rule, self.parser_class)
+            )
 
-        if len( self.quote ) > 1:
-            raise ValueError( "quote for delimited rule must be one character only for rule %s in class %s" % ( self.rule, self.parser_class ) )
+        if len(self.quote) > 1:
+            raise ValueError(
+                "quote for delimited rule must be one character only for rule %s in class %s" %
+                (self.rule, self.parser_class)
+            )
 
-    def parse( self, string ):
+    def parse(self, string):
 
         end = self.next_rule['value'].lower()
-        end_len = len( end )
+        end_len = len(end)
 
         # it's ugly, but we will do this one character at a time
         has_word = False
         vals = []
         current = ''
         in_quote = False
-        for ( index, char ) in enumerate( string ):
+        for (index, char) in enumerate(string):
 
             # if we hit a quote then we need to start/finish a word
             if self.quote and char == self.quote:
@@ -84,7 +95,7 @@ class rule_delimited( rule_base ):
 
                 # close word
                 else:
-                    vals.append( current )
+                    vals.append(current)
                     has_word = False
                     in_quote = False
 
@@ -95,16 +106,16 @@ class rule_delimited( rule_base ):
 
                 # are we done parsing?
 
-                if string[index:index+end_len].lower() == end:
+                if string[index:index + end_len].lower() == end:
                     if has_word:
-                        vals.append( current )
+                        vals.append(current)
                     break
 
                 # if we hit a separator then we need to start a new word
                 if char == self.separator:
 
                     if has_word:
-                        vals.append( current )
+                        vals.append(current)
                         has_word = False
                     current = ''
 
@@ -113,7 +124,7 @@ class rule_delimited( rule_base ):
                 # skip white space outside of quotes (also end a word)
                 if char == ' ':
                     if has_word:
-                        vals.append( current )
+                        vals.append(current)
                         has_word = False
 
                     current = ''
@@ -131,7 +142,7 @@ class rule_delimited( rule_base ):
         # We are out of our processing loop!
         # if we are still in quote then there was a syntax error in the SQL
         if in_quote:
-            raise SyntaxError( "Opening quote without closing quote at %s" % string )
+            raise SyntaxError("Opening quote without closing quote at %s" % string)
 
         # did we match anything?
         if not vals:
