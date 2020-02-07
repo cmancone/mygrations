@@ -9,7 +9,7 @@ parser.add_argument(
     'command',
     nargs='?',
     default='version',
-    choices=['version', 'check', 'import', 'plan', 'plan_export'],
+    choices=['version', 'apply', 'check', 'import', 'plan', 'plan_export'],
     help='Action to execute (default: check)'
 )
 parser.add_argument('--env', default='.env', help='Location of environment file (default: .env)')

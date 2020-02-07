@@ -1,8 +1,9 @@
 import importlib
 
 commands = {
-    'import': 'import_files',
+    'apply': 'apply',
     'check': 'check',
+    'import': 'import_files',
     'plan': 'plan',
     'plan_export': 'plan_export',
     'version': 'version'

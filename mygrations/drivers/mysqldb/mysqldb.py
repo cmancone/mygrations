@@ -4,6 +4,7 @@ import MySQLdb.cursors
 from collections import OrderedDict
 class mysqldb(object):
     """ High level driver for a MySQLdb connection """
+    execute_cursor = None
 
     def __init__(self, credentials):
         """ Initialize the MySQLdb connection
@@ -65,3 +66,13 @@ class mysqldb(object):
         cursor.close()
 
         return rows
+
+    def execute(self, queries):
+        if isinstance(queries, str):
+            queries = [queries]
+
+        cursor = self.conn.cursor(MySQLdb.cursors.DictCursor)
+        for query in queries:
+            cursor.execute(query)
+        self.conn.commit()
+        cursor.close()

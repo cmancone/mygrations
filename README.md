@@ -77,6 +77,7 @@ Currently the system supports 3 modes:
 | Mode              | Action                                                                                       |
 | ----------------- | -------------------------------------------------------------------------------------------- |
 | version (default) | Display the version and license information and exit                                         |
+| apply             | Update the database!                                                                         |
 | check             | Read all `*.sql` file and report any SQL errors or MySQL 1215 errors                         |
 | plan              | Dump a list of MySQL commands that will bring the database up-to-spec with the `*.sql` files |
 | plan_export       | Dump a list of data showing how to update the `*.sql` files to match the database            |
@@ -85,9 +86,7 @@ Each should be executed by running the mygration command with the desired mode a
 
 ```mygrate.py [mode]```
 
-Since the system is still in testing, it does not yet have an option to automatically apply the mygration plan.  After checking the results of `mygrate.py plan` you can either copy and paste the commands into a MySQL client, or try something like this:
-
-```mygrate.py plan | mysql -u username -p -D database```
+The typical use case would be to run `mygrate.py plan` and inspect the results.  If things seem reasonable then simply  `mygrate.py execute`
 
 ## Advantages
 
