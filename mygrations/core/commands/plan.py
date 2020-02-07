@@ -13,6 +13,11 @@ def execute(options):
 class plan(base):
     def execute(self):
 
+        commands = self.build_commands()
+        print(''.join(['%s\n' % command for command in commands]))
+
+    def build_commands(self):
+
         files_database = database_parser(self.config['files_directory'])
 
         # any errors or warnings?
@@ -64,7 +69,8 @@ class plan(base):
         if not ops:
             return True
 
-        print(disable_checks())
-        for op in ops:
-            print(op)
-        print(enable_checks())
+        return [
+            disable_checks(),
+            *ops,
+            enable_checks(),
+        ]
