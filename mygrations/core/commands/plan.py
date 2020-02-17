@@ -6,6 +6,7 @@ from mygrations.formats.mysql.mygrations.row_mygration import row_mygration
 from mygrations.drivers.mysqldb.mysqldb import mysqldb
 from mygrations.formats.mysql.mygrations.operations.disable_checks import disable_checks
 from mygrations.formats.mysql.mygrations.operations.enable_checks import enable_checks
+import sys
 def execute(options):
 
     obj = plan(options)
@@ -23,20 +24,20 @@ class plan(base):
         # any errors or warnings?
         quit_early = False
         if files_database.errors and not self.options['force']:
-            print('Errors found in *.sql files')
+            print('Errors found in *.sql files', file=sys.stderr)
             quit_early = True
             for error in files_database.errors:
-                print(error)
+                print(error, file=sys.stderr)
 
         # or 1215 errors?
         if files_database.errors_1215 and not self.options['force']:
-            print('1215 errors encountered')
+            print('1215 errors encountered', sys.stderr)
             quit_early = True
             for error in files_database.errors_1215:
-                print(error)
+                print(error, file=sys.stderr)
 
         if quit_early:
-            return False
+            return []
 
         # use the credentials to load up a database connection
         live_database = database_reader(mysqldb(self.credentials))
@@ -67,7 +68,7 @@ class plan(base):
             ops.extend(rows.operations)
 
         if not ops:
-            return True
+            return []
 
         return [
             disable_checks(),
