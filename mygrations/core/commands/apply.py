@@ -8,8 +8,5 @@ class apply(plan):
     def execute(self):
 
         commands = self.build_commands()
-        if isinstance(commands, bool):
-            return commands
-
         connection = mysqldb(self.credentials)
         connection.execute(['%s' % command for command in commands])
