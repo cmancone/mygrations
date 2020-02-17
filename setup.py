@@ -18,13 +18,14 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='mygrations',
-    version='0.11.0',
+    version='0.13.0',
     description='A general purpose migration tool for managing MySQL updates',
     long_description=long_description,
     url='https://github.com/cmancone/mygrations',
     author='Conor Mancone',
     author_email='cmancone@gmail.com',
     license='MIT',
+    download_url='https://github.com/cmancone/mygrations/archive/v0.13.tar.gz',
 
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
@@ -36,8 +37,6 @@ setup(
     ],
     keywords='setuptools development migrations mysql',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-
-    # install_requires=['mysqlclient'],
 
     # http://docs.python.org/3.4/distutils/setupscript.html#installing-additional-files
     # data_files=[('/usr/local/bin', ['mygrate.py'])],
