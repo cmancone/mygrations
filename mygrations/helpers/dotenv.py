@@ -20,6 +20,8 @@ class dotenv(dict):
         # we will allow an actual string to parse, a string as a filename,
         # a file object, or an IO stream.  get_contents will handle the
         # details
+        if not os.path.isfile(filename):
+            raise ValueError("Specified file '%s' does not exist" % filename)
         if filename:
             self.raw_contents = self.get_contents(filename)
 
