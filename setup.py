@@ -21,6 +21,7 @@ setup(
     version='0.13.0',
     description='A general purpose migration tool for managing MySQL updates',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/cmancone/mygrations',
     author='Conor Mancone',
     author_email='cmancone@gmail.com',
