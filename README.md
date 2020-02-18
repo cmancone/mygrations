@@ -15,9 +15,9 @@ When you need to change a table structure you don't generate additional migratio
 1. Requires Python3
 2. Requires [MySQLdb For python3](https://pypi.python.org/pypi/mysqlclient).  (For ubuntu: `sudo apt-get install python3-mysqldb`)
 
-To install `mygrations`:
+Note that installing this via pip will **not** install the MySQLdb dependency.  I did this because installing MySQLdb through pip can be a pain, requiring additional dependencies and a compiler.  In contrast, MySQLdb can usually be installed from a package manager with a one liner (see above).  To install `mygrations`:
 
-```pip install mygrations```
+```pip3 install mygrations```
 
 Then you just need to download and install the mygrations runner.  Something like this works:
 
@@ -49,30 +49,32 @@ When you run `mygrate.py` it will read the `mygrate.conf` file in your current d
 Your `.env` file presumably already exists for your application to use, and may look like this:
 
 ```
-DB_HOSTNAME     = "localhost"
-DB_USERNAME     = "app"
-DB_PASSWORD     = "[Your password here]"
-DB_DATABASE     = "app"
+DB_HOSTNAME = "localhost"
+DB_USERNAME = "app"
+DB_PASSWORD = "[Your password here]"
+DB_DATABASE = "app"
 
-ANOTHER_CONFIG  = "SomeValue"
+ANOTHER_CONFIG = "SomeValue"
 ```
 
 Your `mygrate.conf` file would then look like this:
 
 ```
-hostname_key    = "DB_HOSTNAME"
-username_key    = "DB_USERNAME"
-password_key    = "DB_PASSWORD"
-database_key    = "DB_DATABASE"
+hostname_key = "DB_HOSTNAME"
+username_key = "DB_USERNAME"
+password_key = "DB_PASSWORD"
+database_key = "DB_DATABASE"
 
 files_directory = "database/"
 ```
 
 To be clear, you don't put your database credentials in your `mygrate.conf` file: instead you simply tell it which keys to grab the database credentials out of from your `.env` file.  This way you can just have one `mygrate.conf` file that works in all environments.  The files directory tells it where to find your `*.sql` files.  You simply specify the location of the directory containing those files, relative to the `mygrate.conf` file.  It will automatically read any `*.sql` files in that directory and use the structure in those files to determine the "truth" of what your database should look like.
 
+To make things super clear I have created an example repository that is ready to run mygrations.  Instructions [here](https://github.com/cmancone/mygrations_example).
+
 ## Usage
 
-Currently the system supports 3 modes:
+Currently the system supports 5 modes:
 
 | Mode              | Action                                                                                       |
 | ----------------- | -------------------------------------------------------------------------------------------- |
@@ -137,10 +139,10 @@ Since the migration files are just simple `CREATE TABLE` commands, `mygrations` 
 This is a brand new venture that is a long way from complete.  To give some guidance, here is my target feature list for when version 1.0 will officially be released:
 
 1. Parsing of `CREATE TABLE` and `INSERT` commands and using those as migration definitions (Done)
-2. Automatic foreign key dependency calculation (Sidelined)
-3. Detailed foreign key error notices (Done)
-4. Ability to migrate database to match definitions from any state (Done)
-5. Generation of migration commands (Done)
-6. Generation of migration files (Done)
+2. Detailed foreign key error notices (Done)
+3. Ability to migrate database to match definitions from any state (Done)
+4. Generation of migration commands (Done)
+5. Generation of migration files (Done)
+6. More flexible methods for credential management
 
 Currently the system has reached a complete enough state that it is being tested in our real-world systems.
