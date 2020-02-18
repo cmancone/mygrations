@@ -17,7 +17,9 @@ When you need to change a table structure you don't generate additional migratio
 
 Note that installing this via pip will **not** install the MySQLdb dependency.  I did this because installing MySQLdb through pip can be a pain, requiring additional dependencies and a compiler.  In contrast, MySQLdb can usually be installed from a package manager with a one liner (see above).  To install `mygrations`:
 
-```pip3 install mygrations```
+```
+pip3 install mygrations
+```
 
 Then you just need to download and install the mygrations runner.  Something like this works:
 
