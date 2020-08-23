@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 import unittest
-
 import sys, os
-sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 
-glob = 'test*.py'
+
+sys.path.append(os.path.dirname(os.path.realpath(__file__)))
+glob = '?*test.py'
 if len(sys.argv) > 1:
     path = sys.argv[1]
     # generally expecting a directory.  If it is a file then find the parent directory
@@ -17,7 +17,7 @@ if len(sys.argv) > 1:
     # convert to python speak
     path = path.replace('/', '.').strip('.')
 else:
-    path = 'tests'
+    path = '.'
 
 tests = unittest.TestLoader().discover(path, pattern=glob)
 testRunner = unittest.runner.TextTestRunner()

@@ -1,34 +1,44 @@
-from abc import ABC
+from __future__ import annotations
+from abc import ABC, abstractmethod
+from typing import Union, List
 
 
 class Column(ABC):
-    _unsigned = None
-    _character_set = None
-    _collate = None
-    _auto_increment = None
-    _errors = None
-    _warnings = None
+    _auto_increment: bool = None
+    _character_set: str = None
+    _collate: str = None
+    _column_type: str = None
+    _default: Union[str, int] = None
+    _length: Union[str, int] = None
+    _name: str = ''
+    _null: bool = None
+    _unsigned: bool = None
+    _errors: List[str] = None
+    _warnings: List[str] = None
 
     def __init__(
         self,
-        name='',
-        length='255',
-        null=True,
-        default=None,
-        unsigned=None,
-        character_set='',
-        collate='',
-        auto_increment=False
+        name: str,
+        column_type: str,
+        length: Union[str, int] = None,
+        null: bool = True,
+        default: Union[str, int] = None,
+        unsigned: bool = None,
+        character_set: str = '',
+        collate: str = '',
+        auto_increment: bool = False
     ):
-        self._name = name
-        self._length = length
-        self._null = null
-        self._column_type = column_type
-        self._default = default
-        self._unsigned = unsigned
+        self._auto_increment = auto_increment
         self._character_set = character_set
         self._collate = collate
-        self._auto_increment = auto_increment
+        self._column_type = column_type
+        self._default = default
+        self._length = length
+        self._name = name
+        self._null = null
+        self._unsigned = unsigned
+        self._errors = []
+        self._warnings = []
 
     @property
     def name(self) -> str:
@@ -41,7 +51,7 @@ class Column(ABC):
         return self._name
 
     @property
-    def length(self) -> str, int:
+    def length(self) -> Union[str, int]:
         """ Public getter.  Returns the length of the column as a string.
 
         Some examples of the length for various column definitions:
@@ -71,8 +81,7 @@ class Column(ABC):
         return self._null
 
     @property
-    @abstractmethod
-    def column_type(self):
+    def column_type(self) -> str:
         """ Public getter.  Returns a string denoting the type of the column.  Always returns in uppercase
 
         Some examples of the length for various column definitions:
@@ -89,10 +98,10 @@ class Column(ABC):
         :returns: The column type
         :rtype: string
         """
-        pass
+        return self._column_type
 
     @property
-    def default(self):
+    def default(self) -> Union[str, int]:
         """ Public getter.  Returns the default value for the column as a string, or None for a default value of null
 
         Returns None to represent a default value of null.
@@ -103,7 +112,7 @@ class Column(ABC):
         return self._default
 
     @property
-    def unsigned(self):
+    def unsigned(self) -> bool:
         """ Public getter.  Returns True, False, or None to denote the status of the UNSIGNED property
 
         ==================  ====================
@@ -120,17 +129,16 @@ class Column(ABC):
         return self._unsigned
 
     @property
-    @abstractmethod
-    def character_set(self):
+    def character_set(self) -> str:
         """ Public getter.  Returns None or a value to denote the CHARACTER_SET property
 
         :returns: string, or None
         :rtype: string|None
         """
-        pass
+        return None if self._character_set is None else self._character_set.upper()
 
     @property
-    def collate(self):
+    def collate(self) -> str:
         """ Public getter.  Returns None or a value to denote the COLLATE property
 
         :returns: string, or None
@@ -139,7 +147,7 @@ class Column(ABC):
         return None if self._collate is None else self._collate.upper()
 
     @property
-    def auto_increment(self):
+    def auto_increment(self) -> bool:
         """ Public getter.  Returns True, False, or None to denote the status of the AUTO_INCREMENT property
 
         ==================  ====================
@@ -156,7 +164,7 @@ class Column(ABC):
         return self._auto_increment
 
     @property
-    def errors(self):
+    def errors(self) -> List[str]:
         """ Public getter.  Returns a list of parsing errors
 
         :returns: A list of parsing errors
@@ -165,7 +173,7 @@ class Column(ABC):
         return [] if self._errors is None else self._errors
 
     @property
-    def warnings(self):
+    def warnings(self) -> List[str]:
         """ Public getter.  Returns a list of parsing/table warnings
 
         :returns: A list of parsing/table warnings
@@ -173,7 +181,7 @@ class Column(ABC):
         """
         return [] if self._warnings is None else self._warnings
 
-    def __str__(self):
+    def __str__(self) -> str:
         """ Returns the MySQL command that would create the column
 
         i.e. column_name type(len) default ''
@@ -202,7 +210,7 @@ class Column(ABC):
         if self.default is not None:
             if self.default == '':
                 parts.append("DEFAULT ''")
-            elif self.default.isnumeric():
+            elif type(self.default) != str or self.default.isnumeric():
                 parts.append("DEFAULT %s" % self.default)
             else:
                 parts.append("DEFAULT '%s'" % self.default)
@@ -210,15 +218,9 @@ class Column(ABC):
         if self.auto_increment:
             parts.append('AUTO_INCREMENT')
 
-        if self.character_set:
-            parts.append("CHARACTER SET '%s'" % self.character_set)
-
-        if self.collate:
-            parts.append("COLLATE '%s'" % self.collate)
-
         return ' '.join(parts)
 
-    def is_really_the_same_as(self, column):
+    def is_really_the_same_as(self, column: Column) -> bool:
         """ Takes care of a pesky false-positive when checking columns
 
         :param column: The column to comprehensively check for a difference with
@@ -243,14 +245,6 @@ class Column(ABC):
                     return False
         else:
             if self.default != column.default:
-                return False
-
-        # if collate or character_set are different and *both* have a value,
-        # then these aren't really the same
-        for attr in ['collate', 'character_set']:
-            my_val = getattr(self, attr)
-            that_val = getattr(column, attr)
-            if my_val and that_val and my_val != that_val:
                 return False
 
         # if we got here then these columns are the same. Either all attributes have the same
