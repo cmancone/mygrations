@@ -45,3 +45,8 @@ class TestColumn(unittest.TestCase):
             column2 = MockColumn(**{**attrs, **{key: val}})
             self.assertFalse(column1.is_really_the_same_as(column2))
             self.assertFalse(column2.is_really_the_same_as(column1))
+
+        column1 = MockColumn(**attrs)
+        column2 = MockColumn(**{**attrs, 'default': None})
+        self.assertFalse(column1.is_really_the_same_as(column2))
+        self.assertFalse(column2.is_really_the_same_as(column1))

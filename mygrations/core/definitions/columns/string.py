@@ -1,4 +1,3 @@
-import unittest
 from .column import Column
 
 

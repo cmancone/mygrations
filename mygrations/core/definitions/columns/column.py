@@ -45,7 +45,6 @@ class Column(ABC):
         """ Public getter.  Returns the name of the column.
 
         :returns: The column name
-        :rtype: string
         """
 
         return self._name
@@ -66,7 +65,6 @@ class Column(ABC):
         ==================  ====================
 
         :returns: The column length
-        :rtype: string
         """
 
         return self._length
@@ -76,7 +74,6 @@ class Column(ABC):
         """ Public getter.  Returns True/False to denote if the column is allowed to be null
 
         :returns: Whether or not null is an allowed value for the column
-        :rtype: bool
         """
         return self._null
 
@@ -96,7 +93,6 @@ class Column(ABC):
         ==================  ====================
 
         :returns: The column type
-        :rtype: string
         """
         return self._column_type
 
@@ -107,7 +103,6 @@ class Column(ABC):
         Returns None to represent a default value of null.
 
         :returns: The default value
-        :rtype: string|None
         """
         return self._default
 
@@ -124,7 +119,6 @@ class Column(ABC):
         ==================  ====================
 
         :returns: True, False, or None
-        :rtype: bool|None
         """
         return self._unsigned
 
@@ -133,7 +127,6 @@ class Column(ABC):
         """ Public getter.  Returns None or a value to denote the CHARACTER_SET property
 
         :returns: string, or None
-        :rtype: string|None
         """
         return None if self._character_set is None else self._character_set.upper()
 
@@ -142,7 +135,6 @@ class Column(ABC):
         """ Public getter.  Returns None or a value to denote the COLLATE property
 
         :returns: string, or None
-        :rtype: string|None
         """
         return None if self._collate is None else self._collate.upper()
 
@@ -159,7 +151,6 @@ class Column(ABC):
         ==================  ====================
 
         :returns: True, False, or None
-        :rtype: bool|None
         """
         return self._auto_increment
 
@@ -168,7 +159,6 @@ class Column(ABC):
         """ Public getter.  Returns a list of parsing errors
 
         :returns: A list of parsing errors
-        :rtype: list
         """
         return [] if self._errors is None else self._errors
 
@@ -177,7 +167,6 @@ class Column(ABC):
         """ Public getter.  Returns a list of parsing/table warnings
 
         :returns: A list of parsing/table warnings
-        :rtype: list
         """
         return [] if self._warnings is None else self._warnings
 
@@ -187,7 +176,6 @@ class Column(ABC):
         i.e. column_name type(len) default ''
 
         :returns: A partial MySQL command that could be used to generate the column
-        :rtype: string
         """
         parts = []
         parts.append('`%s`' % self.name)
@@ -224,31 +212,30 @@ class Column(ABC):
         """ Takes care of a pesky false-positive when checking columns
 
         :param column: The column to comprehensively check for a difference with
-        :type column: mygrations.formats.mysql.definitions.column
         :returns: True if the column really is the same, even for apparent differences
-        :rtype: bool
         """
         # if any of these attributes change then it really isn't the same
         for attr in ['name', 'length', 'null', 'column_type', 'unsigned']:
             if getattr(self, attr) != getattr(column, attr):
                 return False
 
-        # default needs a special check because it can run into issues for decimal columns
-        if self.column_type == 'DECIMAL':
-            split = self.length.split(',')
-            if len(split) == 2:
-                ndecimals = int(split[1])
-                if (self.default is None
-                    and column.default is not None) or (self.default is not None and column.default is None):
-                    return False
-                if round(float(self.default), ndecimals) != round(float(column.default), ndecimals):
-                    return False
-        else:
-            if self.default != column.default:
-                return False
+        if not self._default_none_mismatch(column):
+            return False
+        if not self._is_really_the_same_default(column):
+            return False
 
         # if we got here then these columns are the same. Either all attributes have the same
         # values, or collate and/or character_set differ, but they differ by one not having
         # a value.  This is the false-positive we are trying to check for
         # (see tests.formats.mysql.definitions.test_table_text_false_positives)
         return True
+
+    def _default_none_mismatch(self, column: Column) -> bool:
+        if self.default is not None and column.default is None:
+            return False
+        if column.default is not None and self.default is None:
+            return False
+        return True
+
+    def _is_really_the_same_default(self, column: Column) -> bool:
+        return self.default == column.default
