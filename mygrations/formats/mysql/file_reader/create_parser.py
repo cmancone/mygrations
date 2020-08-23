@@ -102,3 +102,6 @@ class create_parser(parser, table):
 
         if not self.semicolon:
             self._errors.append("Missing ending semicolon for table %s" % self._name)
+
+    def as_table(self):
+        pass

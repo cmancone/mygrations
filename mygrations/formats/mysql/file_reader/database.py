@@ -1,9 +1,9 @@
 import os
 import glob
-
 from .reader import reader as sql_reader
-from mygrations.formats.mysql.definitions.database import database as database_definition
-class database(database_definition):
+
+
+class Database:
     def __init__(self, strings):
         """ Constructor.  Accepts a string or list of strings with different possible contents
 
@@ -32,8 +32,6 @@ class database(database_definition):
 
         for string in strings:
             self.process(string)
-
-        self.store_rows_with_tables()
 
     def process(self, string):
         """ Processes a string.
@@ -98,3 +96,24 @@ class database(database_definition):
 
         for (table_name, rows) in reader.rows.items():
             self._rows.extend(rows)
+
+    #def store_rows_with_tables(self):
+        #""" Processes table rows and adds them to the appropriate tables
+
+        #Table rows are stored with tables for comparison purposes, but might
+        #come in through their own separate files.  This method puts the two
+        #together.
+        #"""
+        #for rows in self._rows:
+            #if not rows.table in self._tables:
+                #self._errors.append('Found rows for table %s but that table does not have a definition' % rows.table)
+                #continue
+
+            #returned = self._tables[rows.table].add_rows(rows)
+            #if isinstance(returned, str):
+                #self._errors.append(returned)
+
+    #def as_database(self):
+        #database = []
+        #database.store_rows_with_tables()
+        #return database

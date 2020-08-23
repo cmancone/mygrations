@@ -85,7 +85,7 @@ class type_numeric(parser, column):
         if self._default and len(self._default) >= 2 and self._default[0] == "'" and self._default[-1] == "'":
             self._default = self._default.strip("'")
             if not self.is_char:
-                self._warnings.append('Default value for numeric column %s does not need to be quoted' % self._name)
+                self._errors.append('Column %s has a numeric type but its default value is a string' % self._name)
         elif self._default:
             if self._default.lower() == 'null':
                 self._default = None
