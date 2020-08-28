@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from typing import Union, List
 
 
-class Constraint(object):
+class Constraint:
     _name: str = ''
     _column: str = ''
     _foreign_table: str = ''
