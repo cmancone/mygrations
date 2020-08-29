@@ -42,6 +42,10 @@ class Index:
         """
         return self._index_type.upper()
 
+    def is_primary(self) -> bool:
+        """ Returns True/False to denote if the index is a primary index """
+        return self.index_type == 'PRIMARY'
+
     @property
     def columns(self) -> List[Union[Column, str]]:
         """ Public getter.  Returns a list of the columns and/or names on the index.

@@ -8,8 +8,8 @@ class MockColumn(Column):
 class TestColumn(unittest.TestCase):
     def test_string_conversion(self):
         column = MockColumn(
-            name='test_column',
-            column_type='INT',
+            'test_column',
+            'INT',
             length=25,
             null=False,
             default=0,
@@ -20,33 +20,46 @@ class TestColumn(unittest.TestCase):
 
     def test_is_the_same(self):
         attrs = {
-            'name': 'test',
-            'column_type': 'INT',
             'length': 5,
             'null': False,
             'unsigned': True,
             'default': '5',
         }
-        column1 = MockColumn(**attrs)
-        column2 = MockColumn(**attrs)
+        column1 = MockColumn('test_column', 'INT', **attrs)
+        column2 = MockColumn('test_column', 'INT', **attrs)
 
         self.assertTrue(column1.is_really_the_same_as(column2))
         self.assertTrue(column2.is_really_the_same_as(column1))
 
         diff = {
-            'name': 'test2',
             'length': 6,
             'null': None,
             'unsigned': False,
             'default': 5,
         }
         for (key,val) in diff.items():
-            column1 = MockColumn(**attrs)
-            column2 = MockColumn(**{**attrs, **{key: val}})
+            column1 = MockColumn('test_column', 'INT', **attrs)
+            column2 = MockColumn('test_column', 'INT', **{**attrs, **{key: val}})
             self.assertFalse(column1.is_really_the_same_as(column2))
             self.assertFalse(column2.is_really_the_same_as(column1))
 
-        column1 = MockColumn(**attrs)
-        column2 = MockColumn(**{**attrs, 'default': None})
+        column1 = MockColumn('test_column', 'INT', **attrs)
+        column2 = MockColumn('test_column', 'INT', **{**attrs, 'default': None})
         self.assertFalse(column1.is_really_the_same_as(column2))
         self.assertFalse(column2.is_really_the_same_as(column1))
+
+    def test_not_null_needs_default(self):
+        column = MockColumn(
+            'test_column',
+            'INT',
+            length=25,
+            null=False,
+            default=None,
+        )
+        self.assertEquals(
+            ['Column test_column is not null and has no default'],
+            column.warnings,
+        )
+
+        column = MockColumn('test_column', 'INT')
+        self.assertEquals([], column.warnings)

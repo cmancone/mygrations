@@ -15,6 +15,7 @@ class Column(ABC):
     _unsigned: bool = None
     _errors: List[str] = None
     _warnings: List[str] = None
+    _allowed_column_types = []
 
     def __init__(
         self,
@@ -24,8 +25,8 @@ class Column(ABC):
         null: bool = True,
         default: Union[str, int] = None,
         unsigned: bool = None,
-        character_set: str = '',
-        collate: str = '',
+        character_set: str = None,
+        collate: str = None,
         auto_increment: bool = False
     ):
         self._auto_increment = auto_increment
@@ -37,8 +38,7 @@ class Column(ABC):
         self._name = name
         self._null = null
         self._unsigned = unsigned
-        self._errors = []
-        self._warnings = []
+        self._check_for_errors_and_warnings()
 
     @property
     def name(self) -> str:
@@ -169,6 +169,21 @@ class Column(ABC):
         :returns: A list of parsing/table warnings
         """
         return [] if self._warnings is None else self._warnings
+
+    def _check_for_errors_and_warnings(self):
+        """ Runs through the properties of the column and populates self._errors and self._warnings approppriately """
+
+        # we raise an exception (instead of recording an error) if the column type is invalid for the current
+        # class because this represents a bug in mygrations.  I.e. if an INT column_type ends up in the
+        # String() column, then something went wrong with mygrations, not with the SQL the user wrote.
+        if self.column_type not in self._allowed_column_types:
+            raise ValueError(f'Error in column {self.name}: column type {self.column_type} not allowed for class {self.__class__.__name__}')
+
+        self._errors = []
+        self._warnings = []
+        if self.default is None and not self.null:
+            self._warnings.append(f'Column {self.name} is not null and has no default')
+
 
     def __str__(self) -> str:
         """ Returns the MySQL command that would create the column
