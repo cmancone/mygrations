@@ -2,4 +2,8 @@ from .column import Column
 
 
 class Date(Column):
-    pass
+    _allowed_column_types = [
+        'DATE',
+        'DATETIME',
+        'TIMESTAMP',
+    ]
