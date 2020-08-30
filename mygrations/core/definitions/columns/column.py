@@ -94,7 +94,7 @@ class Column(ABC):
 
         :returns: The column type
         """
-        return self._column_type
+        return self._column_type.upper()
 
     @property
     def default(self) -> Union[str, int]:

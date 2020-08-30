@@ -3,7 +3,7 @@ from .column import Column
 
 
 class MockColumn(Column):
-    pass
+    _allowed_column_types = ['INT']
 
 class TestColumn(unittest.TestCase):
     def test_string_conversion(self):

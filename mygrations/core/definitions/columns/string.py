@@ -54,8 +54,11 @@ class String(Column):
         if self.default is not None and self.column_type not in self._allowed_default:
             self._errors.append(f'Column {self.name} of type {self.column_type} cannot have a default')
 
+        if self.auto_increment:
+            self._errors.append(f'Column {self.name} of type {self.column_type} cannot be an AUTO_INCREMENT: only numeric columns can')
+
         if (self.character_set or self.collate):
-            if self.column_type not in self._allowed_collation
+            if self.column_type not in self._allowed_collation:
                 self._errors.append(
                     f'Column {self.name} of type {self.column_type} cannot have a collation/character set'
                 )
