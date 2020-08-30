@@ -23,6 +23,8 @@ class String(Column):
         'VARCHAR',
         'BINARY',
         'VARBINARY',
+        'ENUM',
+        'SET',
     ]
 
     _allowed_collation = [
@@ -30,6 +32,8 @@ class String(Column):
         'VARCHAR',
         'BINARY',
         'VARBINARY',
+        'ENUM',
+        'SET',
     ]
 
     _allowed_length = [

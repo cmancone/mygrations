@@ -16,6 +16,7 @@ class Column(ABC):
     _errors: List[str] = None
     _warnings: List[str] = None
     _allowed_column_types = []
+    _values: List[str] = None # enum/set only
 
     def __init__(
         self,
@@ -27,7 +28,8 @@ class Column(ABC):
         unsigned: bool = None,
         character_set: str = None,
         collate: str = None,
-        auto_increment: bool = False
+        auto_increment: bool = False,
+        values: List[str] = None,
     ):
         self._auto_increment = auto_increment
         self._character_set = character_set
@@ -38,6 +40,7 @@ class Column(ABC):
         self._name = name
         self._null = null
         self._unsigned = unsigned
+        self._values = values
         self._check_for_errors_and_warnings()
 
     @property
@@ -155,6 +158,11 @@ class Column(ABC):
         return self._auto_increment
 
     @property
+    def values(self) -> List[str]:
+        """ Public getter.  Returns the allowed values for the column (enum/set only)"""
+        return self._values
+
+    @property
     def errors(self) -> List[str]:
         """ Public getter.  Returns a list of parsing errors
 
@@ -196,12 +204,10 @@ class Column(ABC):
         parts.append('`%s`' % self.name)
 
         type_string = self.column_type
-        if self.length:
-            if type(self.length) == type([]):
-                length = "'%s'" % ("','".join(self.length))
-            else:
-                length = self.length
-            type_string += '(%s)' % length
+        if self.values:
+            type_string += "('%s')" % ("', '".join(self.values))
+        elif self.length is not None:
+            type_string += '(%s)' % self.length
         parts.append(type_string)
 
         if self.unsigned:
@@ -234,7 +240,7 @@ class Column(ABC):
             if getattr(self, attr) != getattr(column, attr):
                 return False
 
-        if not self._default_none_mismatch(column):
+        if self._default_none_mismatch(column):
             return False
         if not self._is_really_the_same_default(column):
             return False
@@ -247,10 +253,10 @@ class Column(ABC):
 
     def _default_none_mismatch(self, column: Column) -> bool:
         if self.default is not None and column.default is None:
-            return False
+            return True
         if column.default is not None and self.default is None:
-            return False
-        return True
+            return True
+        return False
 
     def _is_really_the_same_default(self, column: Column) -> bool:
         return self.default == column.default
