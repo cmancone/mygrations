@@ -28,9 +28,9 @@ class Table:
         indexes: List[Index],
         options: List[Option]
     ):
-        self._errors = []
         self._columns = OrderedDict()
         self._constraints = OrderedDict()
+        self._errors = []
         self._indexes = OrderedDict()
         self._name = name
         self._options = []
@@ -54,8 +54,6 @@ class Table:
         self._columns = OrderedDict((col.name, col) for col in columns)
         self._constraints = OrderedDict((constraint.name, constraint for constraint in )
         self._indexes = OrderedDict()
-
-
 
     @property
     def name(self):

@@ -21,8 +21,7 @@ class Index:
         self._name = name
         self._index_type = index_type
         self._columns = columns
-        self._errors = []
-        self._warnings = []
+        self._check_for_errors_and_warnings()
 
     @property
     def name(self) -> str:
@@ -69,6 +68,13 @@ class Index:
         :returns: A list of parsing/table warnings
         """
         return [] if self._warnings is None else self._warnings
+
+    def _check_for_errors_and_warnings(self):
+        self._errors = []
+        self._warnings = []
+        if len(self.name) > 64:
+            self._errors.append('Key name %s must be <=64 characters long' % (self._name))
+
 
     def __str__(self):
         """ Returns the MySQL command that would create the index
