@@ -7,15 +7,15 @@ from .columns.column import Column
 class Index:
     _name: str = ''
     _index_type: str = ''
-    _columns: List[Union[Column, str]] = None
+    _columns: List[str] = None
     _errors: List[str] = None
     _warnings: List[str] = None
 
-    def __init__(self, name: str, columns: List[Union[Column, str]], index_type: str='INDEX'):
+    def __init__(self, name: str, columns: List[str], index_type: str='INDEX'):
         """ Index constructor
 
         :param name: The name of the index
-        :param columns: The columns in the index
+        :param columns: The name of the columns in the index
         :param index_type: The type of the index (INDEX, UNIQUE, or PRIMARY)
         """
         self._name = name
@@ -46,11 +46,8 @@ class Index:
         return self.index_type == 'PRIMARY'
 
     @property
-    def columns(self) -> List[Union[Column, str]]:
-        """ Public getter.  Returns a list of the columns and/or names on the index.
-
-        :returns: The column length
-        """
+    def columns(self) -> List[Column]:
+        """ Public getter.  Returns a list of the columns on the index. """
         return self._columns
 
     @property
@@ -96,6 +93,6 @@ class Index:
 
         if self.name:
             parts.append('`%s`' % self.name)
-        parts.append('(`%s`)' % ("`,`".join(col if type(col) == str else col.name for col in self.columns)))
+        parts.append('(`%s`)' % ("`,`".join(self.columns)))
 
         return ' '.join(parts)

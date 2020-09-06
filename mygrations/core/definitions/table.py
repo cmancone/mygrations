@@ -33,7 +33,7 @@ class Table:
         self._errors = []
         self._indexes = OrderedDict()
         self._name = name
-        self._options = []
+        self._options = options
         self._primary = None
         self._raw_columns = columns
         self._raw_constraints = constraints
@@ -45,7 +45,7 @@ class Table:
         self._indexes = OrderedDict((index.name, index) for index in indexes)
         self._check_for_errors_and_warnings(columns, constraints, indexes)
 
-        for index in self._indexes:
+        for index in self._indexes.values():
             if index.index_type == 'PRIMARY':
                 self._primary = index
                 break
@@ -92,17 +92,17 @@ class Table:
                 self._errors.append(f"Duplicate {label} name found in table {self.name}: '{key}'")
 
         # more than one primary key
-        primaries = filter(lambda index: index.is_primary(), indexes)
+        primaries = list(filter(lambda index: index.is_primary(), indexes))
         if len(primaries) > 1:
             self._errors.append(f"Table {self.name} has more than one PRIMARY index")
 
         # auto increment checks
-        auto_increment = filter(lambda column: column.auto_increment, columns)
+        auto_increment = list(filter(lambda column: column.auto_increment, columns))
         if len(auto_increment) > 1:
             self._errors.append(f"Table {self.name} has more than one AUTO_INCREMENT column")
         elif not primaries:
             self._errors.append(f"Table {self.name} has an AUTO_INCREMENT column but is missing the PRIMARY index")
-        elif primaries[0].columns[0].name != auto_increment[0].name:
+        elif primaries[0].columns[0] != auto_increment[0].name:
             self._errors.append("Mismatched indexes in table %s: column %s is the AUTO_INCREMENT column but %s is the PRIMARY index column" % (self.name, auto_increment[0].name, primaries[0].columns[0].name))
 
 

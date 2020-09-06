@@ -5,10 +5,7 @@ from .columns.string import String
 
 class TestIndex(unittest.TestCase):
     def setUp(self):
-        self.columns = [
-            String('name', 'VARCHAR'),
-            String('description', 'VARCHAR'),
-        ]
+        self.columns = ['name', 'description']
 
     def test_can_create(self):
         name = String('name', 'VARCHAR')
