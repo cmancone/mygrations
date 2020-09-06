@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, Set, List
+from typing import Dict, Set, List, Union
 from collections import OrderedDict
 from .rows import Rows
 from .option import Option
@@ -16,7 +16,7 @@ class Table:
     _name: str = ''
     _options: List[Option] = None
     _primary: Index = None
-    _rows: Rows = None
+    _rows: Dict[int, List[Union[str, int]]] = None
     _tracking_rows: bool = False
     _warnings: List[str] = None
 
@@ -35,25 +35,76 @@ class Table:
         self._name = name
         self._options = []
         self._primary = None
+        self._raw_columns = columns
+        self._raw_constraints = constraints
+        self._raw_indexes = indexes
         self._warnings = []
 
-        # There is some violation of DRY here, except that indexes need extra logic
-        for column in columns:
-            if column.name in self._columns:
-                self._errors.append(f'Duplicate column {column.name} in table {self.name}')
-            self._columns[column.name] = column
-        for self.
-        for index in indexes:
-            if index.name in self._indexes:
-                self._errors.append(f'Duplicate index {index.name} in table {self.name}')
-            if index.is_primary():
-                if self._primary is not None:
-                    self._errors.append(f'More than one primary index for table {self.name}')
-            self._primary = index
-
         self._columns = OrderedDict((col.name, col) for col in columns)
-        self._constraints = OrderedDict((constraint.name, constraint for constraint in )
-        self._indexes = OrderedDict()
+        self._constraints = OrderedDict((constraint.name, constraint) for constraint in constraints)
+        self._indexes = OrderedDict((index.name, index) for index in indexes)
+        self._check_for_errors_and_warnings(columns, constraints, indexes)
+
+        for index in self._indexes:
+            if index.index_type == 'PRIMARY':
+                self._primary = index
+                break
+
+    def _check_for_errors_and_warnings(
+        self,
+        columns: List[Column],
+        constraints: List[Constraint],
+        indexes: List[Index]
+    ):
+        """ Check for errors and warnings for the initial data
+
+        The raw list of columns/constraints/indexes must be passed in because the constructor
+        converts these to ordered dicts, which means duplicate names will result in missing entries.
+        We want to check for duplicate entries, so therefore we need the original list.
+        """
+        self._errors = []
+        self._warnings = []
+
+        if not self.name:
+            self._errors.append("Table missing name")
+
+        # start with errors from "children" and append the table name for context
+        for type_to_check in [columns, constraints, indexes]:
+            for to_check in type_to_check:
+                for error in to_check.errors:
+                    self._errors.append(f'{error} in table {self.name}')
+                for warning in to_check.warnings:
+                    self._warnings.append(f'{warning} in table {self.name}')
+
+        # duplicate names
+        for (name, to_check) in {'columns': columns, 'constraints': constraints, 'indexes': indexes}.items():
+            if len(to_check) == len(getattr(self, name)):
+                continue
+            label = name.rstrip('s')
+            found = {}
+            duplicates = {}
+            for item in to_check:
+                if item.name in to_check:
+                    duplicates[item.name] = True
+                    continue
+                found[item.name] = True
+            for key in duplicates.keys():
+                self._errors.append(f"Duplicate {label} name found in table {self.name}: '{key}'")
+
+        # more than one primary key
+        primaries = filter(lambda index: index.is_primary(), indexes)
+        if len(primaries) > 1:
+            self._errors.append(f"Table {self.name} has more than one PRIMARY index")
+
+        # auto increment checks
+        auto_increment = filter(lambda column: column.auto_increment, columns)
+        if len(auto_increment) > 1:
+            self._errors.append(f"Table {self.name} has more than one AUTO_INCREMENT column")
+        elif not primaries:
+            self._errors.append(f"Table {self.name} has an AUTO_INCREMENT column but is missing the PRIMARY index")
+        elif primaries[0].columns[0].name != auto_increment[0].name:
+            self._errors.append("Mismatched indexes in table %s: column %s is the AUTO_INCREMENT column but %s is the PRIMARY index column" % (self.name, auto_increment[0].name, primaries[0].columns[0].name))
+
 
     @property
     def name(self):
@@ -89,7 +140,7 @@ class Table:
             self._rows = OrderedDict()
 
     @property
-    def tracking_rows(self):
+    def tracking_rows(self) -> bool:
         """ Public getter.  Returns True/False to denote whether or not this table is tracking row records
 
         To be clear on the distinction: just about any table might have rows.  However,
@@ -98,89 +149,51 @@ class Table:
         should probably be syncing rows for this table.
 
         :returns: Whether or not the mygration system is tracking rows on the table
-        :rtype: bool
         """
-
         return self._tracking_rows
 
     @property
-    def columns(self):
-        """ Public getter.  Returns an ordered dictionary of table columns
-
-        :returns: Table columns
-        :rtype: OrderedDict
-        """
-
+    def columns(self) -> Dict[str, Column]:
+        """ Public getter.  Returns an ordered dictionary of table columns """
         return self._columns
 
     @property
-    def indexes(self):
-        """ Public getter.  Returns an ordered dictionary of table indexes
-
-        :returns: Table indexes
-        :rtype: OrderedDict
-        """
-
+    def indexes(self) -> Dict[str, Index]:
+        """ Public getter.  Returns an ordered dictionary of table indexes """
         return self._indexes
 
     @property
-    def constraints(self):
-        """ Public getter.  Returns an ordered dictionary of table constraints
-
-        :returns: Table constraints
-        :rtype: OrderedDict
-        """
-
+    def constraints(self) -> Dict[str, Constraint]:
+        """ Public getter.  Returns an ordered dictionary of table constraints """
         return self._constraints
 
     @property
-    def primary(self):
-        """ Public getter.  Returns the index object for the primary key
-
-        :returns: The index object of the primary key column
-        :rtype: isinstance(formats.mysql.definitions.index)
-        """
-
+    def primary(self) -> Index:
+        """ Public getter.  Returns the index object for the primary key """
         return self._primary
 
     @property
-    def errors(self):
-        """ Public getter.  Returns a list of parsing errors
-
-        :returns: A list of parsing errors
-        :rtype: list
-        """
+    def errors(self) -> List[str]:
+        """ Public getter.  Returns a list of parsing errors """
         return [] if self._errors is None else self._errors
 
     @property
-    def warnings(self):
-        """ Public getter.  Returns a list of parsing/table warnings
-
-        :returns: A list of parsing/table warnings
-        :rtype: list
-        """
+    def warnings(self) -> List[str]:
+        """ Public getter.  Returns a list of parsing/table warnings """
         return [] if self._warnings is None else self._warnings
 
     @property
-    def auto_increment(self):
-        """ Public getter.  Returns the autoincrement for the table
-
-        :returns: The auto increment
-        :rtype: int
-        """
+    def auto_increment(self) -> int:
+        """ Public getter.  Returns the autoincrement value for the table """
         return self._auto_increment
 
     @property
-    def rows(self):
-        """ Public getter.  Returns an ordered dictionary with row data by id
+    def rows(self) -> Dict[int, List[Union[str, int]]]:
+        """ Public getter.  Returns an ordered dictionary with row data by id """
+        return None if self._rows is None else self._rows
 
-        :returns: An ordered dictionary with row data by id
-        :rtype: OrderedDict
-        """
-        return [] if self._rows is None else self._rows
-
-    def add_rows(self, rows):
-        """ Adds a mygrations.formats.mysql.definitions.rows object to the table
+    def add_rows(self, rows: Rows) -> Union[str, bool]:
+        """ Adds rows to the table
 
         The rows object has some flexibility in terms of columns: it doesn't just
         assume that a value is provided for every column in the table.  Rather,
@@ -190,10 +203,7 @@ class Table:
 
         Rows with errors will not be processed
 
-        :param rows: The rows to process
-        :type rows: mygrations.formats.mysql.definitions.rows
         :returns: An error string if an error is encountered, otherwise True/False
-        :rtype: bool | string
         """
         if not isinstance(rows, rows_definition):
             raise ValueError(
@@ -237,17 +247,14 @@ class Table:
 
         return True
 
-    def add_raw_row(self, row):
+    def add_raw_row(self, row: Dict[str, Union[str, int]]) -> Union[str, bool]:
         """ Adds a row into the table as a dictionary instead of a row object
 
         A bit of repetition here.  This is similar to what happens inside the main
         loop of self.add_rows, but different enough that I'm not trying to combine
         them right this second.
 
-        :param row: The row to add
-        :type row: A dictionary
         :returns: An error string if an error is encountered, otherwise True/False
-        :rtype: bool | string
         """
         self._tracking_rows = True
         if self._rows is None:
@@ -268,15 +275,12 @@ class Table:
 
         self._rows[row_id] = converted_row
 
-    def column_before(self, column_name):
+    def column_before(self, column_name: str) -> Union[str, bool]:
         """ Returns the name of the column that comes before a given row.
 
         Returns true if the column is at the beginning of the table
 
-        :param column_name: The name of the column to find the position for
-        :type column_name: str
         :returns: The name of the column before the given column, or True if at the beginning
-        :rtype: string|True
         """
         # this works because we used an OrderedDict
         columns = [col for col in self.columns.keys()]
@@ -293,17 +297,154 @@ class Table:
 
         return columns[index - 1]
 
-    def __str__(self):
+    def column_is_indexed(self, column: Union[str, Column]) -> bool:
+        """ Returns True/False to denote whether or not the column has a useable index """
+        if type(column) != str:
+            column = column.name
+        if column not in self._columns:
+            return False
+
+        # best way to do this is with a set.  We'll keep a record of all indexed columns
+        # the column is indexed if an index has that column in the first position
+        if self._indexed_columns is None:
+            self._indexed_columns = set([index.columns[0] for index in self._indexes.values()])
+        return column in self._indexed_columns
+
+    def __str__(self) -> str:
         return str(self.create())
 
-    def nice(self):
+    def nice(self) -> str:
         return str(self.create(True))
 
-    def create(self, nice=False):
+    def add_column(self, column: Column, position=False):
+        """ Adds a column to the table
+
+        The value of position matches self.position from mygrations.formats.mysql.mygration.operations.add_column
+
+        :param column: The column to add
+        :param position: Where to put the column
+        """
+        if column.name in self._columns:
+            raise ValueError("Cannot add column %s because %s already exists" % (column.name, column.name))
+
+        # putting it at the end is easy
+        if not position:
+            self._columns[column.name] = column
+            return None
+
+        # beginning is also easy
+        if position == True:
+            self._columns[column.name] = column
+            self._columns.move_to_end(column.name, last=False)
+            return None
+
+        # now it is tricky
+        found = False
+        new_columns = OrderedDict()
+        for key, value in self._columns.items():
+            new_columns[key] = value
+            if key == position:
+                new_columns[column.name] = column
+                found = True
+
+        if not found:
+            raise ValueError(
+                "Cannot add column %s after %s because %s does not exist" % (column.name, position, position)
+            )
+
+        self._columns = new_columns
+        return None
+
+    def remove_column(self, column: Union[str, Column]):
+        """ Removes a column from the table """
+        column_name = column if type(column) == str else column.name
+        if not column_name in self._columns:
+            raise ValueError("Cannot remove column %s because column %s does not exist" % (column_name, column_name))
+        self._columns.pop(column_name, None)
+
+    def change_column(self, new_column: Column):
+        """ Changes a column.  This does not currently support renaming columns """
+        if not new_column.name in self._columns:
+            raise ValueError(
+                "Cannot modify column %s because column %s does not exist" % (new_column.name, new_column.name)
+            )
+        self._columns[new_column.name] = new_column
+
+    def add_index(self, index: Index):
+        """ Adds an index to the table """
+        if index.name in self._indexes:
+            raise ValueError("Cannot add index %s because index %s already exists" % (index.name, index.name))
+        self._indexes[index.name] = index
+
+        if self._indexed_columns is not None:
+            self._indexed_columns.add(index.columns[0])
+
+    def remove_index(self, index: Union[str, Index]):
+        """ Removes an index from the table """
+        index_name = index if type(index) == str else index.name
+        if index_name not in self._indexes:
+            raise ValueError("Cannot remove index %s because index %s does not exist" % (index_name, index_name))
+
+        indexed_column = self._indexes[index_name].columns[0]
+        self._indexes.pop(index_name, None)
+        if self._indexed_columns is not None:
+            self._indexed_columns.discard(indexed_column)
+
+    def change_index(self, new_index: Index):
+        """ Changes an index.  This does not currently support renaming """
+        if not new_index.name in self._indexes:
+            raise ValueError("Cannot modify index %s because index %s does not exist" % (new_index.name, new_index.name))
+
+        if self._indexed_columns is not None:
+            self._indexed_columns.discard(self._indexes[new_index.name].columns[0])
+        self._indexes[new_index.name] = new_index
+
+        if self._indexed_columns is not None:
+            self._indexed_columns.add(new_index.columns[0])
+
+    def add_constraint(self, constraint: Constraint):
+        """ Adds a constraint to the table """
+        if constraint.name in self._constraints:
+            raise ValueError(
+                "Cannot add constraint %s because constraint %s already exists" % (constraint.name, constraint.name)
+            )
+        self._constraints[constraint.name] = constraint
+
+    def remove_constraint(self, constraint: Union[str, Constraint]):
+        """ Removes an constraint from the table """
+        if type(constraint) != str:
+            constraint = constraint.name
+        if constraint not in self._constraints:
+            raise ValueError(
+                "Cannot remove constraint %s because constraint %s does not exist" % (constraint, constraint)
+            )
+        self._constraints.pop(constraint, None)
+
+    def change_constraint(self, new_constraint):
+        """ Changes a constraint. This does not currently support renaming. """
+        if not new_constraint.name in self._constraints:
+            raise ValueError(
+                "Cannot modify constraint %s because constraint %s does not exist" %
+                (new_constraint.name, new_constraint.name)
+            )
+        self._constraints[new_constraint.name] = new_constraint
+
+    def _loose_equal(self, val1: Union[str, int], val2: Union[str, int]) -> bool:
+        """ Performs a looser comparison, as values might have different types depending on whether they came out of a database or file
+
+        Returns true if the two values are equal, even if one is a string and the other an int.
+        """
+        # if we don't have a type mistmatch then this is easy
+        if type(val1) == type(val2):
+            return val1 == val2
+
+        # otherwise see if we can cheat and just convert to strings
+        return str(val1) == str(val2)
+
+    def create(self, nice: bool = False):
         """ Returns a create table operation that can create this table
 
         :param nice: Whether or not to return a nicely formatted CREATE TABLE command
-        :type nice: bool
         :returns: A create table operation
         :rtype: mygrations.operations.create_table
         """
@@ -460,25 +601,6 @@ class Table:
 
         return operations
 
-    def column_is_indexed(self, column):
-        """ Returns True/False to denote whether or not the column has a useable index
-
-        :param column: The column to check
-        :type column: string|mygrations.formats.mysql.definitions.column
-        """
-        if type(column) != str:
-            column = column.name
-
-        if column not in self._columns:
-            return False
-
-        # best way to do this is with a set.  We'll keep a record of all indexed columns
-        # the column is indexed if an index has that column in the first position
-        if self._indexed_columns is None:
-            self._indexed_columns = set([index.columns[0] for index in self._indexes.values()])
-
-        return column in self._indexed_columns
-
     def _differences(self, from_list, to_list):
         """
         Calculates the difference between two OrderedDicts.
@@ -501,183 +623,3 @@ class Table:
         :type operation: mygrations.formats.mysql.mygration.operations.*
         """
         operation.apply_to_table(self)
-
-    def add_column(self, column, position=False):
-        """ Adds a column to the table
-
-        The value of position matches self.position from mygrations.formats.mysql.mygration.operations.add_column
-
-        :param column: The column to add
-        :param position: Where to put the column
-        :type column: mygrations.formats.mysql.definitions.column
-        :type position: See mygrations.formats.mysql.mygration.operations.add_column
-        """
-        # putting it at the end is easy
-        if column.name in self._columns:
-            raise ValueError("Cannot add column %s because %s already exists" % (column.name, column.name))
-
-        if not position:
-            self._columns[column.name] = column
-            return True
-
-        # end is also easy
-        if position == True:
-            self._columns[column.name] = column
-            self._columns.move_to_end(column.name, last=False)
-            return True
-
-        # now it is tricky
-        found = False
-        new_columns = OrderedDict()
-        for key, value in self._columns.items():
-            new_columns[key] = value
-            if key == position:
-                new_columns[column.name] = column
-                found = True
-
-        if not found:
-            raise ValueError(
-                "Cannot add column %s after %s because %s does not exist" % (column.name, position, position)
-            )
-
-        self._columns = new_columns
-        return True
-
-    def remove_column(self, column_name):
-        """ Removes a column from the table
-
-        :param column_name: The column to remove
-        :type column_name: string|mygrations.formats.mysql.definitions.column
-        """
-        if type(column_name) != str:
-            column_name = column_name.name
-
-        if not column_name in self._columns:
-            raise ValueError("Cannot remove column %s because column %s does not exist" % (column_name, column_name))
-
-        self._columns.pop(column_name, None)
-
-    def change_column(self, new_column):
-        """ Changes a column
-
-        This does not currently support renaming
-
-        :param new_column: The new column definition
-        :type new_column: mygrations.formats.mysql.definitions.column
-        """
-        if not new_column.name in self._columns:
-            raise ValueError(
-                "Cannot modify column %s because column %s does not exist" % (new_column.name, new_column.name)
-            )
-        self._columns[new_column.name] = new_column
-
-    def add_key(self, key):
-        """ Adds an key to the table
-
-        :param key: The key to add
-        :type key: mygrations.formats.mysql.definitions.key
-        """
-        if key.name in self._indexes:
-            raise ValueError("Cannot add key %s because key %s already exists" % (key.name, key.name))
-        self._indexes[key.name] = key
-
-        if self._indexed_columns is not None:
-            self._indexed_columns.add(key.columns[0])
-
-    def remove_key(self, key):
-        """ Removes an key from the table
-
-        :param key: The key to remove
-        :type key: string|mygrations.formats.mysql.definitions.key
-        """
-        if type(key) != str:
-            key = key.name
-
-        if key not in self._indexes:
-            raise ValueError("Cannot remove key %s because key %s does not exist" % (key, key))
-
-        indexed_column = self._indexes[key].columns[0]
-        self._indexes.pop(key, None)
-
-        if self._indexed_columns is not None:
-            self._indexed_columns.discard(indexed_column)
-
-    def change_key(self, new_key):
-        """ Changes a key
-
-        This does not currently support renaming
-
-        :param new_key: The new key definition
-        :type new_key: mygrations.formats.mysql.definitions.key
-        """
-        if not new_key.name in self._indexes:
-            raise ValueError("Cannot modify key %s because key %s does not exist" % (new_key.name, new_key.name))
-
-        if self._indexed_columns is not None:
-            self._indexed_columns.discard(self._indexes[new_key.name].columns[0])
-
-        self._indexes[new_key.name] = new_key
-
-        if self._indexed_columns is not None:
-            self._indexed_columns.add(new_key.columns[0])
-
-    def add_constraint(self, constraint):
-        """ Adds a constraint to the table
-
-        :param constraint: The constraint to add
-        :type constraint: mygrations.formats.mysql.definitions.constraint
-        """
-        if constraint.name in self._constraints:
-            raise ValueError(
-                "Cannot add constraint %s because constraint %s already exists" % (constraint.name, constraint.name)
-            )
-        self._constraints[constraint.name] = constraint
-
-    def remove_constraint(self, constraint):
-        """ Removes an constraint from the table
-
-        :param constraint: The constraint to remove
-        :type constraint: string|mygrations.formats.mysql.definitions.constraint
-        """
-        if type(constraint) != str:
-            constraint = constraint.name
-
-        if constraint not in self._constraints:
-            raise ValueError(
-                "Cannot remove constraint %s because constraint %s does not exist" % (constraint, constraint)
-            )
-        self._constraints.pop(constraint, None)
-
-    def change_constraint(self, new_constraint):
-        """ Changes a constraint
-
-        This does not currently support renaming
-
-        :param new_constraint: The new constraint definition
-        :type new_constraint: mygrations.formats.mysql.definitions.constraint
-        """
-        if not new_constraint.name in self._constraints:
-            raise ValueError(
-                "Cannot modify constraint %s because constraint %s does not exist" %
-                (new_constraint.name, new_constraint.name)
-            )
-        self._constraints[new_constraint.name] = new_constraint
-
-    def _loose_equal(self, val1, val2):
-        """ Performs a looser comparison, as values might have different types depending on whether they came out of a database or file
-
-        Returns true if the two values are equal, even if one is a string and the other an int.
-
-        :param val1: The first value to compare
-        :param val2: The second value to compare
-        :type val1: string|int
-        :type val2: string|int
-        :return: Whether or not they are considered a match
-        :rtype: bool
-        """
-        # if we don't have a type mistmatch then this is easy
-        if type(val1) == type(val2):
-            return val1 == val2
-
-        # otherwise see if we can cheat and just convert to strings
-        return str(val1) == str(val2)

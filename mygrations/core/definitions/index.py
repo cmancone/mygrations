@@ -72,6 +72,9 @@ class Index:
     def _check_for_errors_and_warnings(self):
         self._errors = []
         self._warnings = []
+        for required in ['name', 'index_type', 'columns']:
+            if not getattr(self, required):
+                self._errors.append(f"Missing {required} for index {self.name}")
         if len(self.name) > 64:
             self._errors.append('Key name %s must be <=64 characters long' % (self._name))
 

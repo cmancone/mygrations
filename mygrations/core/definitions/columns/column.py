@@ -192,6 +192,10 @@ class Column(ABC):
         if self.default is None and not self.null:
             self._warnings.append(f'Column {self.name} is not null and has no default')
 
+        for required in ['name', 'column_type']:
+            if not getattr(self, required):
+                self._errors.append(f"Missing {required} for column {self.name}")
+
 
     def __str__(self) -> str:
         """ Returns the MySQL command that would create the column
