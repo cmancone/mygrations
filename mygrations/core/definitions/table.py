@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Dict, Set, List, Union
+from typing import Any, Dict, List, Set, Union
 from collections import OrderedDict
 from .rows import Rows
 from .option import Option
@@ -43,6 +43,11 @@ class Table:
         self._columns = OrderedDict((col.name, col) for col in columns)
         self._constraints = OrderedDict((constraint.name, constraint) for constraint in constraints)
         self._indexes = OrderedDict((index.name, index) for index in indexes)
+
+        # It is somewhat non-sensical that we check for errors and warnings in the constructor, but allow
+        # columns/constraints/indexes to be allowed later as well.  It ended up like this simply because that's
+        # how the other classes are organized, but the other classes don't allow changes to be made after
+        # instatiation.  Therefore this will likely cause problems in the future, but I'm being lazy right now.
         self._check_for_errors_and_warnings(columns, constraints, indexes)
 
         for index in self._indexes.values():
@@ -450,15 +455,6 @@ class Table:
         # otherwise see if we can cheat and just convert to strings
         return str(val1) == str(val2)
 
-    def create(self, nice: bool = False):
-        """ Returns a create table operation that can create this table
-
-        :param nice: Whether or not to return a nicely formatted CREATE TABLE command
-        :returns: A create table operation
-        :rtype: mygrations.operations.create_table
-        """
-        return create_table(self, nice)
-
     def to(self, comparison_table, split_operations=False):
         """ Compares two tables to eachother and returns a list of operations which can bring the structure of the second in line with the first
 
@@ -610,7 +606,7 @@ class Table:
 
         return operations
 
-    def _differences(self, from_list, to_list):
+    def _differences(self, from_list: Dict[str, Any], to_list: Dict[str, Any]):
         """
         Calculates the difference between two OrderedDicts.
 
@@ -621,8 +617,11 @@ class Table:
         :return: (added, removed, overlap)
         """
 
-        return ([key for key in to_list if key not in from_list], [key for key in from_list if key not in to_list],
-                [key for key in from_list if key in to_list])
+        return (
+            [key for key in to_list if key not in from_list],
+            [key for key in from_list if key not in to_list],
+            [key for key in from_list if key in to_list]
+        )
 
     def apply_operation(self, operation):
         """

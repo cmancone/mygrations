@@ -2,7 +2,7 @@ import unittest
 from .numeric import Numeric
 
 
-class TestNumeric(unittest.TestCase):
+class NumericTest(unittest.TestCase):
     def test_is_the_same(self):
         attrs = {
             'length': '5,2',
