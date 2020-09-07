@@ -24,8 +24,8 @@ class Table:
         self,
         name: str,
         columns: List[Column],
-        constraints: List[Constraint],
         indexes: List[Index],
+        constraints: List[Constraint],
         options: List[Option]
     ):
         self._columns = OrderedDict()
@@ -67,44 +67,53 @@ class Table:
 
         if not self.name:
             self._errors.append("Table missing name")
+        if not len(self.columns):
+            self._errors.append(f"Table '{self.name}' does not have any columns")
+            # if we have no columns then none of these other checks apply
+            return None
 
         # start with errors from "children" and append the table name for context
-        for type_to_check in [columns, constraints, indexes]:
+        for type_to_check in [columns, indexes, constraints]:
             for to_check in type_to_check:
                 for error in to_check.errors:
-                    self._errors.append(f'{error} in table {self.name}')
+                    self._errors.append(f"{error} in table '{self.name}'")
                 for warning in to_check.warnings:
-                    self._warnings.append(f'{warning} in table {self.name}')
+                    self._warnings.append(f"{warning} in table '{self.name}'")
 
         # duplicate names
         for (name, to_check) in {'columns': columns, 'constraints': constraints, 'indexes': indexes}.items():
             if len(to_check) == len(getattr(self, name)):
                 continue
-            label = name.rstrip('s')
+            label = name.rstrip('es').rstrip('s')
             found = {}
             duplicates = {}
             for item in to_check:
-                if item.name in to_check:
+                if item.name in found:
                     duplicates[item.name] = True
                     continue
                 found[item.name] = True
             for key in duplicates.keys():
-                self._errors.append(f"Duplicate {label} name found in table {self.name}: '{key}'")
+                self._errors.append(f"Duplicate {label} name found in table '{self.name}': '{key}'")
 
         # more than one primary key
         primaries = list(filter(lambda index: index.is_primary(), indexes))
         if len(primaries) > 1:
-            self._errors.append(f"Table {self.name} has more than one PRIMARY index")
+            self._errors.append(f"Table '{self.name}' has more than one PRIMARY index")
 
         # auto increment checks
         auto_increment = list(filter(lambda column: column.auto_increment, columns))
         if len(auto_increment) > 1:
-            self._errors.append(f"Table {self.name} has more than one AUTO_INCREMENT column")
+            self._errors.append(f"Table '{self.name}' has more than one AUTO_INCREMENT column")
         elif not primaries:
-            self._errors.append(f"Table {self.name} has an AUTO_INCREMENT column but is missing the PRIMARY index")
+            self._errors.append(f"Table '{self.name}' has an AUTO_INCREMENT column but is missing the PRIMARY index")
         elif primaries[0].columns[0] != auto_increment[0].name:
-            self._errors.append("Mismatched indexes in table %s: column %s is the AUTO_INCREMENT column but %s is the PRIMARY index column" % (self.name, auto_increment[0].name, primaries[0].columns[0].name))
+            self._errors.append("Mismatched indexes in table '%s': column '%s' is the AUTO_INCREMENT column but '%s' is the PRIMARY index column" % (self.name, auto_increment[0].name, primaries[0].columns[0]))
 
+        # indexes on non-existent columns
+        for index in self.indexes.values():
+            for column in index.columns:
+                if not column in self.columns:
+                    self._errors.append(f"Table '{self.name}' has index '{index.name}' that references non-existent column '{column}'")
 
     @property
     def name(self):
