@@ -1,15 +1,14 @@
-class change_constraint:
-    """ Generates a partial SQL command to change a foreign key in a table """
+from ..definitions.constraint import Constraint
+from ..definitions.table import Table
 
-    def __init__(self, constraint):
+
+class ChangeConstraint:
+    """ Generates a partial SQL command to change a constraint in a table """
+    def __init__(self, constraint: Constraint):
         self.constraint = constraint
 
-    def apply_to_table(self, table):
-        """ Changes the constraint in the table
-
-        :param table: The table to change the constraint on
-        :param type: mygrations.formats.mysql.definitions.table
-        """
+    def apply_to_table(self, table: Table):
+        """ Changes the constraint in the table """
         table.change_constraint(self.constraint)
 
     def __str__(self):
