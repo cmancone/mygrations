@@ -1,5 +1,4 @@
-class database(object):
-
+class database:
     _errors = None
     _warnings = None
     _tables = None
@@ -50,22 +49,6 @@ class database(object):
         if self._errors_1215 is None:
             self._errors_1215 = self._find_all_1215_errors()
         return self._errors_1215
-
-    def store_rows_with_tables(self):
-        """ Processes table rows and adds them to the appropriate tables
-
-        Table rows are stored with tables for comparison purposes, but might
-        come in through their own separate files.  This method puts the two
-        together.
-        """
-        for rows in self._rows:
-            if not rows.table in self._tables:
-                self._errors.append('Found rows for table %s but that table does not have a definition' % rows.table)
-                continue
-
-            returned = self._tables[rows.table].add_rows(rows)
-            if isinstance(returned, str):
-                self._errors.append(returned)
 
     def unfulfilled_fks(self, table):
         """ Returns a dictionary with information about all constraints in the table which are not fulfilled by this database

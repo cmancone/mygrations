@@ -133,7 +133,7 @@ class reader(object):
             elif data[:6].lower() == 'create':
                 parser = create_parser()
                 data = parser.parse(data)
-                self._tables[parser.name] = parser
+                self._tables[parser.name] = parser.as_table()
 
             elif data[:6].lower() == 'insert':
                 parser = insert_parser()
