@@ -6,6 +6,7 @@ from .option import Option
 from .columns.column import Column
 from .index import Index
 from .constraint import Constraint
+from ..operations.create_table import CreateTable
 
 
 class Table:
@@ -326,6 +327,14 @@ class Table:
 
     def __str__(self) -> str:
         return str(self.create())
+
+    def create(self, nice=False):
+        """ Returns a create table operation that can create this table
+
+        :param nice: Whether or not to return a nicely formatted CREATE TABLE command
+        :returns: A create table operation
+        """
+        return CreateTable(self, nice)
 
     def nice(self) -> str:
         return str(self.create(True))
