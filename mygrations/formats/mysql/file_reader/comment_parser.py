@@ -1,5 +1,5 @@
-from mygrations.core.parse.parser import parser
-class comment_parser(parser):
+from mygrations.core.parse.parser import Parser
+class CommentParser(Parser):
 
     rules = ['nope']
     sql = ''

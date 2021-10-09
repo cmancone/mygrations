@@ -1,4 +1,4 @@
-class row_delete:
+class RowDelete:
     """ Generates an SQL command to delete a record """
 
     def __init__(self, table_name, row_id):

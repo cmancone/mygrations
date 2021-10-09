@@ -1,8 +1,9 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.rows import rows
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.rows import Rows
+from .parsers.insert_values import InsertValues
 
-from .parsers.insert_values import insert_values
-class insert_parser(parser, rows):
+
+class InsertParser(Parser, Rows):
 
     rules = [{
         'type': 'literal',
@@ -28,7 +29,7 @@ class insert_parser(parser, rows):
     }, {
         'type': 'children',
         'name': 'inserts',
-        'classes': [insert_values]
+        'classes': [InsertValues]
     }, {
         'type': 'literal',
         'value': ';',

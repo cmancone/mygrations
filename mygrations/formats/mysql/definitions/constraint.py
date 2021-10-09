@@ -1,4 +1,4 @@
-class constraint(object):
+class Constraint(object):
 
     _errors = None
     _warnings = None

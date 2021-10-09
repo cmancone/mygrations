@@ -1,6 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.index import index
-class index_primary(parser, index):
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.index import Index
+class IndexPrimary(Parser, Index):
 
     _index_type = 'primary'
     has_comma = False

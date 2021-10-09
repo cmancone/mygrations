@@ -1,4 +1,4 @@
-class alter_table:
+class AlterTable:
     """ Generates an SQL command to alter a table """
 
     def __init__(self, table):

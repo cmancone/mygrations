@@ -1,6 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.column import column
-class type_character(parser, column):
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.column import Column
+class TypeCharacter(Parser, Column):
 
     allowed_collation_types = {'char': True, 'varchar': True}
 

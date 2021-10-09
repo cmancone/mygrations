@@ -1,5 +1,5 @@
-from .rule_base import rule_base
-class rule_delimited(rule_base):
+from .rule_base import RuleBase
+class RuleDelimited(RuleBase):
     """ rule = rule_delimited( parser, rule, next_rule )
 
     rule_delimited constructor.  Pass in the parser object that the rule is for, the rule

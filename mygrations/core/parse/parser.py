@@ -1,16 +1,16 @@
 import re
+from .rule_children import RuleChildren
+from .rule_delimited import RuleDelimited
+from .rule_literal import RuleLiteral
+from .rule_regexp import RuleRegexp
 
-from .rule_children import rule_children
-from .rule_delimited import rule_delimited
-from .rule_literal import rule_literal
-from .rule_regexp import rule_regexp
-class parser(object):
 
+class Parser(object):
     rule_types = {
-        'children': rule_children,
-        'delimited': rule_delimited,
-        'literal': rule_literal,
-        'regexp': rule_regexp
+        'children': RuleChildren,
+        'delimited': RuleDelimited,
+        'literal': RuleLiteral,
+        'regexp': RuleRegexp
     }
 
     def __init__(self, rules=[]):

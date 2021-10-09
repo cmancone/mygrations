@@ -1,6 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.column import column
-class type_text(parser, column):
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.column import Column
+class TypeText(Parser, Column):
 
     #***** Lint error if default is found for text field ******
     allowed_types = {

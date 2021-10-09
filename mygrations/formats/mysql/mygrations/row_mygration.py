@@ -1,10 +1,10 @@
 import copy
 
-from mygrations.formats.mysql.definitions.database import database
-from mygrations.formats.mysql.mygrations.operations.row_insert import row_insert
-from mygrations.formats.mysql.mygrations.operations.row_delete import row_delete
-from mygrations.formats.mysql.mygrations.operations.row_update import row_update
-class row_mygration:
+from mygrations.formats.mysql.definitions.database import Database
+from mygrations.formats.mysql.mygrations.operations.row_insert import RowInsert
+from mygrations.formats.mysql.mygrations.operations.row_delete import RowDelete
+from mygrations.formats.mysql.mygrations.operations.row_update import RowUpdate
+class RowMygration:
     """ Creates a migration plan to sync the rows of a database for tables being tracked.
 
     This doesn't sync rows for all tables but only those tables marked as

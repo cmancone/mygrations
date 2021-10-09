@@ -1,6 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.column import column
-class type_decimal(parser, column):
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.column import Column
+class TypeDecimal(Parser, Column):
 
     allowed_types = {'real': True, 'double': True, 'float': True, 'decimal': True, 'numeric': True}
 

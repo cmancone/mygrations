@@ -1,7 +1,7 @@
 import os, os.path
 from mygrations.helpers.dotenv import dotenv
 from mygrations.helpers.db_credentials import db_credentials
-class base(object):
+class Base(object):
 
     credentials = {}
     config = {}

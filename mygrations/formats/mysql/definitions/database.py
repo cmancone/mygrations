@@ -1,4 +1,4 @@
-class database:
+class Database:
     _errors = None
     _warnings = None
     _tables = None

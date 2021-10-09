@@ -1,16 +1,16 @@
-from .base import base
-from mygrations.formats.mysql.file_reader.database import database as database_parser
-from mygrations.formats.mysql.db_reader.database import database as database_reader
-from mygrations.formats.mysql.mygrations.mygration import mygration
+from .base import Base
+from mygrations.formats.mysql.file_reader.database import Database as DatabaseParser
+from mygrations.formats.mysql.db_reader.database import Database as DatabaseReader
+from mygrations.formats.mysql.mygrations.mygration import Mygration
 from mygrations.drivers.mysqldb.mysqldb import mysqldb
 def execute(options):
 
-    obj = import_files(options)
+    obj = ImportFiles(options)
     obj.execute()
-class import_files(base):
+class ImportFiles(base):
     def execute(self):
 
-        files_database = database_parser(self.config['files_directory'])
+        files_database = DatabaseParser(self.config['files_directory'])
 
         # any errors or warnings?
         if files_database.errors:
@@ -21,7 +21,7 @@ class import_files(base):
             return False
 
         # use the credentials to load up a database connection
-        live_database = database_reader(mysqldb(self.credentials))
+        live_database = DatabaseReader(mysqldb(self.credentials))
 
         # we have to tell the live database to load records
         # for any tables we are tracking records for.
@@ -38,7 +38,7 @@ class import_files(base):
 
             live_database.read_rows(table)
 
-        mygrate = mygration(files_database, live_database)
+        mygrate = Mygration(files_database, live_database)
         if mygrate.errors_1215:
             print('1215 Errors encountered')
             for error in mygrate.errors_1215:

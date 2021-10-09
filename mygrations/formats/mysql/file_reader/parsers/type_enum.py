@@ -1,6 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.column import column
-class type_enum(parser, column):
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.column import Column
+class TypeEnum(Parser, Column):
 
     allowed_types = {'set': True, 'enum': True}
 

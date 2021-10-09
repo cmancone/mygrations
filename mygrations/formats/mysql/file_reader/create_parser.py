@@ -1,13 +1,13 @@
 from collections import OrderedDict
 
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.constraint import constraint
-from mygrations.formats.mysql.definitions.index import index
-from mygrations.formats.mysql.definitions.column import column
-from mygrations.formats.mysql.definitions.table import table
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.constraint import Constraint
+from mygrations.formats.mysql.definitions.index import Index
+from mygrations.formats.mysql.definitions.column import Column
+from mygrations.formats.mysql.definitions.table import Table
 
 from .parsers import *
-class create_parser(parser, table):
+class CreateParser(Parser, Table):
 
     # this defines the rules for the parsing engine.  Yes, I decided to try to build
     # a parsing engine to parse the MySQL.  Seems like a reasonable choice at the
@@ -38,8 +38,8 @@ class create_parser(parser, table):
                  'name':
                  'definitions',
                  'classes': [
-                     index_primary, index_key, index_unique, constraint_foreign, type_character, type_numeric,
-                     type_decimal, type_text, type_enum, type_plain
+                     IndexPrimary, IndexKey, IndexUnique, ConstraintForeign, TypeCharacter, TypeNumeric,
+                     TypeDecimal, TypeText, TypeEnum, TypePlain
                  ]
              }, {
                  'type': 'literal',
@@ -47,7 +47,7 @@ class create_parser(parser, table):
              }, {
                  'type': 'children',
                  'name': 'table_options',
-                 'classes': [table_option],
+                 'classes': [TableOption],
                  'optional': True
              }, {
                  'type': 'literal',

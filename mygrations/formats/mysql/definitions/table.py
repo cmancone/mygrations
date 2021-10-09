@@ -1,21 +1,23 @@
 from collections import OrderedDict
-from .rows import rows as rows_definition
+from .rows import Rows as RowsDefinition
 
-from ..mygrations.operations.alter_table import alter_table
-from ..mygrations.operations.add_column import add_column
-from ..mygrations.operations.change_column import change_column
-from ..mygrations.operations.remove_column import remove_column
-from ..mygrations.operations.add_key import add_key
-from ..mygrations.operations.change_key import change_key
-from ..mygrations.operations.remove_key import remove_key
-from ..mygrations.operations.add_constraint import add_constraint
-from ..mygrations.operations.change_constraint import change_constraint
-from ..mygrations.operations.remove_constraint import remove_constraint
-from ..mygrations.operations.create_table import create_table
-from ..mygrations.operations.row_delete import row_delete
-from ..mygrations.operations.row_insert import row_insert
-from ..mygrations.operations.row_update import row_update
-class table(object):
+from ..mygrations.operations.alter_table import AlterTable
+from ..mygrations.operations.add_column import AddColumn
+from ..mygrations.operations.change_column import ChangeColumn
+from ..mygrations.operations.remove_column import RemoveColumn
+from ..mygrations.operations.add_key import AddKey
+from ..mygrations.operations.change_key import ChangeKey
+from ..mygrations.operations.remove_key import RemoveKey
+from ..mygrations.operations.add_constraint import AddConstraint
+from ..mygrations.operations.change_constraint import ChangeConstraint
+from ..mygrations.operations.remove_constraint import RemoveConstraint
+from ..mygrations.operations.create_table import CreateTable
+from ..mygrations.operations.row_delete import RowDelete
+from ..mygrations.operations.row_insert import RowInsert
+from ..mygrations.operations.row_update import RowUpdate
+
+
+class Table(object):
 
     _name = ''
     _options = None
@@ -190,7 +192,7 @@ class table(object):
         :returns: An error string if an error is encountered, otherwise True/False
         :rtype: bool | string
         """
-        if not isinstance(rows, rows_definition):
+        if not isinstance(rows, RowsDefinition):
             raise ValueError(
                 'Only objects of class mygrations.formats.mysql.definitions.rows can be added as rows to a table'
             )
@@ -342,10 +344,10 @@ class table(object):
         # 1. Adding columns, changing columns, adding keys, changing keys, removing keys, removing foreign keys
         # 2. Adding foreign keys, changing foreign keys
         # 3. Removing columns
-        primary_alter = alter_table(self.name)
+        primary_alter = AlterTable(self.name)
         for new_column in added_columns:
             primary_alter.add_operation(
-                add_column(comparison_table.columns[new_column], comparison_table.column_before(new_column))
+                AddColumn(comparison_table.columns[new_column], comparison_table.column_before(new_column))
             )
 
         for overlap_column in overlap_columns:
@@ -359,30 +361,30 @@ class table(object):
             if self.columns[overlap_column].is_really_the_same_as(comparison_table.columns[overlap_column]):
                 continue
 
-            primary_alter.add_operation(change_column(comparison_table.columns[overlap_column]))
+            primary_alter.add_operation(ChangeColumn(comparison_table.columns[overlap_column]))
 
         for removed_column in removed_columns:
-            primary_alter.add_operation(remove_column(self.columns[removed_column]))
+            primary_alter.add_operation(RemoveColumn(self.columns[removed_column]))
 
         # indexes also go in that first alter table
         for new_key in added_keys:
-            primary_alter.add_operation(add_key(comparison_table.indexes[new_key]))
+            primary_alter.add_operation(AddKey(comparison_table.indexes[new_key]))
         for removed_key in removed_keys:
-            primary_alter.add_operation(remove_key(self.indexes[removed_key]))
+            primary_alter.add_operation(RemoveKey(self.indexes[removed_key]))
         for overlap_key in overlap_keys:
             if str(self.indexes[overlap_key]) == str(comparison_table.indexes[overlap_key]):
                 continue
-            primary_alter.add_operation(change_key(comparison_table.indexes[overlap_key]))
+            primary_alter.add_operation(ChangeKey(comparison_table.indexes[overlap_key]))
 
         # removed foreign key constraints get their own alter because that should always happen first
-        removed_constraints_alter = alter_table(self.name)
+        removed_constraints_alter = AlterTable(self.name)
         for removed_constraint in removed_constraints:
-            removed_constraints_alter.add_operation(remove_constraint(self.constraints[removed_constraint]))
+            removed_constraints_alter.add_operation(RemoveConstraint(self.constraints[removed_constraint]))
 
         # adding/changing/removing foreign keys gets their own alter
-        constraints = alter_table(self.name)
+        constraints = AlterTable(self.name)
         for added_constraint in added_constraints:
-            constraints.add_operation(add_constraint(comparison_table.constraints[added_constraint]))
+            constraints.add_operation(AddConstraint(comparison_table.constraints[added_constraint]))
         for overlap_constraint in overlap_constraints:
             if str(self.constraints[overlap_constraint]) == str(comparison_table.constraints[overlap_constraint]):
                 continue
@@ -390,8 +392,8 @@ class table(object):
             # foreign key constraints are modified by first dropping the constraint and
             # then adding the new one.  However, these two operations cannot happen in the
             # same alter command.  Kinda a pain.  Oh well.
-            removed_constraints_alter.add_operation(remove_constraint(self.constraints[overlap_constraint]))
-            constraints.add_operation(add_constraint(comparison_table.constraints[overlap_constraint]))
+            removed_constraints_alter.add_operation(RemoveConstraint(self.constraints[overlap_constraint]))
+            constraints.add_operation(AddConstraint(comparison_table.constraints[overlap_constraint]))
 
         # now put it all together
         if split_operations:
@@ -436,10 +438,10 @@ class table(object):
 
         operations = []
         for row_id in inserted_ids:
-            operations.append(row_insert(self.name, self.rows[row_id]))
+            operations.append(RowInsert(self.name, self.rows[row_id]))
 
         for row_id in deleted_ids:
-            operations.append(row_delete(self.name, row_id))
+            operations.append(RowDelete(self.name, row_id))
 
         for row_id in updated_ids:
             # try to be smart and not update if we don't have to
@@ -451,7 +453,7 @@ class table(object):
                     break
 
             if differences:
-                operations.append(row_update(self.name, self.rows[row_id]))
+                operations.append(RowUpdate(self.name, self.rows[row_id]))
 
         return operations
 

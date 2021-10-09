@@ -1,4 +1,4 @@
-class change_column:
+class ChangeColumn:
     """ Generates a partial SQL command to change a column in a table """
 
     def __init__(self, column):

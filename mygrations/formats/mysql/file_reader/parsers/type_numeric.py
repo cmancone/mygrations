@@ -1,6 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.column import column
-class type_numeric(parser, column):
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.column import Column
+class TypeNumeric(Parser, Column):
 
     allowed_types = {
         'bit': True,

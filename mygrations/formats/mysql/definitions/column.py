@@ -1,4 +1,4 @@
-class column(object):
+class Column(object):
 
     definition_type = 'column'
     _unsigned = None

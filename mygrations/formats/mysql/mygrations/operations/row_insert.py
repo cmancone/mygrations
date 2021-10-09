@@ -1,4 +1,4 @@
-class row_insert:
+class RowInsert:
     """ Generates an SQL command to insert a record """
 
     def __init__(self, table_name, data):

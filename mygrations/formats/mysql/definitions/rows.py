@@ -1,4 +1,4 @@
-class rows(object):
+class Rows(object):
 
     _table = ''
     _raw_rows = ''

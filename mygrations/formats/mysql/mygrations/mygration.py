@@ -1,12 +1,14 @@
 import copy
 
-from mygrations.formats.mysql.definitions.database import database
-from mygrations.formats.mysql.mygrations.operations.alter_table import alter_table
-from mygrations.formats.mysql.mygrations.operations.add_constraint import add_constraint
-from mygrations.formats.mysql.mygrations.operations.remove_table import remove_table
-from mygrations.formats.mysql.mygrations.operations.disable_checks import disable_checks
-from mygrations.formats.mysql.mygrations.operations.enable_checks import enable_checks
-class mygration:
+from mygrations.formats.mysql.definitions.database import Database
+from mygrations.formats.mysql.mygrations.operations.alter_table import AlterTable
+from mygrations.formats.mysql.mygrations.operations.add_constraint import AddConstraint
+from mygrations.formats.mysql.mygrations.operations.remove_table import RemoveTable
+from mygrations.formats.mysql.mygrations.operations.disable_checks import DisableChecks
+from mygrations.formats.mysql.mygrations.operations.enable_checks import EnableChecks
+
+
+class Mygration:
     """ Creates a migration plan to update a database to a given spec.
 
     If only one database is passed in, it treats it as a structure to migrate
@@ -123,7 +125,7 @@ class mygration:
         """
         operations = []
         if self._disable_fk_checks:
-            operations.append(disable_checks())
+            operations.append(DisableChecks())
 
         # what tables have been added/changed/removed
         db_from_tables = self.db_from.tables if self.db_from else {}
@@ -141,7 +143,7 @@ class mygration:
             operations.append(remove_table(table_name))
 
         if self._disable_fk_checks:
-            operations.append(enable_checks())
+            operations.append(EnableChecks())
 
         return operations
 
@@ -170,7 +172,7 @@ class mygration:
         # Our primary output is a list of operations, but there is more that we need
         # to make all of this happen.  We need a database to keep track of the
         # state of the database we are building after each operation is "applied"
-        tracking_db = copy.deepcopy(self.db_from) if self.db_from else database()
+        tracking_db = copy.deepcopy(self.db_from) if self.db_from else Database()
 
         # a little bit of extra processing will simplify our algorithm by a good chunk.
         # The situation is much more complicated when we have a database we are migrating
@@ -243,9 +245,9 @@ class mygration:
             new_table = self.db_to.tables[table_to_add]
             bad_constraints = tracking_db.unfulfilled_fks(new_table)
             new_table_copy = copy.deepcopy(new_table)
-            create_fks = alter_table(table_to_add)
+            create_fks = AlterTable(table_to_add)
             for constraint in bad_constraints.values():
-                create_fks.add_operation(add_constraint(constraint['foreign_key']))
+                create_fks.add_operation(AddConstraint(constraint['foreign_key']))
                 new_table_copy.remove_constraint(constraint['foreign_key'])
             operations.append(new_table_copy.create())
             fk_operations.append(create_fks)
@@ -256,7 +258,7 @@ class mygration:
 
         # finally remove any tables
         for table_to_remove in tables_to_remove:
-            operations.append(remove_table(table_to_remove))
+            operations.append(RemoveTable(table_to_remove))
             tracking_db.remove_table(table_to_remove)
 
         # all done!!!

@@ -1,5 +1,5 @@
-from mygrations.core.parse.parser import parser
-class insert_values(parser):
+from mygrations.core.parse.parser import Parser
+class InsertValues(Parser):
 
     has_comma = False
     values = []

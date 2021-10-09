@@ -1,4 +1,4 @@
-class enable_checks:
+class EnableChecks:
     """ Generates an SQL command to re-enable foreign key checks """
 
     def __str__(self):

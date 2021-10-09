@@ -1,9 +1,9 @@
 import os
 import glob
-from .reader import reader as sql_reader
+from .reader import Reader as SqlReader
 
 
-class database:
+class Database:
     def __init__(self, strings):
         """ Constructor.  Accepts a string or list of strings with different possible contents
 

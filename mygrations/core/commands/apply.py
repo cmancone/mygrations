@@ -1,10 +1,10 @@
-from .plan import plan
+from .plan import Plan
 from mygrations.drivers.mysqldb.mysqldb import mysqldb
 def execute(options):
 
-    obj = apply(options)
+    obj = Apply(options)
     obj.execute()
-class apply(plan):
+class Apply(Plan):
     def execute(self):
 
         commands = self.build_commands()

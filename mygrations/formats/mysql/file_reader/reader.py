@@ -1,8 +1,8 @@
 import io, os
-from .comment_parser import comment_parser
-from .create_parser import create_parser
-from .insert_parser import insert_parser
-class reader(object):
+from .comment_parser import CommentParser
+from .create_parser import CreateParser
+from .insert_parser import InsertParser
+class Reader(object):
     def __init__(self):
 
         self._tables = {}
@@ -127,16 +127,16 @@ class reader(object):
             # now we are looking for one of three things:
             # comment, create, insert
             if data[:2] == '--' or data[:2] == '/*' or data[0] == '#':
-                parser = comment_parser()
+                parser = CommentParser()
                 data = parser.parse(data)
 
             elif data[:6].lower() == 'create':
-                parser = create_parser()
+                parser = CreateParser()
                 data = parser.parse(data)
                 self._tables[parser.name] = parser.as_table()
 
             elif data[:6].lower() == 'insert':
-                parser = insert_parser()
+                parser = InsertParser()
                 data = parser.parse(data)
                 if not parser.table in self._rows:
                     self._rows[parser.table] = []

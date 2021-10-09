@@ -1,4 +1,4 @@
-class disable_checks:
+class DisableChecks:
     """ Generates an SQL command to disable foreign key checks """
 
     def __str__(self):

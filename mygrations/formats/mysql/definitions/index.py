@@ -1,4 +1,4 @@
-class index(object):
+class Index(object):
 
     _name = ''
     _index_type = ''

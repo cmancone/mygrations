@@ -1,4 +1,4 @@
-class change_key:
+class ChangeKey:
     """ Generates a partial SQL command to change a key in a table """
 
     def __init__(self, key):

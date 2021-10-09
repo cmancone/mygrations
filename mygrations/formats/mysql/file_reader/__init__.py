@@ -1,5 +1,5 @@
-from .reader import reader
-from .database import database
+from .reader import Reader
+from .database import Database
 
 def parse(strings):
-    return database(strings).as_core_database()
+    return Database(strings).as_core_database()

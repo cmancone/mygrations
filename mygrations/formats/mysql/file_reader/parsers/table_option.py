@@ -1,5 +1,5 @@
-from mygrations.core.parse.parser import parser
-class table_option(parser):
+from mygrations.core.parse.parser import Parser
+class TableOption(Parser):
 
     name = ''
     value = ''

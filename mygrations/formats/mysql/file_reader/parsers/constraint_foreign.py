@@ -1,6 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.constraint import constraint
-class constraint_foreign(parser, constraint):
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.constraint import Constraint
+class ConstraintForeign(Parser, Constraint):
 
     has_comma = False
 

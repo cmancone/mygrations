@@ -1,17 +1,17 @@
-from .base import base
-from mygrations.formats.mysql.file_reader.database import database as database_parser
-from mygrations.formats.mysql.db_reader.database import database as database_reader
-from mygrations.formats.mysql.mygrations.mygration import mygration
-from mygrations.formats.mysql.mygrations.row_mygration import row_mygration
+from .base import Base
+from mygrations.formats.mysql.file_reader.database import Database as DatabaseParser
+from mygrations.formats.mysql.db_reader.database import Database as DatabaseReader
+from mygrations.formats.mysql.mygrations.mygration import Mygration
+from mygrations.formats.mysql.mygrations.row_mygration import RowMygration
 from mygrations.drivers.mysqldb.mysqldb import mysqldb
-from mygrations.formats.mysql.mygrations.operations.disable_checks import disable_checks
-from mygrations.formats.mysql.mygrations.operations.enable_checks import enable_checks
+from mygrations.formats.mysql.mygrations.operations.disable_checks import DisableChecks
+from mygrations.formats.mysql.mygrations.operations.enable_checks import EnableChecks
 import sys
 def execute(options):
 
-    obj = plan(options)
+    obj = Plan(options)
     obj.execute()
-class plan(base):
+class Plan(base):
     def execute(self):
 
         commands = self.build_commands()
@@ -19,7 +19,7 @@ class plan(base):
 
     def build_commands(self):
 
-        files_database = database_parser(self.config['files_directory'])
+        files_database = DatabaseParser(self.config['files_directory'])
 
         # any errors or warnings?
         quit_early = False
@@ -40,7 +40,7 @@ class plan(base):
             return []
 
         # use the credentials to load up a database connection
-        live_database = database_reader(mysqldb(self.credentials))
+        live_database = DatabaseReader(mysqldb(self.credentials))
 
         # we have to tell the live database to load records
         # for any tables we are tracking records for.
@@ -57,7 +57,7 @@ class plan(base):
 
             live_database.read_rows(table)
 
-        mygrate = mygration(files_database, live_database, False)
+        mygrate = Mygration(files_database, live_database, False)
 
         ops = []
         if mygrate.operations:

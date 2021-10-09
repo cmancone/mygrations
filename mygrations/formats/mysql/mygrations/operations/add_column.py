@@ -1,4 +1,4 @@
-class add_column:
+class AddColumn:
     """ Generates a partial SQL command to add a column to a table """
 
     def __init__(self, column, position=None):
