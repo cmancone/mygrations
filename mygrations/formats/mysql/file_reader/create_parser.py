@@ -31,30 +31,29 @@ class CreateParser(Parser, Table):
     }, {
         'type': 'literal',
         'value': '('
-    },
-             {
-                 'type':
-                 'children',
-                 'name':
-                 'definitions',
-                 'classes': [
-                     IndexPrimary, IndexKey, IndexUnique, ConstraintForeign, TypeCharacter, TypeNumeric,
-                     TypeDecimal, TypeText, TypeEnum, TypePlain
-                 ]
-             }, {
-                 'type': 'literal',
-                 'value': ')'
-             }, {
-                 'type': 'children',
-                 'name': 'table_options',
-                 'classes': [TableOption],
-                 'optional': True
-             }, {
-                 'type': 'literal',
-                 'value': ';',
-                 'optional': True,
-                 'name': 'closing_semicolon'
-             }]
+    }, {
+        'type':
+        'children',
+        'name':
+        'definitions',
+        'classes': [
+            IndexPrimary, IndexKey, IndexUnique, ConstraintForeign, TypeCharacter, TypeNumeric, TypeDecimal, TypeText,
+            TypeEnum, TypePlain
+        ]
+    }, {
+        'type': 'literal',
+        'value': ')'
+    }, {
+        'type': 'children',
+        'name': 'table_options',
+        'classes': [TableOption],
+        'optional': True
+    }, {
+        'type': 'literal',
+        'value': ';',
+        'optional': True,
+        'name': 'closing_semicolon'
+    }]
 
     def process(self):
 

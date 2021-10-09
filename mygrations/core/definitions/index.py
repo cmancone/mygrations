@@ -2,8 +2,6 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Union, List
 from .columns.column import Column
-
-
 class Index:
     _name: str = ''
     _index_type: str = ''
@@ -11,7 +9,7 @@ class Index:
     _errors: List[str] = None
     _warnings: List[str] = None
 
-    def __init__(self, name: str, columns: List[str], index_type: str='INDEX'):
+    def __init__(self, name: str, columns: List[str], index_type: str = 'INDEX'):
         """ Index constructor
 
         :param name: The name of the index
@@ -74,7 +72,6 @@ class Index:
                 self._errors.append(f"Missing {required} for index {self.name}")
         if len(self.name) > 64:
             self._errors.append('Key name %s must be <=64 characters long' % (self._name))
-
 
     def __str__(self):
         """ Returns the MySQL command that would create the index

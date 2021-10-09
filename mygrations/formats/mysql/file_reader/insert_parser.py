@@ -1,8 +1,6 @@
 from mygrations.core.parse.parser import Parser
 from mygrations.formats.mysql.definitions.rows import Rows
 from .parsers.insert_values import InsertValues
-
-
 class InsertParser(Parser, Rows):
 
     rules = [{

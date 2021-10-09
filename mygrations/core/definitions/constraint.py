@@ -1,8 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Union, List, Tuple
-
-
 class Constraint:
     _column_name: str = ''
     _errors: List[str] = None

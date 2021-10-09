@@ -1,6 +1,4 @@
 from .column import Column
-
-
 class Numeric(Column):
     _allowed_column_types = [
         'INTEGER',
@@ -24,10 +22,14 @@ class Numeric(Column):
         no_auto_increment = ['FLOAT', 'DOUBLE', 'BIT']
 
         if self.default is not None and type(self.default) == str:
-            self._errors.append(f'Column {self.name} of type {self.column_type} cannot have a string value as a default')
+            self._errors.append(
+                f'Column {self.name} of type {self.column_type} cannot have a string value as a default'
+            )
         else:
             if type(self.default) == float and self.column_type not in allow_float:
-                self._errors.append(f'Column {self.name} of type {self.column_type} must have an integer value as a default')
+                self._errors.append(
+                    f'Column {self.name} of type {self.column_type} must have an integer value as a default'
+                )
             if self.column_type == 'BIT' and self.default != 0 and self.default != 1:
                 self._errors.append(f'Column {self.name} of type BIT must have a default of 1 or 0')
 
@@ -35,7 +37,9 @@ class Numeric(Column):
             if self.column_type in no_length:
                 self._errors.append(f'Column {self.name} of type {self.column_type} cannot have a length')
             elif type(self.length) == str and ',' in self.length and self.column_type not in allow_float:
-                self._errors.append(f'Column {self.name} of type {self.column_type} must have an integer value as its length')
+                self._errors.append(
+                    f'Column {self.name} of type {self.column_type} must have an integer value as its length'
+                )
 
         if self.character_set is not None:
             self._errors.append(f'Column {self.name} of type {self.column_type} cannot have a character set')
@@ -44,7 +48,6 @@ class Numeric(Column):
 
         if self.auto_increment and self.column_type in no_auto_increment:
             self._errors.append(f'Column {self.name} of type {self.column_type} cannot be an AUTO_INCREMENT')
-
 
     def _is_really_the_same_default(self, column: Column) -> bool:
         if self.column_type != 'DECIMAL':

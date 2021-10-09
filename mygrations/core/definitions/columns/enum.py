@@ -1,6 +1,4 @@
 from .string import String
-
-
 class Enum(String):
     _allowed_column_types = [
         'ENUM',

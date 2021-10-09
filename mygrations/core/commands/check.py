@@ -1,13 +1,9 @@
 from .base import Base
 from mygrations.formats.mysql.file_reader.database import Database as DatabaseParser
 from mygrations.formats.mysql.mygrations.mygration import Mygration
-
-
 def execute(options):
     obj = Check(options)
     obj.execute()
-
-
 class Check(Base):
     def execute(self):
         files_database = DatabaseParser(self.config['files_directory'])

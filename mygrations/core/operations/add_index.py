@@ -1,7 +1,5 @@
 from ..definitions.index import Index
 from ..definitions.table import Table
-
-
 class AddIndex:
     """ Generates a partial SQL command to add an index to a table """
     _index: Index = None

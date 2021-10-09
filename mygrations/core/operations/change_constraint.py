@@ -1,7 +1,5 @@
 from ..definitions.constraint import Constraint
 from ..definitions.table import Table
-
-
 class ChangeConstraint:
     """ Generates a partial SQL command to change a constraint in a table """
     def __init__(self, constraint: Constraint):

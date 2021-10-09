@@ -1,6 +1,5 @@
 class CreateTable:
     """ Generates an SQL command to create a table """
-
     def __init__(self, table, nice=False):
         """ Create table constructor
 

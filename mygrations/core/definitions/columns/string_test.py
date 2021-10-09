@@ -1,19 +1,12 @@
 import unittest
 from .string import String
-
-
 class TestString(unittest.TestCase):
     def test_string_conversion_with_collation(self):
-        column = String(
-            'test_column',
-            'VARCHAR',
-            length=25,
-            default='asdf',
-            character_set='unicode',
-            collate='sup'
-        )
+        column = String('test_column', 'VARCHAR', length=25, default='asdf', character_set='unicode', collate='sup')
 
-        self.assertEquals('`test_column` VARCHAR(25) DEFAULT \'asdf\' CHARACTER SET \'UNICODE\' COLLATE \'SUP\'', str(column))
+        self.assertEquals(
+            '`test_column` VARCHAR(25) DEFAULT \'asdf\' CHARACTER SET \'UNICODE\' COLLATE \'SUP\'', str(column)
+        )
         self.assertEquals([], column.errors)
         self.assertEquals([], column.warnings)
 

@@ -2,8 +2,6 @@ import os
 import glob
 from ..file_reader.reader import Reader as SQLReader
 from mygrations.formats.mysql.definitions.database import Database as DatabaseDefinition
-
-
 class Database(DatabaseDefinition):
     def __init__(self, conn):
         """ Constructor.  Accepts a mygrations db wrapper

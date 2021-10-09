@@ -1,12 +1,9 @@
 from typing import Union
 from ..definitions.columns.column import Column
 from ..definitions.table import Table
-
-
 class AddColumn:
     _column: Column
     _position: Union[str, bool] = None
-
     """ Generates a partial SQL command to add a column to a table """
     def __init__(self, column: Column, position: Union[str, bool] = None):
         """ Create an add column operation

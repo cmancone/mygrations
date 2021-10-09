@@ -26,4 +26,6 @@ class CreateTable:
             options = ' %s' % ' '.join(options)
         else:
             options = ''
-        return 'CREATE TABLE `%s` (%s%s%s)%s;' % (self._table.name, newline, body_separator.join(body), newline, options)
+        return 'CREATE TABLE `%s` (%s%s%s)%s;' % (
+            self._table.name, newline, body_separator.join(body), newline, options
+        )

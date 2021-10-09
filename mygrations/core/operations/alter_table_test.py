@@ -4,8 +4,6 @@ from .alter_table import AlterTable
 from ..definitions.index import Index
 from ..definitions.table import Table
 from ..definitions.columns import Numeric
-
-
 class AlterTableTest(unittest.TestCase):
     def test_as_string(self):
         id_column = Numeric('id', 'INT', length=10, unsigned=True, null=False, auto_increment=True)

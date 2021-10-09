@@ -1,8 +1,6 @@
 import unittest
 from .add_column import AddColumn
 from ..definitions.columns import String
-
-
 class AddColumnTest(unittest.TestCase):
     def test_as_string(self):
         string = String('name', 'VARCHAR', length=255, default='', null=False)

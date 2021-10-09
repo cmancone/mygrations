@@ -1,8 +1,6 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Union, List
-
-
 class Column(ABC):
     _auto_increment: bool = None
     _character_set: str = None
@@ -16,7 +14,7 @@ class Column(ABC):
     _errors: List[str] = None
     _warnings: List[str] = None
     _allowed_column_types = []
-    _values: List[str] = None # enum/set only
+    _values: List[str] = None    # enum/set only
 
     def __init__(
         self,
@@ -185,7 +183,9 @@ class Column(ABC):
         # class because this represents a bug in mygrations.  I.e. if an INT column_type ends up in the
         # String() column, then something went wrong with mygrations, not with the SQL the user wrote.
         if self.column_type not in self._allowed_column_types:
-            raise ValueError(f'Error in column {self.name}: column type {self.column_type} not allowed for class {self.__class__.__name__}')
+            raise ValueError(
+                f'Error in column {self.name}: column type {self.column_type} not allowed for class {self.__class__.__name__}'
+            )
 
         self._errors = []
         self._warnings = []
@@ -195,7 +195,6 @@ class Column(ABC):
         for required in ['name', 'column_type']:
             if not getattr(self, required):
                 self._errors.append(f"Missing {required} for column {self.name}")
-
 
     def __str__(self) -> str:
         """ Returns the MySQL command that would create the column

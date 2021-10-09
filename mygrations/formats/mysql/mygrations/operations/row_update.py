@@ -1,6 +1,5 @@
 class RowUpdate:
     """ Generates an SQL command to update a record """
-
     def __init__(self, table_name, data):
         if 'id' not in data:
             raise KeyError('Missing `id` column needed for update')

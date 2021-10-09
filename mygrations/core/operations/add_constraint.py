@@ -1,7 +1,5 @@
 from ..definitions.constraint import Constraint
 from ..definitions.table import Table
-
-
 class AddConstraint:
     """ Generates a partial SQL command to add a FK to a table """
     _constraint: Constraint = None

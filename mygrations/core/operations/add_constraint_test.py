@@ -1,8 +1,6 @@
 import unittest
 from .add_constraint import AddConstraint
 from ..definitions.constraint import Constraint
-
-
 class AddConstraintTest(unittest.TestCase):
     def test_as_string(self):
         constraint = Constraint('user_id_fk', 'user_id', 'users', 'id')

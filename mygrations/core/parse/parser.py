@@ -3,15 +3,8 @@ from .rule_children import RuleChildren
 from .rule_delimited import RuleDelimited
 from .rule_literal import RuleLiteral
 from .rule_regexp import RuleRegexp
-
-
 class Parser(object):
-    rule_types = {
-        'children': RuleChildren,
-        'delimited': RuleDelimited,
-        'literal': RuleLiteral,
-        'regexp': RuleRegexp
-    }
+    rule_types = {'children': RuleChildren, 'delimited': RuleDelimited, 'literal': RuleLiteral, 'regexp': RuleRegexp}
 
     def __init__(self, rules=[]):
 

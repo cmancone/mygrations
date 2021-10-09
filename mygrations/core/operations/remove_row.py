@@ -1,7 +1,5 @@
 from typing import Union
 from ..definitions.table import Table
-
-
 class RemoveRow:
     """ Generates an SQL command to delete a record """
     def __init__(self, table_name: Union[str, Table], row_id: Union[int, str]):

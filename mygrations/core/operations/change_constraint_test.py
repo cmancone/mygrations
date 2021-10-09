@@ -1,8 +1,6 @@
 import unittest
 from .change_constraint import ChangeConstraint
 from ..definitions.constraint import Constraint
-
-
 class ChangeConstraintTest(unittest.TestCase):
     def test_as_string(self):
         constraint = Constraint('user_id_fk', 'user_id', 'users', 'id', on_update='cascade')

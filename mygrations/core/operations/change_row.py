@@ -1,10 +1,7 @@
 from typing import Union, Dict
 from ..definitions.table import Table
-
-
 class ChangeRow:
     """ Generates an SQL command to update a record """
-
     def __init__(self, table_name: Union[str, Table], data: Dict):
         if 'id' not in data:
             raise KeyError('Missing `id` column needed for update')

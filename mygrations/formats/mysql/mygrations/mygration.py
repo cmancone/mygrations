@@ -6,8 +6,6 @@ from mygrations.formats.mysql.mygrations.operations.add_constraint import AddCon
 from mygrations.formats.mysql.mygrations.operations.remove_table import RemoveTable
 from mygrations.formats.mysql.mygrations.operations.disable_checks import DisableChecks
 from mygrations.formats.mysql.mygrations.operations.enable_checks import EnableChecks
-
-
 class Mygration:
     """ Creates a migration plan to update a database to a given spec.
 
@@ -30,7 +28,6 @@ class Mygration:
     7. Apply all foreign key constraints that were previously ignored in steps 4 & 6
     8. Remove any tables that need to be removed
     """
-
     def __init__(self, db_to, db_from=None, disable_checks=True):
         """ Create a migration plan
 

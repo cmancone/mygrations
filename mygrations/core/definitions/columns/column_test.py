@@ -1,10 +1,7 @@
 import unittest
 from .column import Column
-
-
 class MockColumn(Column):
     _allowed_column_types = ['INT']
-
 class TestColumn(unittest.TestCase):
     def test_string_conversion(self):
         column = MockColumn(
@@ -37,7 +34,7 @@ class TestColumn(unittest.TestCase):
             'unsigned': False,
             'default': 5,
         }
-        for (key,val) in diff.items():
+        for (key, val) in diff.items():
             column1 = MockColumn('test_column', 'INT', **attrs)
             column2 = MockColumn('test_column', 'INT', **{**attrs, **{key: val}})
             self.assertFalse(column1.is_really_the_same_as(column2))

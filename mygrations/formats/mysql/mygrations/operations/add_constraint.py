@@ -1,6 +1,5 @@
 class AddConstraint:
     """ Generates a partial SQL command to add a FK to a table """
-
     def __init__(self, constraint):
         self.constraint = constraint
 

@@ -7,8 +7,6 @@ from .columns.column import Column
 from .index import Index
 from .constraint import Constraint
 from ..operations.create_table import CreateTable
-
-
 class Table:
     _auto_increment: int = 1
     _columns: Dict[str, Column] = None
@@ -22,11 +20,7 @@ class Table:
     _warnings: List[str] = None
 
     def __init__(
-        self,
-        name: str,
-        columns: List[Column],
-        indexes: List[Index],
-        constraints: List[Constraint],
+        self, name: str, columns: List[Column], indexes: List[Index], constraints: List[Constraint],
         options: List[Option]
     ):
         self._columns = OrderedDict()
@@ -57,10 +51,7 @@ class Table:
                 break
 
     def _check_for_errors_and_warnings(
-        self,
-        columns: List[Column],
-        constraints: List[Constraint],
-        indexes: List[Index]
+        self, columns: List[Column], constraints: List[Constraint], indexes: List[Index]
     ):
         """ Check for errors and warnings for the initial data
 
@@ -113,13 +104,18 @@ class Table:
         elif not primaries:
             self._errors.append(f"Table '{self.name}' has an AUTO_INCREMENT column but is missing the PRIMARY index")
         elif primaries[0].columns[0] != auto_increment[0].name:
-            self._errors.append("Mismatched indexes in table '%s': column '%s' is the AUTO_INCREMENT column but '%s' is the PRIMARY index column" % (self.name, auto_increment[0].name, primaries[0].columns[0]))
+            self._errors.append(
+                "Mismatched indexes in table '%s': column '%s' is the AUTO_INCREMENT column but '%s' is the PRIMARY index column"
+                % (self.name, auto_increment[0].name, primaries[0].columns[0])
+            )
 
         # indexes on non-existent columns
         for index in self.indexes.values():
             for column in index.columns:
                 if not column in self.columns:
-                    self._errors.append(f"Table '{self.name}' has index '{index.name}' that references non-existent column '{column}'")
+                    self._errors.append(
+                        f"Table '{self.name}' has index '{index.name}' that references non-existent column '{column}'"
+                    )
 
     @property
     def name(self):
@@ -416,7 +412,9 @@ class Table:
     def change_index(self, new_index: Index):
         """ Changes an index.  This does not currently support renaming """
         if not new_index.name in self._indexes:
-            raise ValueError("Cannot modify index %s because index %s does not exist" % (new_index.name, new_index.name))
+            raise ValueError(
+                "Cannot modify index %s because index %s does not exist" % (new_index.name, new_index.name)
+            )
 
         if self._indexed_columns is not None:
             self._indexed_columns.discard(self._indexes[new_index.name].columns[0])
@@ -626,11 +624,8 @@ class Table:
         :return: (added, removed, overlap)
         """
 
-        return (
-            [key for key in to_list if key not in from_list],
-            [key for key in from_list if key not in to_list],
-            [key for key in from_list if key in to_list]
-        )
+        return ([key for key in to_list if key not in from_list], [key for key in from_list if key not in to_list],
+                [key for key in from_list if key in to_list])
 
     def apply_operation(self, operation):
         """

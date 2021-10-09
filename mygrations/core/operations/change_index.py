@@ -1,7 +1,5 @@
 from ..definitions.index import Index
 from ..definitions.table import Table
-
-
 class ChangeIndex:
     """ Generates a partial SQL command to change an index in a table """
     def __init__(self, index: Index):

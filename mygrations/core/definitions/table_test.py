@@ -5,8 +5,6 @@ from .constraint import Constraint
 from .index import Index
 from .option import Option
 from .table import Table
-
-
 class TestTable(unittest.TestCase):
     def setUp(self):
         self.id = Numeric('id', 'INT', length=10, unsigned=True, null=False, auto_increment=True)
@@ -29,18 +27,9 @@ class TestTable(unittest.TestCase):
         )
 
         self.assertEquals('registrations', table.name)
-        self.assertEquals(
-            ['id', 'user_id', 'age', 'name'],
-            [column.name for column in table.columns.values()]
-        )
-        self.assertEquals(
-            ['user_id_fk'],
-            [constraint.name for constraint in table.constraints.values()]
-        )
-        self.assertEquals(
-            ['id_index', 'name_age', 'user_id_index'],
-            [index.name for index in table.indexes.values()]
-        )
+        self.assertEquals(['id', 'user_id', 'age', 'name'], [column.name for column in table.columns.values()])
+        self.assertEquals(['user_id_fk'], [constraint.name for constraint in table.constraints.values()])
+        self.assertEquals(['id_index', 'name_age', 'user_id_index'], [index.name for index in table.indexes.values()])
         self.assertEquals([self.engine], table.options)
         self.assertEquals(self.id_index, table.primary)
         self.assertEquals([], table.errors)
@@ -80,11 +69,8 @@ class TestTable(unittest.TestCase):
         self.assertEquals(["Duplicate index name found in table 'errors': 'id_index'"], table.errors)
 
         table = Table(
-            'errors',
-            [self.id, self.user_id],
-            [self.id_index, self.user_id_index],
-            [self.user_id_constraint, self.user_id_constraint],
-            []
+            'errors', [self.id, self.user_id], [self.id_index, self.user_id_index],
+            [self.user_id_constraint, self.user_id_constraint], []
         )
         self.assertEquals(["Duplicate constraint name found in table 'errors': 'user_id_fk'"], table.errors)
 
@@ -93,10 +79,8 @@ class TestTable(unittest.TestCase):
         self.assertEquals(["Table 'errors' has more than one PRIMARY index"], table.errors)
 
         table = Table('errors', [self.id], [], [], [])
-        self.assertEquals(
-            ["Table 'errors' has an AUTO_INCREMENT column but is missing the PRIMARY index"],
-            table.errors
-        )
+        self.assertEquals(["Table 'errors' has an AUTO_INCREMENT column but is missing the PRIMARY index"],
+                          table.errors)
 
         table = Table(
             'errors',
@@ -105,19 +89,14 @@ class TestTable(unittest.TestCase):
             [],
             [],
         )
-        self.assertEquals(
-            ["Mismatched indexes in table 'errors': column 'id' is the AUTO_INCREMENT column but 'user_id' is the PRIMARY index column"],
-            table.errors
-        )
+        self.assertEquals([
+            "Mismatched indexes in table 'errors': column 'id' is the AUTO_INCREMENT column but 'user_id' is the PRIMARY index column"
+        ], table.errors)
 
     def test_check_missing_index_columns(self):
         table = Table(
-            'errors',
-            [self.id, self.user_id],
-            [self.id_index, Index('bad_index', ['non_column'], 'INDEX')],
-            [],
-            []
+            'errors', [self.id, self.user_id],
+            [self.id_index, Index('bad_index', ['non_column'], 'INDEX')], [], []
         )
-        self.assertEquals([
-            "Table 'errors' has index 'bad_index' that references non-existent column 'non_column'"
-        ], table.errors)
+        self.assertEquals(["Table 'errors' has index 'bad_index' that references non-existent column 'non_column'"],
+                          table.errors)

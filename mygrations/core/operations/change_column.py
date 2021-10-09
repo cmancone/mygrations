@@ -1,10 +1,7 @@
 from ..definitions.columns.column import Column
 from ..definitions.table import Table
-
-
 class ChangeColumn:
     """ Generates a partial SQL command to change a column in a table """
-
     def __init__(self, column: Column):
         self.column = column
 

@@ -1,7 +1,5 @@
 import unittest
 from .constraint import Constraint
-
-
 class TestConstraint(unittest.TestCase):
     def test_can_create(self):
         constraint = Constraint(

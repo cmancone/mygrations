@@ -1,6 +1,5 @@
 class RemoveKey:
     """ Generates a partial SQL command to drop a key from a table """
-
     def __init__(self, key):
         self.key = key
 

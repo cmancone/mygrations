@@ -1,7 +1,5 @@
 from typing import Union, Dict
 from ..definitions.table import Table
-
-
 class AddRow:
     """ Generates an SQL command to insert a record """
     def __init__(self, table_name: Union[str, Table], data: Dict):

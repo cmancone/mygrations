@@ -1,6 +1,4 @@
 from .column import Column
-
-
 class String(Column):
     _allowed_column_types = [
         'CHAR',
@@ -59,7 +57,9 @@ class String(Column):
             self._errors.append(f'Column {self.name} of type {self.column_type} cannot have a default')
 
         if self.auto_increment:
-            self._errors.append(f'Column {self.name} of type {self.column_type} cannot be an AUTO_INCREMENT: only numeric columns can')
+            self._errors.append(
+                f'Column {self.name} of type {self.column_type} cannot be an AUTO_INCREMENT: only numeric columns can'
+            )
 
         if (self.character_set or self.collate):
             if self.column_type not in self._allowed_collation:

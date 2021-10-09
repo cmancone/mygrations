@@ -10,7 +10,6 @@ class RowMygration:
     This doesn't sync rows for all tables but only those tables marked as
     tracking_rows
     """
-
     def __init__(self, db_to, db_from=None):
         """ Create a migration plan
 

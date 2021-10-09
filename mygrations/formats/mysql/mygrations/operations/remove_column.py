@@ -1,6 +1,5 @@
 class RemoveColumn:
     """ Generates a partial SQL command to remove a column from a table """
-
     def __init__(self, column):
         self.column = column
 

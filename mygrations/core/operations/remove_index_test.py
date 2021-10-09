@@ -1,8 +1,6 @@
 import unittest
 from .remove_index import RemoveIndex
 from ..definitions.index import Index
-
-
 class RemoveIndexTest(unittest.TestCase):
     def test_as_string(self):
         index = Index('user_id', ['user_id', 'account_id'], 'index')

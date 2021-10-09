@@ -1,8 +1,6 @@
 from __future__ import annotations
 from typing import Union, List
 from .columns.column import Column
-
-
 class Rows:
     _columns: List[Column] = None
     _errors: List[str] = None
@@ -11,20 +9,13 @@ class Rows:
     _table: str = ''
     _warnings: List[str] = None
 
-    def __init__(
-        self,
-        table: str,
-        raw_rows: List[List[str]],
-        columns: List[Column] = None,
-        num_explicit_columns = 0
-    ):
+    def __init__(self, table: str, raw_rows: List[List[str]], columns: List[Column] = None, num_explicit_columns=0):
         self._columns = columns if columns is not None else []
         self._errors = []
         self._num_explicit_columns = num_explicit_columns
         self._raw_rows = raw_rows
         self._table = table
         self._warnings = []
-
 
     @property
     def table(self) -> str:

@@ -1,8 +1,6 @@
 import os
 import glob
 from .reader import Reader as SqlReader
-
-
 class Database:
     def __init__(self, strings):
         """ Constructor.  Accepts a string or list of strings with different possible contents
@@ -98,22 +96,22 @@ class Database:
             self._rows.extend(rows)
 
     #def store_rows_with_tables(self):
-        #""" Processes table rows and adds them to the appropriate tables
+    #""" Processes table rows and adds them to the appropriate tables
 
-        #Table rows are stored with tables for comparison purposes, but might
-        #come in through their own separate files.  This method puts the two
-        #together.
-        #"""
-        #for rows in self._rows:
-            #if not rows.table in self._tables:
-                #self._errors.append('Found rows for table %s but that table does not have a definition' % rows.table)
-                #continue
+    #Table rows are stored with tables for comparison purposes, but might
+    #come in through their own separate files.  This method puts the two
+    #together.
+    #"""
+    #for rows in self._rows:
+    #if not rows.table in self._tables:
+    #self._errors.append('Found rows for table %s but that table does not have a definition' % rows.table)
+    #continue
 
-            #returned = self._tables[rows.table].add_rows(rows)
-            #if isinstance(returned, str):
-                #self._errors.append(returned)
+    #returned = self._tables[rows.table].add_rows(rows)
+    #if isinstance(returned, str):
+    #self._errors.append(returned)
 
     #def as_database(self):
-        #database = []
-        #database.store_rows_with_tables()
-        #return database
+    #database = []
+    #database.store_rows_with_tables()
+    #return database

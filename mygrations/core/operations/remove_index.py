@@ -1,7 +1,5 @@
 from ..definitions.index import Index
 from ..definitions.table import Table
-
-
 class RemoveIndex:
     """ Generates a partial SQL command to drop an index from a table """
     def __init__(self, index: Index):

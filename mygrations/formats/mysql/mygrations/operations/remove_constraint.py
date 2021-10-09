@@ -1,6 +1,5 @@
 class RemoveConstraint:
     """ Generates a partial SQL command to drop a foreign key from a table """
-
     def __init__(self, constraint):
         self.constraint = constraint
 

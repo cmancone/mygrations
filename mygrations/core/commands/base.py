@@ -20,13 +20,9 @@ class Base(object):
         config_abs_path = self._resolve_and_check_config_file(self.options['config'])
         self.config = dotenv(config_abs_path)
         self.config['files_directory'] = self._relative_to_config_abs_path(
-            self.config['files_directory'],
-            config_abs_path
+            self.config['files_directory'], config_abs_path
         )
-        self.options['env'] = self._relative_to_config_abs_path(
-            self.options['env'],
-            config_abs_path
-        )
+        self.options['env'] = self._relative_to_config_abs_path(self.options['env'], config_abs_path)
 
         # and load up the database credentials
         self.credentials = db_credentials(self.options['env'], self.config)
@@ -55,7 +51,7 @@ class Base(object):
         filename = directories.pop()
         ndirectories = len(directories)
         for i in range(ndirectories):
-            abs_path = '/%s/%s' % ('/'.join(directories[:ndirectories-i]), filename)
+            abs_path = '/%s/%s' % ('/'.join(directories[:ndirectories - i]), filename)
             if os.path.isfile(abs_path):
                 return abs_path
 

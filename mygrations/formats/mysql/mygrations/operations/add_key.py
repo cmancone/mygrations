@@ -1,6 +1,5 @@
 class AddKey:
     """ Generates a partial SQL command to add a key to a table """
-
     def __init__(self, key):
         self.key = key
 
