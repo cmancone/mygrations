@@ -3,12 +3,20 @@ from .rule_children import RuleChildren
 from .rule_delimited import RuleDelimited
 from .rule_literal import RuleLiteral
 from .rule_regexp import RuleRegexp
-class Parser(object):
+class Parser:
     rule_types = {'children': RuleChildren, 'delimited': RuleDelimited, 'literal': RuleLiteral, 'regexp': RuleRegexp}
+    _parsing_errors = None
+    _parsing_warnings = None
+    _schema_errors = None
+    _schema_warnings = None
 
     def __init__(self, rules=[]):
 
         self._values = {}
+        self._parsing_errors = []
+        self._parsing_warnings = []
+        self._schema_errors = []
+        self._schema_warnings = []
 
         # rules should be defined by the subclass
         if rules:
@@ -24,6 +32,43 @@ class Parser(object):
                 raise ValueError('Missing type for rule %s in %s' % (rule, self.__class__))
 
         self.num_rules = len(self.rules)
+
+    @property
+    def schema_errors(self):
+        """ Public getter.  Returns a list of schema errors
+
+        :returns: A list of schema errors
+        :rtype: list
+        """
+        return self._schema_errors if self._schema_errors is not None else []
+
+    @property
+    def schema_warnings(self):
+        """ Public getter.  Returns a list of schema warnings
+
+        :returns: A list of schema warnings
+        :rtype: list
+        """
+        return self._schema_warnings if self._schema_warnings is not None else []
+
+
+    @property
+    def parsing_errors(self):
+        """ Public getter.  Returns a list of parsing errors
+
+        :returns: A list of parsing errors
+        :rtype: list
+        """
+        return self._parsing_errors if self._parsing_errors is not None else []
+
+    @property
+    def parsing_warnings(self):
+        """ Public getter.  Returns a list of parsing warnings
+
+        :returns: A list of parsing warnings
+        :rtype: list
+        """
+        return self._parsing_warnings if self._parsing_warnings is not None else []
 
     def __getitem__(self, key):
 

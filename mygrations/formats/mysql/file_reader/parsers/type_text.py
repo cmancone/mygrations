@@ -92,8 +92,10 @@ class TypeText(Parser, Column):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        self._errors = []
-        self._warnings = []
+        self._parsing_errors = []
+        self._parsing_warnings = []
+        self._schema_errors = []
+        self._schema_warnings = []
         self._name = self._values['name'].strip('`')
         self._length = ''
         self._default = None
@@ -105,9 +107,9 @@ class TypeText(Parser, Column):
         if self._column_type.lower() == 'datetime':
             pass
         elif not self._column_type.lower() in self.allowed_types:
-            self._errors.append('Column of type %s must have a length for column %s' % (self._column_type, self._name))
+            self._schema_errors.append('Column of type %s must have a length for column %s' % (self._column_type, self._name))
         elif 'default' in self._values:
-            self._errors.append(
+            self._schema_errors.append(
                 'Column of type %s is not allowed to have a default value for column %s' %
                 (self._column_type, self._name)
             )

@@ -64,8 +64,10 @@ class CreateParser(Parser, Table):
         self._columns = OrderedDict()
         self._indexes = OrderedDict()
         self._constraints = OrderedDict()
-        self._errors = []
-        self._warnings = []
+        self._schema_errors = []
+        self._schema_warnings = []
+        self._parsing_errors = []
+        self._parsing_warnings = []
         self._primary = ''
 
         # ignore the AUTO_INCREMENT option: there is no reason for us to ever manage that
@@ -85,22 +87,27 @@ class CreateParser(Parser, Table):
             elif isinstance(definition, constraint):
                 self._constraints[definition.name] = definition
 
-            if definition.errors:
-                for error in definition.errors:
-                    self._errors.append('%s in table %s' % (error, self._name))
-
-            if definition.warnings:
-                for warning in definition.warnings:
-                    self._warnings.append('%s in table %s' % (warning, self._name))
+            if definition.schema_errors:
+                for error in definition.schema_errors:
+                    self._schema_errors.append('%s in table %s' % (error, self._name))
+            if definition.schema_warnings:
+                for warning in definition.schema_warnings:
+                    self._schema_warnings.append('%s in table %s' % (warning, self._name))
+            if definition.parsing_errors:
+                for error in definition.parsing_errors:
+                    self._parsing_errors.append('%s in table %s' % (error, self._name))
+            if definition.parsing_warnings:
+                for warning in definition.parsing_warnings:
+                    self._parsing_warnings.append('%s in table %s' % (warning, self._name))
 
         if not self._name:
-            self._errors.append('Table name is required')
+            self._schema_errors.append('Table name is required')
 
         if not len(self._columns):
-            self._errors.append("Table %s has no columns" % self._name)
+            self._schema_errors.append("Table %s has no columns" % self._name)
 
         if not self.semicolon:
-            self._errors.append("Missing ending semicolon for table %s" % self._name)
+            self._parsing_errors.append("Missing ending semicolon for table %s" % self._name)
 
     def as_table(self):
         pass

@@ -20,7 +20,5 @@ class TableOption(Parser):
 
     def process(self):
 
-        self._errors = []
-        self._warnings = []
         self.name = self._values['name'].strip()
         self.value = self._values['value'].strip()

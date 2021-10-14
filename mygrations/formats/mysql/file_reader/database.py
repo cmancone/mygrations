@@ -1,7 +1,8 @@
 import os
 import glob
-from .reader import Reader as SqlReader
-class Database:
+from .reader import Reader as SQLReader
+from mygrations.core.definitions.database import Database as BaseDatabase
+class Database(BaseDatabase):
     def __init__(self, strings):
         """ Constructor.  Accepts a string or list of strings with different possible contents
 
@@ -20,8 +21,6 @@ class Database:
         :type strings: string|list
         """
 
-        self._warnings = []
-        self._errors = []
         self._tables = {}
         self._rows = []
 
@@ -76,7 +75,7 @@ class Database:
         """
 
         try:
-            reader = sql_reader()
+            reader = SQLReader()
             reader.parse(contents)
 
         except ValueError as e:

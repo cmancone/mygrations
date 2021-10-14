@@ -57,14 +57,16 @@ class TypeEnum(Parser, Column):
 
         super().__init__(rules)
 
-        self._errors = []
-        self._warnings = []
         self.values = []
 
     def process(self):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
+        self._parsing_errors = []
+        self._parsing_warnings = []
+        self._schema_errors = []
+        self._schema_warnings = []
         self._name = self._values['name'].strip('`')
         self._column_type = self._values['type']
         self.values = self._values['values']
@@ -88,24 +90,24 @@ class TypeEnum(Parser, Column):
             if self._default.lower() == 'null':
                 self._default = None
             else:
-                self._warnings.append(
+                self._parsing_warnings.append(
                     'Default value of "%s" should have quotes for field %s' % (self._default, self._name)
                 )
 
         if self._default and not (self._default in self.values):
-            self._errors.append(
+            self._schema_errors.append(
                 "Column %s has default value of %s but this is not an allowed value" % (self._name, self._default)
             )
 
         if self._default is None and not self._null:
-            self._warnings.append(
+            self._schema_warnings.append(
                 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' %
                 (self._name)
             )
 
         # only a few types of field are allowed to use this
         if not self._column_type.lower() in self.allowed_types:
-            self._errors.append(
+            self._schema_errors.append(
                 'Column of type %s is not allowed to have a list of values for column %s' %
                 (self._column_type, self._name)
             )

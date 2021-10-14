@@ -26,8 +26,6 @@ class InsertValues(Parser):
 
         super().__init__(rules)
 
-        self._errors = []
-        self._warnings = []
         self.values = []
 
     def process(self):

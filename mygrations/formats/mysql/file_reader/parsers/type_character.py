@@ -107,8 +107,10 @@ class TypeCharacter(Parser, Column):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        self._errors = []
-        self._warnings = []
+        self._parsing_errors = []
+        self._parsing_warnings = []
+        self._schema_errors = []
+        self._schema_warnings = []
         self._name = self._values['name'].strip('`')
         self._column_type = self._values['type']
         self._length = self._values['length']
@@ -124,7 +126,7 @@ class TypeCharacter(Parser, Column):
             if self._default.lower() == 'null':
                 self._default = None
             elif not self._default.isdigit():
-                self._warnings.append(
+                self._parsing_warnings.append(
                     'Default value of "%s" should have quotes for field %s' % (self._default, self._name)
                 )
 
@@ -137,19 +139,19 @@ class TypeCharacter(Parser, Column):
 
         if self._character_set or self._collate:
             if not self._column_type.lower() in self.allowed_collation_types:
-                self._errors.append(
+                self._schema_errors.append(
                     'Column of type %s is not allowed to have a collation or character set for column %s' %
                     (self._column_type, self._name)
                 )
 
         if self._default is None and not self._null:
-            self._warnings.append(
+            self._schema_warnings.append(
                 'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' %
                 (self._name)
             )
 
         if self._column_type.lower() in self.disallowed_types:
-            self._errors.append(
+            self._schema_errors.append(
                 'Column of type %s is not allowed to have a length for column %s' % (self._column_type, self._name)
             )
 

@@ -15,7 +15,7 @@ from ..mygrations.operations.create_table import CreateTable
 from ..mygrations.operations.row_delete import RowDelete
 from ..mygrations.operations.row_insert import RowInsert
 from ..mygrations.operations.row_update import RowUpdate
-class Table(object):
+class Table:
 
     _name = ''
     _options = None

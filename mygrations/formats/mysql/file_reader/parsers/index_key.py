@@ -36,8 +36,10 @@ class IndexKey(Parser, Index):
 
         super().__init__(rules)
 
-        self._errors = []
-        self._warnings = []
+        self._schema_errors = []
+        self._schema_warnings = []
+        self._parsing_errors = []
+        self._parsing_warnings = []
         self._columns = []
 
     def process(self):
@@ -47,4 +49,4 @@ class IndexKey(Parser, Index):
         self.has_comma = True if 'ending_comma' in self._values else False
 
         if len(self.name) > 64:
-            self._errors.append('Key name %s is too long' % (self.name))
+            self._schema_errors.append('Key name %s is too long' % (self.name))
