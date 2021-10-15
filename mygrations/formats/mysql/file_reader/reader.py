@@ -7,6 +7,8 @@ class Reader:
 
         self._tables = {}
         self._rows = {}
+        self._global_errors = []
+        self._global_warnings = []
         self._parsing_errors = []
         self._parsing_warnings = []
         self._schema_errors = []
@@ -164,7 +166,9 @@ class Reader:
                 self._rows[parser.table].append(parser)
 
             else:
-                self._own_parsing_errors.append("Unrecognized MySQL command: %s%s" % (data, self._filename_notice()))
+                if self._global_errors is None:
+                    self._global_errors = []
+                self._global_errors.append("Unrecognized MySQL command: %s%s" % (data, self._filename_notice()))
                 return data
 
         self._matched = True

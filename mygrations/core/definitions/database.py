@@ -74,9 +74,9 @@ class Database:
             return self._schema_errors
 
         self._schema_errors = [
-            *self.find_all_row_schema_errors(),
+            *self.find_all_database_schema_errors(),
             *self.find_all_table_schema_errors(),
-            *self.find_all_contstraint_errors(),
+            *self.find_all_row_schema_errors(),
         ]
 
         return self._schema_errors
@@ -125,13 +125,14 @@ class Database:
             warnings.extend(table.schema_warnings)
         return warnings
 
-    def find_all_contstraint_errors(self):
+    def find_all_database_schema_errors(self):
         """ Returns a list of any constraint error messages for this database
 
         :return: A list of constraint error messages
         :rtype: [string]
         """
         errors = []
+        constraint_tables = {}
         for table in self.tables.values():
             if not table.constraints:
                 continue
@@ -140,6 +141,12 @@ class Database:
                 error = self.find_constraint_errors(table, constraint)
                 if error:
                     errors.append(error)
+
+                if constraint.name in constraint_tables:
+                    errors.append(f"Duplicate foreign key: foreign key named '{constraint.name}' exists in tables '{constraint_tables[constraint.name]}' and '{table.name}'")
+                else:
+                    constraint_tables[constraint.name] = table.name
+
 
         return errors
 
@@ -225,7 +232,7 @@ class Database:
         'error' (an error message stating exactly what the problem is) and 'foreign_key'
         (the actual foreign key definition that cannot be fulfilled).
 
-        This is similar to find_all_contstraint_errors but is used in a specific way by the migration process,
+        This is similar to find_all_database_schema_errors but is used in a specific way by the migration process,
         so gets its own method (although both rely heavily on the `find_constraint_errors` method.
 
         :param table: The table to check

@@ -10,10 +10,10 @@ class Database(DatabaseDefinition):
         :type conn: mygrations.drivers.mysqldb.mysqldb
         """
         self.conn = conn
-        self._warnings = []
-        self._errors = []
         self._tables = {}
         self._rows = []
+        self._global_errors = []
+        self._global_warnings = []
 
         # _load_tables will get the party started
         self._load_tables(self.conn)
@@ -34,17 +34,9 @@ class Database(DatabaseDefinition):
             except ValueError as e:
                 print("Error in table %s: %s" % (create_table, e))
 
-            # we shouldn't get any errors, of course, because
-            # this is coming out of MySQL.  However, it may still
-            # get some warnings (due to lint settings (maybe)).  Either way,
-            # keep around the errors just because, even if it is
-            # always empty.
-            self._errors.extend(reader.errors)
-            self._warnings.extend(reader.warnings)
-
             for (table_name, table) in reader.tables.items():
                 if table.name in self._tables:
-                    self.errors.append('Found two definitions for table %s' % table.name)
+                    self._global_errors.append('Found two definitions for table %s' % table.name)
 
                 # our reader will return table objects
                 # from the file_reader namespace.  These expect
