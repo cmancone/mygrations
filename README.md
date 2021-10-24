@@ -14,24 +14,9 @@ As a result, updating your database structure with `mygrations` doesn't involve 
 
 ## Installation
 
-1. Requires Python3
-2. Requires [PyMySQL For python3](https://pypi.org/project/PyMySQL/).
-
-Note that installing this via pip will **not** install the MySQLdb dependency.  I did this because installing MySQLdb through pip can be a pain, requiring additional dependencies and a compiler.  In contrast, MySQLdb can usually be installed from a package manager with a one liner (see above).  To install `mygrations`:
-
 ```
 pip3 install mygrations
 ```
-
-Then you just need to download and install the mygrations runner.  Something like this works:
-
-```bash
-wget 'https://raw.githubusercontent.com/cmancone/mygrations/master/mygrate.py'
-chmod a+x mygrate.py
-sudo mv mygrate.py /usr/local/bin/mygrate.py
-```
-
-Your mileage may vary.
 
 ## Setup
 
@@ -97,11 +82,7 @@ The typical use case would be to run `mygrate.py plan` and inspect the results. 
 
 There are plenty of migration tools out there, and many frameworks come with their own.  So why would I write another, and why would anyone setup a new tool if one comes out-of-the-box with their framework of choice?  Because the declarative approach taken by `mygrations` has a number of concrete advantages.
 
-**1. Database structure trackable by version control**
-
-In `mygrations` each database is defined by a single `CREATE TABLE` command living in one file.  Adjusting a table's structure means adjusting the `CREATE TABLE` command in the table's definition file.  As a result, if two developers attempt to change the same table in conflicting ways, the conflict will be picked up immediately at merge time by your version control system.  Because normal migration systems put each database change in its own file version control cannot pick up any conflicts.  Instead, conflicting table definitions are not found until after a merge when the next migration is run and an SQL error is generated.  This way, potential conflicts are found much sooner.
-
-**2. Database Schema Tests**
+### 1. Database Schema Tests
 
 `mygrations` has a couple main testing modes that grant the equivalent of unit and integration testing for your database schema.  For isolated testing, you can point it to your database schema files and it will parse them, inspect them, and warn you of any schema errors - no actual database is required for this!  It will check for things like foreign key errors, duplicate key names, etc.  This allows you to test your schema without having to actually apply it to a database.
 
@@ -109,15 +90,19 @@ Additionally, `mygrations` can validate a schema against an actual database.  Th
 
 In short, you can add `mygrations` to your CI/CD process right "next" to your usual code tests to ensure that code and database changes can safely deploy together.
 
-**3. Migration plans**
+### 2. Database structure trackable by version control
+
+In `mygrations` each database is defined by a single `CREATE TABLE` command living in a file.  Adjusting a table's structure means adjusting the `CREATE TABLE` command in the table's definition file.  As a result, if two developers attempt to change the same table in conflicting ways, the conflict will be picked up immediately at merge time by your version control system.  Because normal migration systems put each database change in its own file version control cannot pick up any conflicts.  Instead, conflicting table definitions are not found until after a merge when the next migration is run and an SQL error is generated.  This way, potential conflicts are found much sooner.
+
+### 3. Migration plans
 
 Again, because `mygrations` operates with knowledge of both the current database and the target database, it can present an actual migration plan before making any changes.  This makes it easy for the developer to have one last spot check before making changes, if desired.
 
-**4. One table, one file**
+### 4. One table, one file
 
 Standard migration systems dedicate a file to each change of a database table.  As a result, it is very difficult to figure out what the database structure *should* be simply by looking at the contents of the migration directory.  `mygrations` makes it easier for a developer to look at the database schema files and understand exactly what the database should look like.
 
-**5. No Migration table**
+### 5. No Migration table
 
 Since `mygrations` works directly with the database structure it doesn't need to keep a history of which migrations it has run.  Instead, it brings your database up-to-spec no matter what state it is in: no more hassle if your migration table somehow gets out of sync with your migration files.
 
@@ -130,7 +115,8 @@ This is a brand new venture that is a long way from complete.  To give some guid
 3. Ability to migrate database to match definitions from any state (Done)
 4. Generation of migration commands (Done)
 5. Generation of migration files (Done)
-6. More flexible methods for credential management
+6. More flexible methods for credential management (load from environment, specify name of .env file, accept cursor from Python)
 7. Checks against a live database
+8. Auto install PyMySQL and runner
 
 Currently the system has reached a complete enough state that it is being tested in our real-world systems.
