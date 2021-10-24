@@ -2,7 +2,7 @@
 
 # mygrations
 
-A general purpose migration tool for managing MySQL updates.  Written in python but intended for use in other systems as well, especially PHP.
+A stateless database migrator via Schema as Code!
 
 ## About
 
