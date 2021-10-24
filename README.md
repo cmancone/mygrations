@@ -8,7 +8,7 @@ A stateless database migrator via Schema as Code!
 
 `mygrations` is not so much a database migration system as it is "Schema as Code".  Rather than having a migration file dedicated to each change in your database, you describe your database schema via standard `CREATE TABLE` and `INSERT` commands.  `mygrations` can validate your schema both in isolation and against an actual production database, allowing you to make your database migration process fully testable.
 
-The actual database migration process is fully stateless - no need to add a table to your database to keep track of which migrations have run.  Instead, it compares your declared schema against the current schema of your databse, determines the necessary steps to make your database match, and updates your database accordingly.
+The actual database migration process is stateless - no need to add a table to your database to keep track of which migrations have run.  Instead, `mygrations` compares your declared schema against the current schema of your databse, determines the necessary steps to make your database match, and updates your database accordingly.
 
 As a result, updating your database structure with `mygrations` doesn't involve creating additional migration files.  Instead, you simply edit the `CREATE TABLE` command inside the original table definition file to add/remove columns, indexes, or constraints as needed.
 
