@@ -74,9 +74,9 @@ class CreateParser(Parser, Table):
         self._options = [opt for opt in self._options if opt.name != 'AUTO_INCREMENT']
 
         for definition in self._definitions:
-            if isinstance(definition, column):
+            if isinstance(definition, Column):
                 self._columns[definition.name] = definition
-            elif isinstance(definition, index):
+            elif isinstance(definition, Index):
                 self._indexes[definition.name] = definition
 
                 if definition.index_type == 'PRIMARY':
@@ -84,7 +84,7 @@ class CreateParser(Parser, Table):
                         self._errors.append('Found more than one primary column for table %s' % (self._name))
                     else:
                         self._primary = definition
-            elif isinstance(definition, constraint):
+            elif isinstance(definition, Constraint):
                 self._constraints[definition.name] = definition
 
             if definition.schema_errors:

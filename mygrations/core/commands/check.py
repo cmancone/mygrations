@@ -11,17 +11,17 @@ class Check(Base):
         # any errors or warnings?
         errors = False
         if files_database.errors:
-            print('Errors found in *.sql files')
+            print('Errors found in *.sql files:')
             errors = True
             for error in files_database.errors:
                 print(error)
 
-        errors_1215 = files_database.errors_1215
-        if errors_1215:
-            print('1215 Errors encountered')
+        warnings = files_database.warnings
+        if warnings:
+            print('Warnings found in *.sql files:')
             errors = True
-            for error in errors_1215:
-                print(error)
+            for warning in warnings:
+                print(warning)
 
         if not errors:
             print("No problems found")

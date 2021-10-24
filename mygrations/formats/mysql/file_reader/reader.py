@@ -61,6 +61,24 @@ class Reader:
         return [] if self._schema_warnings is None else self._schema_warnings
 
     @property
+    def global_errors(self):
+        """ Public getter.  Returns a list of schema errors
+
+        :returns: A list of schema errors
+        :rtype: list
+        """
+        return [] if self._global_errors is None else self._global_errors
+
+    @property
+    def global_warnings(self):
+        """ Public getter.  Returns a list of schema warnings
+
+        :returns: A list of schema warnings
+        :rtype: list
+        """
+        return [] if self._global_warnings is None else self._global_warnings
+
+    @property
     def tables(self):
         """ Public getter.  Returns a list of table definitions
 
@@ -155,7 +173,7 @@ class Reader:
             elif data[:6].lower() == 'create':
                 parser = CreateParser()
                 data = parser.parse(data)
-                self._tables[parser.name] = parser.as_table()
+                self._tables[parser.name] = parser
 
             elif data[:6].lower() == 'insert':
                 parser = InsertParser()

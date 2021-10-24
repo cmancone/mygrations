@@ -49,6 +49,6 @@ class TypePlain(Parser, Column):
 
         if self._default is None and not self._null:
             self._schema_warnings.append(
-                'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' %
+                "Column '%s' is not null and has no default: you should set a default to avoid MySQL warnings" %
                 (self._name)
             )

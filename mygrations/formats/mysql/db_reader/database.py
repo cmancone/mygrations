@@ -1,6 +1,6 @@
 import os
 import glob
-from ..file_reader.reader import Reader as SQLReader
+from ..file_reader.reader import Reader as Reader
 from mygrations.formats.mysql.definitions.database import Database as DatabaseDefinition
 class Database(DatabaseDefinition):
     def __init__(self, conn):
@@ -28,7 +28,7 @@ class Database(DatabaseDefinition):
         """
         for (table, create_table) in conn.tables().items():
             try:
-                reader = SQLReader()
+                reader = Reader()
                 reader.parse(create_table)
 
             except ValueError as e:

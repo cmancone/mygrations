@@ -6,14 +6,16 @@ A general purpose migration tool for managing MySQL updates.  Written in python 
 
 ## About
 
-`mygrations` manages database migrations with a declarative approach.  Rather than having many migration files, each table in your database has one SQL file which contains a `CREATE TABLE` command that gives the table definition.  This file defines the table structure that you want your table to have (potentially with records as well).  When it comes time to migrate your database, `mygrations` parses the SQL in these files to determine what the structure of your database should be.  It then compares this to the actual table structure in MySQL to determine all of the changes that need to happen to bring the database up to spec.  Finally, it generates any necessary `ALTER TABLE`, `CREATE TABLE`, or `DROP TABLE` commands to update the database.
+`mygrations` is not so much a database migration system as it is "Schema as Code" (SaC - if you'll forgive me).  Rather than having a migration file dedicated to each change in your database, you describe your database schema via standard `CREATE TABLE` and `INSERT` commands.  `mygrations` can validate your schema both in isolation and against an actual production database, allowing you to make your database migration process fully testable.
 
-When you need to change a table structure you don't generate additional migration files, but instead simply edit the `CREATE TABLE` command inside the original table definition file.  When migrating multiple tables related via foreign key constraints you simply have to define your foreign keys in the `CREATE TABLE` command normally.  `mygrations` will take note of the foreign keys and and automatically calculate and resolve dependencies while migrating.
+The actual database migration process is fully stateless - no need to add a table to your database to keep track of which migrations have run.  Instead, it compares your declared schema against the current schema of your databse, determines the necessary steps to make your database match, and updates your database accordingly.
+
+As a result, updating your database structure with `mygrations` doesn't involve creating additional migration files.  Instead, you simply edit the `CREATE TABLE` command inside the original table definition file to add/remove columns, indexes, or constraints as needed.
 
 ## Installation
 
 1. Requires Python3
-2. Requires [MySQLdb For python3](https://pypi.python.org/pypi/mysqlclient).  (For ubuntu: `sudo apt-get install python3-mysqldb`)
+2. Requires [PyMySQL For python3](https://pypi.org/project/PyMySQL/).
 
 Note that installing this via pip will **not** install the MySQLdb dependency.  I did this because installing MySQLdb through pip can be a pain, requiring additional dependencies and a compiler.  In contrast, MySQLdb can usually be installed from a package manager with a one liner (see above).  To install `mygrations`:
 
@@ -44,7 +46,6 @@ When you run `mygrate.py` it will read the `mygrate.conf` file in your current d
 ```
 /var/www/example.com/.env
 /var/www/example.com/mygrate.conf
-/var/www/example.com/public/
 /var/www/example.com/database/*.sql
 ```
 
@@ -100,41 +101,25 @@ There are plenty of migration tools out there, and many frameworks come with the
 
 In `mygrations` each database is defined by a single `CREATE TABLE` command living in one file.  Adjusting a table's structure means adjusting the `CREATE TABLE` command in the table's definition file.  As a result, if two developers attempt to change the same table in conflicting ways, the conflict will be picked up immediately at merge time by your version control system.  Because normal migration systems put each database change in its own file version control cannot pick up any conflicts.  Instead, conflicting table definitions are not found until after a merge when the next migration is run and an SQL error is generated.  This way, potential conflicts are found much sooner.
 
-**2. MySQL Linting**
+**2. Database Schema Tests**
 
-Unlike normal migration systems which simply apply developer-provided transformations to update your tables, `mygrations` is an intelligent tool that understands the actual structure you are trying to create.  As a result it is possible to perform checks to find easy-to-miss syntax errors, as well as enforce project standards.  There are many possibilities:
+`mygrations` has a couple main testing modes that grant the equivalent of unit and integration testing for your database schema.  For isolated testing, you can point it to your database schema files and it will parse them, inspect them, and warn you of any schema errors - no actual database is required for this!  It will check for things like foreign key errors, duplicate key names, etc.  This allows you to test your schema without having to actually apply it to a database.
 
-1. Generate warnings about syntax errors in your SQL files
-2. Enforce system-wide naming conventions on column names
-3. Verify that all foreign key columns actually have foreign key constraints
-4. Set rules to determine what column types should/should not be used
-5. ... more when I think of it
+Additionally, `mygrations` can validate a schema against an actual database.  This can pick up more subtle errors before trying to update things.  For instance, it will warn you if your schema will add a unique index on a column with duplicate values, or attempt to disallow nulls on a column that already contains null values.  These sorts of subtle issues can be easy-to-miss before running a database migration, but `mygrations` can detect them before applying changes.
 
-Mainly though, my intention is to make a linting system that is fully configurable by the end user.
+In short, you can add `mygrations` to your CI/CD process right "next" to your usual code tests to ensure that code and database changes can safely deploy together.
 
-**3. Better foreign key errors**
-
-Does this look familiar?
-
-```ERROR 1215 (HY000): Cannot add foreign key constraint```
-
-I've seen developers at all skill levels waste many hours while creating foreign key constraints due to the above error from MySQL, which gives absolutely no hints as to what the problem actually is.  Because `mygrations` understands what the database is supposed to look like, it can detect the actual conditions that cause this error and provide a specific and actionable error message to the developer.
-
-**4. Migration plans**
+**3. Migration plans**
 
 Again, because `mygrations` operates with knowledge of both the current database and the target database, it can present an actual migration plan before making any changes.  This makes it easy for the developer to have one last spot check before making changes, if desired.
 
-**5. One table, one file**
+**4. One table, one file**
 
-Standard migration systems dedicate a file to each change of a database table.  As a result, it is very difficult to figure out what the database structure *should* be simply by looking at the contents of the migration directory.  Having one table per file makes it easy to spot check your migrations and make sure nothing has been missed.
+Standard migration systems dedicate a file to each change of a database table.  As a result, it is very difficult to figure out what the database structure *should* be simply by looking at the contents of the migration directory.  `mygrations` makes it easier for a developer to look at the database schema files and understand exactly what the database should look like.
 
-**6. No Migration table**
+**5. No Migration table**
 
 Since `mygrations` works directly with the database structure it doesn't need to keep a history of which migrations it has run.  Instead, it brings your database up-to-spec no matter what state it is in: no more hassle if your migration table somehow gets out of sync with your migration files.
-
-**7. Automatic migration builder**
-
-Since the migration files are just simple `CREATE TABLE` commands, `mygrations` can create the migration files for you from your database.  Although you probably won't have to do that very often because the migrations files are very easy to build anyway.  A simple `SHOW CREATE TABLE` command from MySQL is all you need.
 
 ## Roadmap to 1.0
 
@@ -146,5 +131,6 @@ This is a brand new venture that is a long way from complete.  To give some guid
 4. Generation of migration commands (Done)
 5. Generation of migration files (Done)
 6. More flexible methods for credential management
+7. Checks against a live database
 
 Currently the system has reached a complete enough state that it is being tested in our real-world systems.

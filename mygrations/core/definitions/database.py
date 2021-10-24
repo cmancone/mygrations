@@ -88,8 +88,25 @@ class Database:
         :rtype: list[string]
         """
         errors = []
-        for row in self.rows.values():
-            errors.extend(row.schema_errors)
+        for (table_name, rows) in self.rows.items():
+            for row in rows:
+                if hasattr(row, 'schema_errors'):
+                    errors.extend(row.schema_errors)
+
+                # verify the columns which the inserts reference make sense
+                if table_name not in self.tables:
+                    errors.extend(f"Insert error: found an insert for table '{table_name}' but this table does not exist")
+
+                elif row.num_explicit_columns:
+                    table = self.tables[table_name]
+                    for column_name in row.columns:
+                        if column_name not in table.columns:
+                            errors.extend(f"Insert error: insert command attempts to set column '{column_name}' for table '{table_name}' but the column does not exist in the table.")
+                else:
+                    for row_values in row.raw_rows:
+                        if len(row_values) != len(table.columns):
+                            errors.extend(f"Insert error for table '{table_name}': insert command does not explicitly set column names and has a different number of values than the number of columns in the table")
+
         return errors
 
     def find_all_row_schema_warnings(self):
@@ -99,8 +116,10 @@ class Database:
         :rtype: list[string]
         """
         warnings = []
-        for row in self.rows.values():
-            warnings.extend(row.schema_warnings)
+        for rows in self.rows.values():
+            for row in rows:
+                if hasattr(row, 'schema_warnings'):
+                    warnings.extend(row.schema_warnings)
         return warnings
 
     def find_all_table_schema_errors(self):
@@ -111,7 +130,8 @@ class Database:
         """
         errors = []
         for table in self.tables.values():
-            errors.extend(table.schema_errors)
+            if hasattr(table, 'schema_errors'):
+                errors.extend(table.schema_errors)
         return errors
 
     def find_all_table_schema_warnings(self):
@@ -122,7 +142,8 @@ class Database:
         """
         warnings = []
         for table in self.tables.values():
-            warnings.extend(table.schema_warnings)
+            if hasattr(table, 'schema_warnings'):
+                warnings.extend(table.schema_warnings)
         return warnings
 
     def find_all_database_schema_errors(self):
@@ -150,6 +171,82 @@ class Database:
 
         return errors
 
+    def find_parsing_errors(self):
+        """ Returns a list of human-readable error messages (strings) that give any errors from the parsing process
+        :return: List of error messages
+        :rtype: list
+        """
+        if self._parsing_errors is not None:
+            return self._parsing_errors
+
+        self._parsing_errors = [
+            *self.find_all_table_parsing_errors(),
+            *self.find_all_row_parsing_errors(),
+        ]
+
+        return self._parsing_errors
+
+    def find_parsing_warnings(self):
+        """ Returns a list of human-readable error messages (strings) that give any errors from the parsing process
+        :return: List of error messages
+        :rtype: list
+        """
+        if self._parsing_warnings is not None:
+            return self._parsing_warnings
+
+        self._parsing_warnings = [
+            *self.find_all_table_parsing_warnings(),
+            *self.find_all_row_parsing_warnings(),
+        ]
+
+        return self._parsing_warnings
+
+    def find_all_table_parsing_errors(self):
+        """ Returns a list of human-readable error messages (strings) from the table parsing process
+        :return: List of error messages
+        :rtype: list
+        """
+        errors = []
+        for table in self.tables.values():
+            if hasattr(table, 'parsing_errors'):
+                errors.extend(table.parsing_errors)
+        return errors
+
+    def find_all_row_parsing_errors(self):
+        """ Returns a list of human-readable error messages (strings) from the row parsing process
+        :return: List of error messages
+        :rtype: list
+        """
+        errors = []
+        for (table_name, rows) in self.rows.items():
+            for row in rows:
+                if hasattr(row, 'parsing_errors'):
+                    errors.extend(row.parsing_errors)
+        return errors
+
+    def find_all_table_parsing_warnings(self):
+        """ Returns a list of human-readable warning messages (strings) from the table parsing process
+        :return: List of warning messages
+        :rtype: list
+        """
+        warnings = []
+        for table in self.tables.values():
+            if hasattr(table, 'parsing_warnings'):
+                warnings.extend(table.parsing_warnings)
+        return warnings
+
+    def find_all_row_parsing_warnings(self):
+        """ Returns a list of human-readable warning messages (strings) from the row parsing process
+        :return: List of warning messages
+        :rtype: list
+        """
+        warnings = []
+        for (table_name, rows) in self.rows.items():
+            for row in rows:
+                if hasattr(table, 'parsing_warnings'):
+                    warnings.extend(row.parsing_warnings)
+        return warnings
+
     def find_constraint_errors(self, table, constraint):
         """ Returns None or a string with an error message for the given table and constraint
 
@@ -173,6 +270,10 @@ class Database:
             )
 
         # the column exists but we may still have a constraint error.  That can happen in a few ways
+        if constraint.column not in table.columns:
+            return "Constraint error for foreign key `%s`: sets constraint on column `%s`.`%s`, but this column does not exist" % (
+                constraint.name, table.name, constraint.column
+            )
         table_column = table.columns[constraint.column]
         foreign_column = foreign_table.columns[constraint.foreign_column]
 

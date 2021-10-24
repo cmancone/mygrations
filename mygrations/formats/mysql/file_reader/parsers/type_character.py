@@ -140,19 +140,19 @@ class TypeCharacter(Parser, Column):
         if self._character_set or self._collate:
             if not self._column_type.lower() in self.allowed_collation_types:
                 self._schema_errors.append(
-                    'Column of type %s is not allowed to have a collation or character set for column %s' %
+                    "Column of type '%s' is not allowed to have a collation or character set for column '%s'" %
                     (self._column_type, self._name)
                 )
 
         if self._default is None and not self._null:
             self._schema_warnings.append(
-                'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' %
+                "Column '%s' is not null and has no default: you should set a default to avoid MySQL warnings" %
                 (self._name)
             )
 
         if self._column_type.lower() in self.disallowed_types:
             self._schema_errors.append(
-                'Column of type %s is not allowed to have a length for column %s' % (self._column_type, self._name)
+                "Column of type '%s' is not allowed to have a length for column '%s'" % (self._column_type, self._name)
             )
 
         self._attributes = {}

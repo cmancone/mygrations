@@ -11,7 +11,8 @@ class Table:
     _auto_increment: int = 1
     _columns: Dict[str, Column] = None
     _constraints: Dict[str, Constraint] = None
-    _errors: List[str] = None
+    _indexes: Dict[str, Constraint] = None
+    _indexed_columns = None
     _name: str = ''
     _options: List[Option] = None
     _primary: Index = None
@@ -23,17 +24,12 @@ class Table:
         self, name: str, columns: List[Column], indexes: List[Index], constraints: List[Constraint],
         options: List[Option]
     ):
-        self._columns = OrderedDict()
-        self._constraints = OrderedDict()
-        self._errors = []
-        self._indexes = OrderedDict()
         self._name = name
         self._options = options
         self._primary = None
         self._raw_columns = columns
         self._raw_constraints = constraints
         self._raw_indexes = indexes
-        self._warnings = []
 
         self._columns = OrderedDict((col.name, col) for col in columns)
         self._constraints = OrderedDict((constraint.name, constraint) for constraint in constraints)
@@ -182,16 +178,6 @@ class Table:
     def primary(self) -> Index:
         """ Public getter.  Returns the index object for the primary key """
         return self._primary
-
-    @property
-    def errors(self) -> List[str]:
-        """ Public getter.  Returns a list of parsing errors """
-        return [] if self._errors is None else self._errors
-
-    @property
-    def warnings(self) -> List[str]:
-        """ Public getter.  Returns a list of parsing/table warnings """
-        return [] if self._warnings is None else self._warnings
 
     @property
     def auto_increment(self) -> int:
@@ -488,88 +474,7 @@ class Table:
         :returns: A list of operations to apply to table
         :rtype: list[mygrations.formats.mysql.mygrations.operations.*] | dict
         """
-        # start with the columns, obviously
-        (added_columns, removed_columns, overlap_columns) = self._differences(self.columns, comparison_table.columns)
-        (added_keys, removed_keys, overlap_keys) = self._differences(self.indexes, comparison_table.indexes)
-        (added_constraints, removed_constraints,
-         overlap_constraints) = self._differences(self.constraints, comparison_table.constraints)
-
-        # keeping in mind the overall algorithm, we're going to separate out all changes into three alter statments
-        # these are broken up according to the way that the system has to process them to make sure that foreign
-        # keys are not violated during the process
-        # 1. Adding columns, changing columns, adding keys, changing keys, removing keys, removing foreign keys
-        # 2. Adding foreign keys, changing foreign keys
-        # 3. Removing columns
-        primary_alter = alter_table(self.name)
-        for new_column in added_columns:
-            primary_alter.add_operation(
-                add_column(comparison_table.columns[new_column], comparison_table.column_before(new_column))
-            )
-
-        for overlap_column in overlap_columns:
-            # it's really easy to tell if a column changed
-            if str(self.columns[overlap_column]) == str(comparison_table.columns[overlap_column]):
-                continue
-
-            # FALSE POSITIVE CHECK:
-            # if one column has collate/character set and the other doesn't, and that is the only difference,
-            # then ignore this difference
-            if self.columns[overlap_column].is_really_the_same_as(comparison_table.columns[overlap_column]):
-                continue
-
-            primary_alter.add_operation(change_column(comparison_table.columns[overlap_column]))
-
-        for removed_column in removed_columns:
-            primary_alter.add_operation(remove_column(self.columns[removed_column]))
-
-        # indexes also go in that first alter table
-        for new_key in added_keys:
-            primary_alter.add_operation(add_key(comparison_table.indexes[new_key]))
-        for removed_key in removed_keys:
-            primary_alter.add_operation(remove_key(self.indexes[removed_key]))
-        for overlap_key in overlap_keys:
-            if str(self.indexes[overlap_key]) == str(comparison_table.indexes[overlap_key]):
-                continue
-            primary_alter.add_operation(change_key(comparison_table.indexes[overlap_key]))
-
-        # removed foreign key constraints get their own alter because that should always happen first
-        removed_constraints_alter = alter_table(self.name)
-        for removed_constraint in removed_constraints:
-            removed_constraints_alter.add_operation(remove_constraint(self.constraints[removed_constraint]))
-
-        # adding/changing/removing foreign keys gets their own alter
-        constraints = alter_table(self.name)
-        for added_constraint in added_constraints:
-            constraints.add_operation(add_constraint(comparison_table.constraints[added_constraint]))
-        for overlap_constraint in overlap_constraints:
-            if str(self.constraints[overlap_constraint]) == str(comparison_table.constraints[overlap_constraint]):
-                continue
-
-            # foreign key constraints are modified by first dropping the constraint and
-            # then adding the new one.  However, these two operations cannot happen in the
-            # same alter command.  Kinda a pain.  Oh well.
-            removed_constraints_alter.add_operation(remove_constraint(self.constraints[overlap_constraint]))
-            constraints.add_operation(add_constraint(comparison_table.constraints[overlap_constraint]))
-
-        # now put it all together
-        if split_operations:
-            operations = {}
-            if removed_constraints_alter:
-                operations['removed_fks'] = removed_constraints_alter
-            if primary_alter:
-                operations['kitchen_sink'] = primary_alter
-            if constraints:
-                operations['fks'] = constraints
-        else:
-            operations = []
-            for operation in constraints:
-                primary_alter.add_operation(operation)
-            if removed_constraints_alter:
-                operations.append(removed_constraints_alter)
-            if primary_alter:
-                operations.append(primary_alter)
-
-        return operations
+        raise NotImplementedError()
 
     def to_rows(self, from_table=None):
         """ Compares two tables to eachother and returns a list of operations which can bring the rows of this table in line with the other
@@ -584,34 +489,7 @@ class Table:
         :returns: A list of operations to apply to table
         :rtype: list[mygrations.formats.mysql.mygrations.operations.*]
         """
-        if from_table and not from_table.tracking_rows:
-            raise ValueError(
-                "Refusing to compare rows for table %s that is not tracking rows.  Technically I can, but this is probably a sign that you are doing something wrong"
-                % (self.name)
-            )
-
-        (inserted_ids, deleted_ids, updated_ids) = self._differences(from_table.rows if from_table else {}, self.rows)
-
-        operations = []
-        for row_id in inserted_ids:
-            operations.append(row_insert(self.name, self.rows[row_id]))
-
-        for row_id in deleted_ids:
-            operations.append(row_delete(self.name, row_id))
-
-        for row_id in updated_ids:
-            # try to be smart and not update if we don't have to
-            (inserted_cols, deleted_cols, updated_cols) = self._differences(self.rows[row_id], from_table.rows[row_id])
-            differences = False
-            for col in updated_cols:
-                if not self._loose_equal(self.rows[row_id][col], from_table.rows[row_id][col]):
-                    differences = True
-                    break
-
-            if differences:
-                operations.append(row_update(self.name, self.rows[row_id]))
-
-        return operations
+        raise NotImplementedError()
 
     def _differences(self, from_list: Dict[str, Any], to_list: Dict[str, Any]):
         """

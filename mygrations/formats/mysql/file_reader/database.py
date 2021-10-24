@@ -1,7 +1,7 @@
 import os
 import glob
-from .reader import Reader as SQLReader
-from mygrations.core.definitions.database import Database as BaseDatabase
+from .reader import Reader
+from mygrations.formats.mysql.definitions.database import Database as BaseDatabase
 class Database(BaseDatabase):
     def __init__(self, strings):
         """ Constructor.  Accepts a string or list of strings with different possible contents
@@ -22,7 +22,9 @@ class Database(BaseDatabase):
         """
 
         self._tables = {}
-        self._rows = []
+        self._rows = {}
+        self._global_errors = []
+        self._global_warnings = []
 
         if isinstance(strings, str):
             strings = [strings]
@@ -75,15 +77,11 @@ class Database(BaseDatabase):
         """
 
         try:
-            reader = SQLReader()
+            reader = Reader()
             reader.parse(contents)
 
         except ValueError as e:
             print("Error in file %s: %s" % (contents, e))
-
-        # pull in all errors and warnings
-        self._errors.extend(reader.errors)
-        self._warnings.extend(reader.warnings)
 
         # keep rows and tables separate while we are reading
         for (table_name, table) in reader.tables.items():
@@ -92,7 +90,12 @@ class Database(BaseDatabase):
             self._tables[table.name] = table
 
         for (table_name, rows) in reader.rows.items():
-            self._rows.extend(rows)
+            if not table_name in self._rows:
+                self._rows[table_name] = []
+            self._rows[table_name].extend(rows)
+
+        self._global_errors.extend(reader._global_errors)
+        self._global_warnings.extend(reader._global_warnings)
 
     #def store_rows_with_tables(self):
     #""" Processes table rows and adds them to the appropriate tables

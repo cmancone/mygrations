@@ -73,19 +73,19 @@ class TypeDecimal(Parser, Column):
         # make sense of the default
         if self._default and len(self._default) >= 2 and self._default[0] == "'" and self._default[-1] == "'":
             self._default = self._default.strip("'")
-            self._parsing_errors.append('Column %s has a numeric type but its default value is a string' % self._name)
+            self._parsing_errors.append("Column '%s' has a numeric type but its default value is a string" % self._name)
         elif self._default and self._default.lower() == 'null':
             self._default = None
 
         if self._default is None and not self._null:
             self._schema_warnings.append(
-                'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' %
+                "Column '%s' is not null and has no default: you should set a default to avoid MySQL warnings" %
                 (self._name)
             )
 
         # only a few types of field are allowed to have decimals
         if not self._column_type.lower() in self.allowed_types:
             self._schema_errors.append(
-                'Column of type %s is not allowed to have a decimal length for column %s' %
+                "Column of type %s is not allowed to have a decimal length for column '%s'" %
                 (self._column_type, self._name)
             )

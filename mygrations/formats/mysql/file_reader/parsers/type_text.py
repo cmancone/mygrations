@@ -107,9 +107,9 @@ class TypeText(Parser, Column):
         if self._column_type.lower() == 'datetime':
             pass
         elif not self._column_type.lower() in self.allowed_types:
-            self._schema_errors.append('Column of type %s must have a length for column %s' % (self._column_type, self._name))
+            self._schema_errors.append("Column of type %s must have a length for column '%s'" % (self._column_type, self._name))
         elif 'default' in self._values:
             self._schema_errors.append(
-                'Column of type %s is not allowed to have a default value for column %s' %
+                "Column of type %s is not allowed to have a default value for column '%s'" %
                 (self._column_type, self._name)
             )
