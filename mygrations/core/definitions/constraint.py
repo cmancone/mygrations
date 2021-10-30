@@ -1,10 +1,11 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Union, List, Tuple
-class Constraint:
+from .base import Base
+class Constraint(Base):
     _column_name: str = ''
     _errors: List[str] = None
-    _foreign_table: str = ''
+    _foreign_table_name: str = ''
     _foreign_column_name: str = ''
     _name: str = ''
     _on_delete: str = ''
@@ -13,15 +14,15 @@ class Constraint:
 
     def __init__(
         self,
-        name: str,
-        column_name: str,
-        foreign_table: str,
-        foreign_column_name: str,
+        name: str = '',
+        column_name: str = '',
+        foreign_table_name: str = '',
+        foreign_column_name: str = '',
         on_delete: str = '',
         on_update: str = ''
     ):
         self._column_name = column_name
-        self._foreign_table = foreign_table
+        self._foreign_table_name = foreign_table_name
         self._foreign_column_name = foreign_column_name
         self._name = name
         self._on_delete = on_delete.upper()
@@ -30,8 +31,6 @@ class Constraint:
             self._on_delete = 'RESTRICT'
         if not self._on_update:
             self._on_update = 'RESTRICT'
-
-        self._check_for_errors_and_warnings()
 
     @property
     def name(self) -> str:
@@ -44,9 +43,9 @@ class Constraint:
         return self._column_name
 
     @property
-    def foreign_table(self) -> str:
+    def foreign_table_name(self) -> str:
         """ Public getter.  Returns the name of the table this constraint is to """
-        return self._foreign_table
+        return self._foreign_table_name
 
     @property
     def foreign_column_name(self) -> str:
@@ -63,47 +62,31 @@ class Constraint:
         """ Public getter.  Returns the ON UPDATE action for this constraint """
         return self._on_update
 
-    @property
-    def errors(self) -> List[str]:
-        """ Public getter.  Returns a list of parsing errors """
-        return [] if self._errors is None else self._errors
-
-    @property
-    def warnings(self) -> List[str]:
-        """ Public getter.  Returns a list of parsing/table warnings """
-        return [] if self._warnings is None else self._warnings
-
-    def _check_for_errors_and_warnings(self):
+    def find_schema_errors(self) -> List[str]:
         allowed_actions = ['CASCADE', 'NO ACTION', 'RESTRICT', 'SET DEFAULT', 'SET NULL']
-        self._errors = []
-        self._warnings = []
+        errors = []
+        if not self.name:
+            errors.append('Missing name for constraint')
+        elif len(self._name) > 64:
+            self._schema_errors.append(f"Key name '{self.name}' is too long")
+
         if self.on_delete not in allowed_actions:
-            self._errors.append(
-                f"ON DELETE action of '{self.on_delete}' for constraint {self.name} is not a valid ON DELETE action"
+            errors.append(
+                f"ON DELETE action of '{self.on_delete}' for constraint '{self.name}' is not a valid ON DELETE action"
             )
 
         if self.on_update not in allowed_actions:
-            self._errors.append(
-                f"ON UPDATE action of '{self.on_update}' for constraint {self.name} is not a valid ON UPDATE action"
+            errors.append(
+                f"ON UPDATE action of '{self.on_update}' for constraint '{self.name}' is not a valid ON UPDATE action"
             )
 
-        for required in ['name', 'column_name', 'foreign_table', 'foreign_column_name']:
+        for required in ['name', 'column_name', 'foreign_table_name', 'foreign_column_name']:
             if not getattr(self, required):
-                self._errors.append(f"Missing {required} for constraint {self.name}")
+                errors.append(f"Missing {required} for constraint '{self.name}'")
+        return errors
+
+    def find_schema_warnings(self) -> List[str]:
+        return []
 
     def __str__(self) -> str:
-        """ Returns the MySQL command that would create the constraint
-
-        i.e. CONSTRAINT `vendors_w9_fk` FOREIGN KEY (`w9_id`) REFERENCES `vendor_w9s` (`id`) ON UPDATE CASCADE
-        """
-        return ' '.join([
-            'CONSTRAINT',
-            f'`{self.name}`',
-            'FOREIGN KEY',
-            f'(`{self.column_name}`)',
-            'REFERENCES',
-            f'`{self.foreign_table}`',
-            f'(`{self.foreign_column_name}`)',
-            f'ON DELETE {self.on_delete}',
-            f'ON UPDATE {self.on_update}',
-        ])
+        raise NotImplementedError()

@@ -43,7 +43,7 @@ class TestString(unittest.TestCase):
         for column_type in no_default:
             column = String('test', column_type, default='Hey')
             self.assertEquals(
-                [f'Column test of type {column_type} cannot have a default'],
+                [f"Column 'test' of type '{column_type}' cannot have a default"],
                 column.errors,
             )
 
@@ -62,12 +62,12 @@ class TestString(unittest.TestCase):
         for column_type in nope:
             column = String('test', column_type, character_set='Hey')
             self.assertEquals(
-                [f'Column test of type {column_type} cannot have a collation/character set'],
+                [f"Column 'test' of type '{column_type}' cannot have a collation/character set"],
                 column.errors,
             )
             column = String('test', column_type, collate='Hey')
             self.assertEquals(
-                [f'Column test of type {column_type} cannot have a collation/character set'],
+                [f"Column 'test' of type '{column_type}' cannot have a collation/character set"],
                 column.errors,
             )
 
@@ -98,12 +98,12 @@ class TestString(unittest.TestCase):
         for column_type in binary_only:
             column = String('test', column_type, character_set='Hey')
             self.assertEquals(
-                [f'Column test of type {column_type} can only have a collate/character set of BINARY'],
+                [f"Column 'test' of type '{column_type}' can only have a collate/character set of BINARY"],
                 column.errors,
             )
             column = String('test', column_type, collate='Hey')
             self.assertEquals(
-                [f'Column test of type {column_type} can only have a collate/character set of BINARY'],
+                [f"Column 'test' of type '{column_type}' can only have a collate/character set of BINARY"],
                 column.errors,
             )
             column = String('test', column_type, collate='binary')
@@ -116,6 +116,6 @@ class TestString(unittest.TestCase):
     def test_no_auto_increment(self):
         column = String('test', 'VARCHAR', auto_increment=True)
         self.assertEquals(
-            [f'Column test of type VARCHAR cannot be an AUTO_INCREMENT: only numeric columns can'],
+            [f"Column 'test' of type 'VARCHAR' cannot be an AUTO_INCREMENT: only numeric columns can"],
             column.errors,
         )

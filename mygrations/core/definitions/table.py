@@ -18,33 +18,120 @@ class Table:
     _primary: Index = None
     _rows: Dict[int, List[Union[str, int]]] = None
     _tracking_rows: bool = False
-    _warnings: List[str] = None
+    _schema_errors: List[str] = None
+    _schema_warnings: List[str] = None
+
 
     def __init__(
-        self, name: str, columns: List[Column], indexes: List[Index], constraints: List[Constraint],
-        options: List[Option]
+        self, name: str,
+        columns: List[Column] = None,
+        indexes: List[Index] = None,
+        constraints: List[Constraint] = None,
+        options: List[Option] = None
     ):
         self._name = name
         self._options = options
         self._primary = None
-        self._raw_columns = columns
-        self._raw_constraints = constraints
-        self._raw_indexes = indexes
+        self._constraints = {}
+        self._columns = {}
+        self._indexes = {}
+        self._schema_errors = []
+        self._schema_warnings = []
+        self._raw_columns = columns if columns is not None else []
+        self._raw_constraints = constraints if constraints is not None else []
+        self._raw_indexes = indexes if indexes is not None else []
 
-        self._columns = OrderedDict((col.name, col) for col in columns)
-        self._constraints = OrderedDict((constraint.name, constraint) for constraint in constraints)
-        self._indexes = OrderedDict((index.name, index) for index in indexes)
-
-        # It is somewhat non-sensical that we check for errors and warnings in the constructor, but allow
-        # columns/constraints/indexes to be allowed later as well.  It ended up like this simply because that's
-        # how the other classes are organized, but the other classes don't allow changes to be made after
-        # instatiation.  Therefore this will likely cause problems in the future, but I'm being lazy right now.
-        self._check_for_errors_and_warnings(columns, constraints, indexes)
+        if columns is not None:
+            self._columns = OrderedDict((col.name, col) for col in columns)
+        if constraints is not None:
+            self._constraints = OrderedDict((constraint.name, constraint) for constraint in constraints)
+        if indexes is not None:
+            self._indexes = OrderedDict((index.name, index) for index in indexes)
 
         for index in self._indexes.values():
             if index.index_type == 'PRIMARY':
                 self._primary = index
                 break
+
+    @property
+    def schema_errors(self):
+        """ Public getter.  Returns a list of schema errors
+
+        :returns: A list of schema errors
+        :rtype: list
+        """
+        if self._schema_errors is None:
+            self._schema_errors = self._find_schema_errors()
+        return self._schema_errors
+
+    @property
+    def schema_warnings(self):
+        """ Public getter.  Returns a list of schema warnings
+
+        :returns: A list of schema warnings
+        :rtype: list
+        """
+        if self._schema_warnings is None:
+            self._schema_warnings = self._find_schema_warnings()
+        return self._schema_warnings
+
+    def _find_errors_and_warnings(self) -> List[str]:
+        errors = []
+        if not self.name:
+            errors.append("Table missing name")
+        if not len(self.columns):
+            errors.append(f"Table '{self.name}' does not have any columns")
+
+        # start with errors from "children" and append the table name for context
+        for type_to_check in [self._columns, self._indexes, self._constraints]:
+            for to_check in type_to_check:
+                for error in to_check.schema_errors:
+                    errors.append(f"{error} in table '{self.name}'")
+                for warning in to_check.schema_warnings:
+                    warnings.append(f"{warning} in table '{self.name}'")
+
+        # duplicate names
+        for (name, to_check) in {'columns': self._columns, 'constraints': self._constraints, 'indexes': self._indexes}.items():
+            if len(to_check) == len(getattr(self, name)):
+                continue
+            label = name.rstrip('es').rstrip('s')
+            found = {}
+            duplicates = {}
+            for item in to_check:
+                if item.name in found:
+                    duplicates[item.name] = True
+                    continue
+                found[item.name] = True
+            for key in duplicates.keys():
+                errors.append(f"Duplicate {label} name found in table '{self.name}': '{key}'")
+
+        # more than one primary key
+        primaries = list(filter(lambda index: index.is_primary(), self._indexes))
+        if len(primaries) > 1:
+            errors.append(f"Table '{self.name}' has more than one PRIMARY index")
+
+        # auto increment checks
+        auto_increment = list(filter(lambda column: column.auto_increment, self._columns))
+        if len(auto_increment) > 1:
+            errors.append(f"Table '{self.name}' has more than one AUTO_INCREMENT column")
+        elif not primaries:
+            errors.append(f"Table '{self.name}' has an AUTO_INCREMENT column but is missing the PRIMARY index")
+        elif primaries[0].columns[0] != auto_increment[0].name:
+            self._errors.append(
+                "Mismatched indexes in table '%s': column '%s' is the AUTO_INCREMENT column but '%s' is the PRIMARY index column"
+                % (self.name, auto_increment[0].name, primaries[0].columns[0])
+            )
+
+        # indexes on non-existent columns
+        for index in self._indexes.values():
+            for column in index.columns:
+                if not column in self.columns:
+                    self._errors.append(
+                        f"Table '{self.name}' has index '{index.name}' that references non-existent column '{column}'"
+                    )
+
+    def _find_schema_warnings(self) -> List[str]:
+        return []
 
     def _check_for_errors_and_warnings(
         self, columns: List[Column], constraints: List[Constraint], indexes: List[Index]
@@ -202,6 +289,8 @@ class Table:
 
         :returns: An error string if an error is encountered, otherwise True/False
         """
+        self._schema_errors = None
+        self._schema_warnings = None
         if not isinstance(rows, rows_definition):
             raise ValueError(
                 'Only objects of class mygrations.formats.mysql.definitions.rows can be added as rows to a table'
@@ -253,6 +342,8 @@ class Table:
 
         :returns: An error string if an error is encountered, otherwise True/False
         """
+        self._schema_errors = None
+        self._schema_warnings = None
         self._tracking_rows = True
         if self._rows is None:
             self._rows = OrderedDict()
@@ -329,6 +420,8 @@ class Table:
         :param column: The column to add
         :param position: Where to put the column
         """
+        self._schema_errors = None
+        self._schema_warnings = None
         if column.name in self._columns:
             raise ValueError("Cannot add column %s because %s already exists" % (column.name, column.name))
 
@@ -362,6 +455,8 @@ class Table:
 
     def remove_column(self, column: Union[str, Column]):
         """ Removes a column from the table """
+        self._schema_errors = None
+        self._schema_warnings = None
         column_name = column if type(column) == str else column.name
         if not column_name in self._columns:
             raise ValueError("Cannot remove column %s because column %s does not exist" % (column_name, column_name))
@@ -369,6 +464,8 @@ class Table:
 
     def change_column(self, new_column: Column):
         """ Changes a column.  This does not currently support renaming columns """
+        self._schema_errors = None
+        self._schema_warnings = None
         if not new_column.name in self._columns:
             raise ValueError(
                 "Cannot modify column %s because column %s does not exist" % (new_column.name, new_column.name)
@@ -377,6 +474,8 @@ class Table:
 
     def add_index(self, index: Index):
         """ Adds an index to the table """
+        self._schema_errors = None
+        self._schema_warnings = None
         if index.name in self._indexes:
             raise ValueError("Cannot add index %s because index %s already exists" % (index.name, index.name))
         self._indexes[index.name] = index
@@ -386,6 +485,8 @@ class Table:
 
     def remove_index(self, index: Union[str, Index]):
         """ Removes an index from the table """
+        self._schema_errors = None
+        self._schema_warnings = None
         index_name = index if type(index) == str else index.name
         if index_name not in self._indexes:
             raise ValueError("Cannot remove index %s because index %s does not exist" % (index_name, index_name))
@@ -397,6 +498,8 @@ class Table:
 
     def change_index(self, new_index: Index):
         """ Changes an index.  This does not currently support renaming """
+        self._schema_errors = None
+        self._schema_warnings = None
         if not new_index.name in self._indexes:
             raise ValueError(
                 "Cannot modify index %s because index %s does not exist" % (new_index.name, new_index.name)
@@ -411,6 +514,8 @@ class Table:
 
     def add_constraint(self, constraint: Constraint):
         """ Adds a constraint to the table """
+        self._schema_errors = None
+        self._schema_warnings = None
         if constraint.name in self._constraints:
             raise ValueError(
                 "Cannot add constraint %s because constraint %s already exists" % (constraint.name, constraint.name)
@@ -419,6 +524,8 @@ class Table:
 
     def remove_constraint(self, constraint: Union[str, Constraint]):
         """ Removes an constraint from the table """
+        self._schema_errors = None
+        self._schema_warnings = None
         if type(constraint) != str:
             constraint = constraint.name
         if constraint not in self._constraints:
@@ -429,6 +536,8 @@ class Table:
 
     def change_constraint(self, new_constraint):
         """ Changes a constraint. This does not currently support renaming. """
+        self._schema_errors = None
+        self._schema_warnings = None
         if not new_constraint.name in self._constraints:
             raise ValueError(
                 "Cannot modify constraint %s because constraint %s does not exist" %

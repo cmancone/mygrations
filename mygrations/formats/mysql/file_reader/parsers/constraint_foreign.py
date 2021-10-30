@@ -17,21 +17,21 @@ class ConstraintForeign(Parser, Constraint):
         'value': 'FOREIGN KEY ('
     }, {
         'type': 'regexp',
-        'name': 'column',
+        'name': 'column_name',
         'value': '[^\(\s\)]+'
     }, {
         'type': 'literal',
         'value': ') REFERENCES'
     }, {
         'type': 'regexp',
-        'name': 'foreign_table',
+        'name': 'foreign_table_name',
         'value': '[^\(]+'
     }, {
         'type': 'literal',
         'value': '('
     }, {
         'type': 'regexp',
-        'name': 'foreign_column',
+        'name': 'foreign_column_name',
         'value': '[^\)]+'
     }, {
         'type': 'literal',
@@ -85,14 +85,12 @@ class ConstraintForeign(Parser, Constraint):
 
     def process(self):
 
-        self._schema_errors = []
-        self._schema_warnings = []
         self._parsing_errors = []
         self._parsing_warnings = []
         self._name = self._values['name'].strip().strip('`')
-        self._column = self._values['column'].strip().strip('`')
-        self._foreign_table = self._values['foreign_table'].strip().strip('`')
-        self._foreign_column = self._values['foreign_column'].strip().strip('`')
+        self._column_name = self._values['column_name'].strip().strip('`')
+        self._foreign_table_name = self._values['foreign_table_name'].strip().strip('`')
+        self._foreign_column_name = self._values['foreign_column_name'].strip().strip('`')
 
         # figure out what our rules are
         self._on_delete = self.find_action('DELETE')
@@ -100,11 +98,7 @@ class ConstraintForeign(Parser, Constraint):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        if len(self._name) > 64:
-            self._schema_errors.append('Key name %s is too long' % (self._name))
-
     def find_action(self, update_type):
-
         # watch for more than one action for this type
         found = ''
         for action in ['CASCADE', 'NO ACTION', 'RESTRICT', 'SET DEFAULT', 'SET NULL']:

@@ -8,9 +8,9 @@ A stateless database migrator via Schema as Code!
 
 `mygrations` is not so much a database migration system as it is "Schema as Code".  Rather than having a migration file dedicated to each change in your database, you describe your database schema via standard `CREATE TABLE` and `INSERT` commands.  `mygrations` can validate your schema both in isolation and against an actual production database, allowing you to make your database migration process fully testable.
 
-The actual database migration process is stateless - no need to add a table to your database to keep track of which migrations have run.  Instead, `mygrations` compares your declared schema against the current schema of your databse, determines the necessary steps to make your database match, and updates your database accordingly.
+The actual database migration process is stateless - no need to add a table to your database to keep track of which migrations have run.  Instead, `mygrations` compares your declared schema against the current schema of your databse, determines the necessary steps to make your database match, and updates your database accordingly.  As a result, updating your database structure with `mygrations` doesn't involve creating additional migration files.  Instead, you simply edit the `CREATE TABLE` command inside the original table definition file to add/remove columns, indexes, or constraints as needed.
 
-As a result, updating your database structure with `mygrations` doesn't involve creating additional migration files.  Instead, you simply edit the `CREATE TABLE` command inside the original table definition file to add/remove columns, indexes, or constraints as needed.
+The main disadvantage with `mygrations` stems from one of its key advantages (statelessness).  `mygrations` cannot handle stateful operations: renaming tables, renaming columns, moving or transforming data.  The only good way to handle those is by using the same methods as every other migration system out there (i.e. migration files with a record of which have run), and there isn't much point in adding that to this tool.  If you really need that, you're better off using more typical migration tools.
 
 ## Installation
 
@@ -98,13 +98,17 @@ In `mygrations` each database is defined by a single `CREATE TABLE` command livi
 
 Again, because `mygrations` operates with knowledge of both the current database and the target database, it can present an actual migration plan before making any changes.  This makes it easy for the developer to have one last spot check before making changes, if desired.
 
-### 4. One table, one file
+### 4. Clear Schemas
 
 Standard migration systems dedicate a file to each change of a database table.  As a result, it is very difficult to figure out what the database structure *should* be simply by looking at the contents of the migration directory.  `mygrations` makes it easier for a developer to look at the database schema files and understand exactly what the database should look like.
 
 ### 5. No Migration table
 
 Since `mygrations` works directly with the database structure it doesn't need to keep a history of which migrations it has run.  Instead, it brings your database up-to-spec no matter what state it is in: no more hassle if your migration table somehow gets out of sync with your migration files.
+
+### 6. Roll Forward, Roll Back
+
+Because `mygrations` is stateless it has no concept of forward or backward, and no need to define separate instructions for "do" or "undo".  Whether you are changing branches, rolling back to a previous commit, or simply pull down the latest changes, `mygrations` sees no difference and updates your database just the same.
 
 ## Roadmap to 1.0
 

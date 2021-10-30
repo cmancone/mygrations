@@ -7,50 +7,6 @@ class Parser:
     rule_types = {'children': RuleChildren, 'delimited': RuleDelimited, 'literal': RuleLiteral, 'regexp': RuleRegexp}
     _parsing_errors = None
     _parsing_warnings = None
-    _schema_errors = None
-    _schema_warnings = None
-
-    def __init__(self, rules=[]):
-
-        self._values = {}
-        self._parsing_errors = []
-        self._parsing_warnings = []
-        self._schema_errors = []
-        self._schema_warnings = []
-
-        # rules should be defined by the subclass
-        if rules:
-            self.rules = rules
-
-        if not self.rules:
-            raise NotImplementedError("Cannot extend parser without providing rules in %s" % (self.__class__))
-
-        for (rule_index, rule) in enumerate(self.rules):
-
-            # we always need a type
-            if not 'type' in rule:
-                raise ValueError('Missing type for rule %s in %s' % (rule, self.__class__))
-
-        self.num_rules = len(self.rules)
-
-    @property
-    def schema_errors(self):
-        """ Public getter.  Returns a list of schema errors
-
-        :returns: A list of schema errors
-        :rtype: list
-        """
-        return self._schema_errors if self._schema_errors is not None else []
-
-    @property
-    def schema_warnings(self):
-        """ Public getter.  Returns a list of schema warnings
-
-        :returns: A list of schema warnings
-        :rtype: list
-        """
-        return self._schema_warnings if self._schema_warnings is not None else []
-
 
     @property
     def parsing_errors(self):

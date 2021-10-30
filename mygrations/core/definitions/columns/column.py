@@ -1,7 +1,8 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod
 from typing import Union, List
-class Column(ABC):
+from ..base import Base
+
+class Column(Base):
     _auto_increment: bool = None
     _character_set: str = None
     _collate: str = None
@@ -11,15 +12,13 @@ class Column(ABC):
     _name: str = ''
     _null: bool = None
     _unsigned: bool = None
-    _errors: List[str] = None
-    _warnings: List[str] = None
     _allowed_column_types = []
     _values: List[str] = None    # enum/set only
 
     def __init__(
         self,
-        name: str,
-        column_type: str,
+        name: str = '',
+        column_type: str = '',
         length: Union[str, int] = None,
         null: bool = True,
         default: Union[str, int] = None,
@@ -39,20 +38,15 @@ class Column(ABC):
         self._null = null
         self._unsigned = unsigned
         self._values = values
-        self._check_for_errors_and_warnings()
 
     @property
     def name(self) -> str:
-        """ Public getter.  Returns the name of the column.
-
-        :returns: The column name
-        """
-
+        """ Public getter.  Returns the name of the column. """
         return self._name
 
     @property
     def length(self) -> Union[str, int]:
-        """ Public getter.  Returns the length of the column as a string.
+        """ Public getter.  Returns the length of the column as a string or int.
 
         Some examples of the length for various column definitions:
 
@@ -72,10 +66,7 @@ class Column(ABC):
 
     @property
     def null(self) -> bool:
-        """ Public getter.  Returns True/False to denote if the column is allowed to be null
-
-        :returns: Whether or not null is an allowed value for the column
-        """
+        """ Public getter.  Returns True/False to denote if the column is allowed to be null """
         return self._null
 
     @property
@@ -92,8 +83,6 @@ class Column(ABC):
         decimal(20,5)       DECIMAL
         date                DATE
         ==================  ====================
-
-        :returns: The column type
         """
         return self._column_type.upper()
 
@@ -102,8 +91,6 @@ class Column(ABC):
         """ Public getter.  Returns the default value for the column as a string, or None for a default value of null
 
         Returns None to represent a default value of null.
-
-        :returns: The default value
         """
         return self._default
 
@@ -118,8 +105,6 @@ class Column(ABC):
         False               The column is signed
         None                UNSIGNED is not an applicable property for this column type
         ==================  ====================
-
-        :returns: True, False, or None
         """
         return self._unsigned
 
@@ -150,8 +135,6 @@ class Column(ABC):
         False               The column is not an AUTO_INCREMENT column
         None                AUTO_INCREMENT is not an applicable property for this column type
         ==================  ====================
-
-        :returns: True, False, or None
         """
         return self._auto_increment
 
@@ -160,41 +143,30 @@ class Column(ABC):
         """ Public getter.  Returns the allowed values for the column (enum/set only)"""
         return self._values
 
-    @property
-    def errors(self) -> List[str]:
-        """ Public getter.  Returns a list of parsing errors
-
-        :returns: A list of parsing errors
-        """
-        return [] if self._errors is None else self._errors
-
-    @property
-    def warnings(self) -> List[str]:
-        """ Public getter.  Returns a list of parsing/table warnings
-
-        :returns: A list of parsing/table warnings
-        """
-        return [] if self._warnings is None else self._warnings
-
-    def _check_for_errors_and_warnings(self):
-        """ Runs through the properties of the column and populates self._errors and self._warnings approppriately """
+    def find_schema_errors(self) -> List[str]:
+        """ Returns any schema errors for the column """
 
         # we raise an exception (instead of recording an error) if the column type is invalid for the current
         # class because this represents a bug in mygrations.  I.e. if an INT column_type ends up in the
         # String() column, then something went wrong with mygrations, not with the SQL the user wrote.
-        if self.column_type not in self._allowed_column_types:
+        if self._allowed_column_types and self.column_type not in self._allowed_column_types:
             raise ValueError(
                 f'Error in column {self.name}: column type {self.column_type} not allowed for class {self.__class__.__name__}'
             )
 
-        self._errors = []
-        self._warnings = []
-        if self.default is None and not self.null:
-            self._warnings.append(f'Column {self.name} is not null and has no default')
-
+        errors = []
         for required in ['name', 'column_type']:
             if not getattr(self, required):
-                self._errors.append(f"Missing {required} for column {self.name}")
+                errors.append(f"Missing {required} for column {self.name}")
+
+        return errors
+
+    def find_schema_warnings(self) -> List[str]:
+        """ Runs through the properties of the column and populates self._errors and self._warnings approppriately """
+        warnings = []
+        if self.default is None and not self.null:
+            warnings.append(f'Column {self.name} is not null and has no default')
+        return warnings
 
     def __str__(self) -> str:
         """ Returns the MySQL command that would create the column
