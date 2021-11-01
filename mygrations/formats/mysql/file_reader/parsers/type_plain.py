@@ -1,6 +1,7 @@
 from mygrations.core.parse.parser import Parser
 from mygrations.formats.mysql.definitions.column import Column
-class TypePlain(Parser, Column):
+from .type import Type
+class TypePlain(Parser, Type):
 
     has_comma = False
 

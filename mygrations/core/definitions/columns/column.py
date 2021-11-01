@@ -14,6 +14,8 @@ class Column(Base):
     _unsigned: bool = None
     _allowed_column_types = []
     _values: List[str] = None    # enum/set only
+    _parsing_errors: List[str] = None
+    _parsing_warnings: List[str] = None
 
     def __init__(
         self,
@@ -27,6 +29,8 @@ class Column(Base):
         collate: str = None,
         auto_increment: bool = False,
         values: List[str] = None,
+        parsing_errors: List[str] = None,
+        parsing_warnings: List[str] = None,
     ):
         self._auto_increment = auto_increment
         self._character_set = character_set
@@ -38,6 +42,8 @@ class Column(Base):
         self._null = null
         self._unsigned = unsigned
         self._values = values
+        self._parsing_errors = parsing_errors
+        self._parsing_warnings = parsing_warnings
 
     @property
     def name(self) -> str:
@@ -142,6 +148,24 @@ class Column(Base):
     def values(self) -> List[str]:
         """ Public getter.  Returns the allowed values for the column (enum/set only)"""
         return self._values
+
+    @property
+    def parsing_errors(self):
+        """ Public getter.  Returns a list of parsing errors
+
+        :returns: A list of parsing errors
+        :rtype: list
+        """
+        return self._parsing_errors if self._parsing_errors is not None else []
+
+    @property
+    def parsing_warnings(self):
+        """ Public getter.  Returns a list of parsing warnings
+
+        :returns: A list of parsing warnings
+        :rtype: list
+        """
+        return self._parsing_warnings if self._parsing_warnings is not None else []
 
     def find_schema_errors(self) -> List[str]:
         """ Returns any schema errors for the column """

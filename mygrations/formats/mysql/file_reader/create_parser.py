@@ -74,8 +74,8 @@ class CreateParser(Parser, Table):
         self._options = [opt for opt in self._options if opt.name != 'AUTO_INCREMENT']
 
         for definition in self._definitions:
-            if isinstance(definition, Column):
-                self._columns[definition.name] = definition
+            if hasattr(definition, 'as_definition'):
+                self._columns[definition.name] = definition.as_definition() # see notes on the method
             elif isinstance(definition, Index):
                 self._indexes[definition.name] = definition
 

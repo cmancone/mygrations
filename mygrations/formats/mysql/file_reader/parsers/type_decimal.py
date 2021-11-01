@@ -84,7 +84,7 @@ class TypeDecimal(Parser, Column):
             )
 
         # only a few types of field are allowed to have decimals
-        if not self._column_type.lower() in self.allowed_types:
+        if self._column_type.lower() not in self.allowed_types:
             self._schema_errors.append(
                 "Column of type %s is not allowed to have a decimal length for column '%s'" %
                 (self._column_type, self._name)
