@@ -1,5 +1,5 @@
 from mygrations.core.parse.parser import Parser
-from mygrations.formats.mysql.definitions.column import Column
+from mygrations.core.definitions.columns.column import Column
 class TypeDecimal(Parser, Column):
 
     allowed_types = {'real': True, 'double': True, 'float': True, 'decimal': True, 'numeric': True}
@@ -76,16 +76,3 @@ class TypeDecimal(Parser, Column):
             self._parsing_errors.append("Column '%s' has a numeric type but its default value is a string" % self._name)
         elif self._default and self._default.lower() == 'null':
             self._default = None
-
-        if self._default is None and not self._null:
-            self._schema_warnings.append(
-                "Column '%s' is not null and has no default: you should set a default to avoid MySQL warnings" %
-                (self._name)
-            )
-
-        # only a few types of field are allowed to have decimals
-        if self._column_type.lower() not in self.allowed_types:
-            self._schema_errors.append(
-                "Column of type %s is not allowed to have a decimal length for column '%s'" %
-                (self._column_type, self._name)
-            )

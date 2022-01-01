@@ -31,6 +31,10 @@ class Constraint(Base):
             self._on_delete = 'RESTRICT'
         if not self._on_update:
             self._on_update = 'RESTRICT'
+        self._schema_errors = None
+        self._schema_warnings = None
+        self._parsing_errors = None
+        self._parsing_warnings = None
 
     @property
     def name(self) -> str:
@@ -62,31 +66,53 @@ class Constraint(Base):
         """ Public getter.  Returns the ON UPDATE action for this constraint """
         return self._on_update
 
-    def find_schema_errors(self) -> List[str]:
+    @property
+    def schema_errors(self) -> List[str]:
+        """ Returns a list of schema errors """
+        if self._schema_errors is None:
+            self._check_for_schema_errors_and_warnings()
+        return self._schema_errors
+
+    @property
+    def schema_warnings(self) -> List[str]:
+        """ Returns a list of schema warnings """
+        if self._schema_errors is None:
+            self._check_for_schema_errors_and_warnings()
+        return self._schema_warnings
+
+    @property
+    def parsing_errors(self) -> List[str]:
+        """ Returns a list of parsing errors """
+        return self._parsing_errors if self._parsing_errors is not None else []
+
+    @property
+    def parsing_warnings(self) -> List[str]:
+        """ Returns a list of parsing/table warnings """
+        return self._parsing_warnings if self._parsing_warnings is not None else []
+
+    def _check_for_schema_errors_and_warnings(self) -> List[str]:
+        self._schema_errors = []
+        self._schema_warnings = []
+
         allowed_actions = ['CASCADE', 'NO ACTION', 'RESTRICT', 'SET DEFAULT', 'SET NULL']
-        errors = []
         if not self.name:
-            errors.append('Missing name for constraint')
+            self._schema_errors.append('Missing name for constraint')
         elif len(self._name) > 64:
             self._schema_errors.append(f"Key name '{self.name}' is too long")
 
         if self.on_delete not in allowed_actions:
-            errors.append(
+            self._schema_errors.append(
                 f"ON DELETE action of '{self.on_delete}' for constraint '{self.name}' is not a valid ON DELETE action"
             )
 
         if self.on_update not in allowed_actions:
-            errors.append(
+            self._schema_errors.append(
                 f"ON UPDATE action of '{self.on_update}' for constraint '{self.name}' is not a valid ON UPDATE action"
             )
 
         for required in ['name', 'column_name', 'foreign_table_name', 'foreign_column_name']:
             if not getattr(self, required):
-                errors.append(f"Missing {required} for constraint '{self.name}'")
-        return errors
-
-    def find_schema_warnings(self) -> List[str]:
-        return []
+                self._schema_errors.append(f"Missing {required} for constraint '{self.name}'")
 
     def __str__(self) -> str:
         raise NotImplementedError()

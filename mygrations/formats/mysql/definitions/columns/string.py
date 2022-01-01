@@ -1,4 +1,6 @@
 from mygrations.core.definitions.columns.string import String as StringBase
+from typing import List, Union
+
 class String(StringBase):
     def __init__(
         self,

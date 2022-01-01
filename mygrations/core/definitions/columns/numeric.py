@@ -1,4 +1,6 @@
 from .column import Column
+from typing import List, Union
+
 class Numeric(Column):
     _allowed_column_types = [
         'INTEGER',
@@ -37,6 +39,7 @@ class Numeric(Column):
             length=length,
             null=null,
             default=default,
+            unsigned=unsigned,
             character_set=character_set,
             collate=collate,
             auto_increment=auto_increment,
@@ -45,42 +48,46 @@ class Numeric(Column):
             parsing_warnings=parsing_warnings,
         )
 
-    def find_schema_errors(self):
-        errors = super().find_schema_errors()
+    def _check_for_schema_errors_and_warnings(self):
+        super()._check_for_schema_errors_and_warnings()
 
         allow_float = ['DECIMAL', 'NUMERIC', 'FLOAT', 'DOUBLE']
         no_length = ['FLOAT', 'DOUBLE', 'BIT']
         no_auto_increment = ['FLOAT', 'DOUBLE', 'BIT']
 
         if self.default is not None and type(self.default) == str:
-            errors.append(
+            self._schema_errors.append(
                 f"Column '{self.name}' of type '{self.column_type}' cannot have a string value as a default"
             )
         else:
             if type(self.default) == float and self.column_type not in allow_float:
-                errors.append(
+                self._schema_errors.append(
                     f"Column '{self.name}' of type '{self.column_type}' must have an integer value as a default"
                 )
             if self.column_type == 'BIT' and self.default != 0 and self.default != 1:
-                errors.append(f"Column '{self.name}' of type 'BIT' must have a default of 1 or 0")
+                self._schema_errors.append(f"Column '{self.name}' of type 'BIT' must have a default of 1 or 0")
 
         if self.length:
             if self.column_type in no_length:
-                errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot have a length")
+                self._schema_errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot have a length")
             elif type(self.length) == str and ',' in self.length and self.column_type not in allow_float:
-                errors.append(
+                self._schema_errors.append(
                     f"Column '{self.name}' of type '{self.column_type}' must have an integer value as its length"
                 )
 
         if self.character_set is not None:
-            errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot have a character set")
+            self._schema_errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot have a character set")
         if self.collate is not None:
-            errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot have a collate")
+            self._schema_errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot have a collate")
 
         if self.auto_increment and self.column_type in no_auto_increment:
-            errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot be an AUTO_INCREMENT")
+            self._schema_errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot be an AUTO_INCREMENT")
 
-        return errors
+        if self.values:
+            self._schema_errors.append(
+                "Column '%s' of type %s is not allowed to have a list of values for its length" %
+                (self.name, self.column_type)
+            )
 
     def _is_really_the_same_default(self, column: Column) -> bool:
         if self.column_type != 'DECIMAL':

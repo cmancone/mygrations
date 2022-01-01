@@ -27,21 +27,8 @@ class IndexPrimary(Parser, Index):
         'name': 'ending_comma'
     }]
 
-    def __init__(self, rules=[]):
-
-        super().__init__(rules)
-
-        self._schema_errors = []
-        self._schema_warnings = []
-        self._parsing_errors = []
-        self._parsing_warnings = []
-        self._columns = []
-
     def process(self):
 
         self._name = ''
         self._columns = self._values['columns']
         self.has_comma = True if 'ending_comma' in self._values else False
-
-        if len(self.name) > 64:
-            self._schema_errors.append('Key name %s is too long' % (self.name))

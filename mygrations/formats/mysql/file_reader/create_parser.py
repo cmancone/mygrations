@@ -3,11 +3,12 @@ from collections import OrderedDict
 from mygrations.core.parse.parser import Parser
 from mygrations.formats.mysql.definitions.constraint import Constraint
 from mygrations.formats.mysql.definitions.index import Index
-from mygrations.formats.mysql.definitions.column import Column
+from mygrations.core.definitions.columns.column import Column
 from mygrations.formats.mysql.definitions.table import Table
+from mygrations.core.definitions.option import Option
 
 from .parsers import *
-class CreateParser(Parser, Table):
+class CreateParser(Table, Parser):
 
     # this defines the rules for the parsing engine.  Yes, I decided to try to build
     # a parsing engine to parse the MySQL.  Seems like a reasonable choice at the
@@ -55,6 +56,9 @@ class CreateParser(Parser, Table):
         'name': 'closing_semicolon'
     }]
 
+    def __init__(self):
+        super().__init__('')
+
     def process(self):
 
         self.semicolon = True if 'closing_semicolon' in self._values else False
@@ -64,10 +68,7 @@ class CreateParser(Parser, Table):
         self._columns = OrderedDict()
         self._indexes = OrderedDict()
         self._constraints = OrderedDict()
-        self._schema_errors = []
-        self._schema_warnings = []
-        self._parsing_errors = []
-        self._parsing_warnings = []
+        self._options = []
         self._primary = ''
 
         # ignore the AUTO_INCREMENT option: there is no reason for us to ever manage that
@@ -75,39 +76,29 @@ class CreateParser(Parser, Table):
 
         for definition in self._definitions:
             if hasattr(definition, 'as_definition'):
-                self._columns[definition.name] = definition.as_definition() # see notes on the method
+                if definition._name in self._columns:
+                    self._global_errors.append(f"Table '{self._name}' has two columns named '{definition._name}'")
+                    continue
+
+                self.add_column(definition.as_definition()) # see notes on definition.as_definition()
             elif isinstance(definition, Index):
-                self._indexes[definition.name] = definition
+                if definition._name in self._indexes:
+                    self._global_errors.append(f"Table '{self._name}' has two indexes named '{definition._name}'")
+                    continue
 
-                if definition.index_type == 'PRIMARY':
-                    if self._primary:
-                        self._errors.append('Found more than one primary column for table %s' % (self._name))
-                    else:
-                        self._primary = definition
+                self.add_index(definition)
             elif isinstance(definition, Constraint):
-                self._constraints[definition.name] = definition
+                if definition._name in self._constraints:
+                    self._global_errors.append(f"Table '{self._name}' has two constraints named '{definition._name}'")
+                    continue
 
-            if definition.schema_errors:
-                for error in definition.schema_errors:
-                    self._schema_errors.append('%s in table %s' % (error, self._name))
-            if definition.schema_warnings:
-                for warning in definition.schema_warnings:
-                    self._schema_warnings.append('%s in table %s' % (warning, self._name))
-            if definition.parsing_errors:
-                for error in definition.parsing_errors:
-                    self._parsing_errors.append('%s in table %s' % (error, self._name))
-            if definition.parsing_warnings:
-                for warning in definition.parsing_warnings:
-                    self._parsing_warnings.append('%s in table %s' % (warning, self._name))
+                self.add_constraint(definition)
 
-        if not self._name:
-            self._schema_errors.append('Table name is required')
+            elif isinstance(definition, Option):
+                self._options.append(definition)
 
-        if not len(self._columns):
-            self._schema_errors.append("Table %s has no columns" % self._name)
+            else:
+                raise ValueError("Found unknown definition of type " . type(definition))
 
         if not self.semicolon:
-            self._parsing_errors.append("Missing ending semicolon for table %s" % self._name)
-
-    def as_table(self):
-        pass
+            self._global_errors.append("Missing ending semicolon for table %s" % self._name)

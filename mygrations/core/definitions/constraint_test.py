@@ -15,7 +15,7 @@ class TestConstraint(unittest.TestCase):
         self.assertEquals('id', constraint.foreign_column_name)
         self.assertEquals('RESTRICT', constraint.on_delete)
         self.assertEquals('RESTRICT', constraint.on_update)
-        self.assertEquals([], constraint.errors)
+        self.assertEquals([], constraint.schema_errors)
 
     def test_action(self):
         constraint = Constraint(
@@ -29,4 +29,4 @@ class TestConstraint(unittest.TestCase):
         self.assertEquals([
             "ON DELETE action of 'GARBAGE' for constraint 'user_id_fk' is not a valid ON DELETE action",
             "ON UPDATE action of 'WHATEVER' for constraint 'user_id_fk' is not a valid ON UPDATE action",
-        ], constraint.errors)
+        ], constraint.schema_errors)

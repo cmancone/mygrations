@@ -1,5 +1,5 @@
 from mygrations.core.parse.parser import Parser
-from mygrations.formats.mysql.definitions.column import Column
+from mygrations.core.definitions.columns.column import Column
 class TypeText(Parser, Column):
 
     #***** Lint error if default is found for text field ******

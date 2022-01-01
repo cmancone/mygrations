@@ -1,4 +1,6 @@
-from mygrations.core.definitions.enum import Enum as EnumBase
+from mygrations.core.definitions.columns.enum import Enum as EnumBase
+from typing import List, Union
+
 class Enum(EnumBase):
     def __init__(
         self,

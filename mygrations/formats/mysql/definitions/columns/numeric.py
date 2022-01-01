@@ -1,4 +1,6 @@
-from mygrations.core.definitions.numeric import Numeric as NumericBase
+from mygrations.core.definitions.columns.numeric import Numeric as NumericBase
+from typing import List, Union
+
 class Numeric(NumericBase):
     def __init__(
         self,

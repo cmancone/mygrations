@@ -1,5 +1,5 @@
 from mygrations.core.parse.parser import Parser
-from mygrations.formats.mysql.definitions.column import Column
+from mygrations.core.definitions.columns.column import Column
 class TypeEnum(Parser, Column):
 
     allowed_types = {'set': True, 'enum': True}
@@ -93,21 +93,3 @@ class TypeEnum(Parser, Column):
                 self._parsing_warnings.append(
                     'Default value of "%s" should have quotes for field %s' % (self._default, self._name)
                 )
-
-        if self._default and not (self._default in self.values):
-            self._schema_errors.append(
-                "Column '%s' has default value of '%s' but this is not an allowed value" % (self._name, self._default)
-            )
-
-        if self._default is None and not self._null:
-            self._schema_warnings.append(
-                "Column '%s' is not null and has no default: you should set a default to avoid MySQL warnings" %
-                (self._name)
-            )
-
-        # only a few types of field are allowed to use this
-        if not self._column_type.lower() in self.allowed_types:
-            self._schema_errors.append(
-                "Column of type %s is not allowed to have a list of values for column '%s'" %
-                (self._column_type, self._name)
-            )

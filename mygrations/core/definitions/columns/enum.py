@@ -1,4 +1,6 @@
 from .string import String
+from typing import List, Union
+
 class Enum(String):
     _allowed_column_types = [
         'ENUM',
@@ -28,6 +30,7 @@ class Enum(String):
             length=length,
             null=null,
             default=default,
+            unsigned=unsigned,
             character_set=character_set,
             collate=collate,
             auto_increment=auto_increment,
@@ -36,16 +39,19 @@ class Enum(String):
             parsing_warnings=parsing_warnings,
         )
 
-    def find_schema_errors(self):
-        errors = super().find_schema_errors()
+    def _check_for_schema_errors_and_warnings(self):
+        super()._check_for_schema_errors_and_warnings()
 
-        # exception because this is a parsing mistake, not an end-user mistake
         if not self.values or type(self.values) != list:
-            raise ValueError(f"column '{self.name}' of type '{self.column_type}' must have a list of values")
+            self._schema_errors.append(f"column '{self.name}' of type '{self.column_type}' must have a list of values")
 
-        if self.default is not None and self.default and self.default not in self.values:
-            errors.append(
+        if self.default and self.default not in self.values:
+            self._schema_errors.append(
                 f"Default value for '{self.column_type}' column '{self.name}' is not in the list of allowed values"
             )
 
-        return errors
+        if self.auto_increment and self.column_type in no_auto_increment:
+            self._schema_errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot be an AUTO_INCREMENT")
+
+        if self.unsigned:
+            self._schema_errors.append("Column %s cannot be unsigned" % self._name)

@@ -1,4 +1,5 @@
 from mygrations.formats.mysql.definitions import columns
+from mygrations.core.definitions.columns.column import Column
 
 class Type:
     column_type_map = {
@@ -43,15 +44,17 @@ class Type:
         types.  Therefore, we can't put the column definition directly in our inheritence tree and have
         to build and return a new one based on the type we have.
         """
-        if self._column_type not in self.column_type_map:
-            raise ValueError(f"Found an unknown column type, '{self._column_type}' that does not have a corresponding column class")
-        column_class = self.column_type_map[self._column_type]
+        column_type = self._column_type.upper()
+        if column_type not in self.column_type_map:
+            raise ValueError(f"Found an unknown column type, '{column_type}' that does not have a corresponding column class")
+        column_class = self.column_type_map[column_type]
         return column_class(
             name=self._name,
-            column_type=self._column_type,
+            column_type=column_type,
             length=getattr(self, '_length', None),
             null=getattr(self, '_null', None),
             default=getattr(self, '_default', None),
+            unsigned=getattr(self, '_unsigned', None),
             character_set=getattr(self, '_character_set', None),
             collate=getattr(self, '_collate', None),
             auto_increment=getattr(self, '_auto_increment', None),

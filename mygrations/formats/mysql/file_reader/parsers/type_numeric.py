@@ -1,5 +1,5 @@
 from mygrations.core.parse.parser import Parser
-from mygrations.formats.mysql.definitions.column import Column
+from mygrations.core.definitions.columns.column import Column
 class TypeNumeric(Parser, Column):
 
     allowed_types = {
@@ -79,34 +79,11 @@ class TypeNumeric(Parser, Column):
         self._auto_increment = True if 'AUTO_INCREMENT' in self._values else False
         self.is_char = self._column_type in ['char', 'varchar']
 
-        # double check unsigned
-        if self._unsigned and self.is_char:
-            self._errors.append("Column %s is a character type and cannot be unsigned" % self._name)
-
         # make sense of the default
         if self._default and len(self._default) >= 2 and self._default[0] == "'" and self._default[-1] == "'":
             self._default = self._default.strip("'")
-            if not self.is_char:
-                self._schema_errors.append("Column '%s' has a numeric type but its default value is a string" % self._name)
         elif self._default:
             if self._default.lower() == 'null':
                 self._default = None
             elif self.is_char:
                 self._parsing_warnings.append('Default value for column %s should be quoted' % self._name)
-
-        if self._default is None and not self._null and not self._auto_increment:
-            self._schema_warnings.append(
-                "Column '%s' is not null and has no default: you should set a default to avoid MySQL warnings" %
-                (self._name)
-            )
-
-        if self._auto_increment and self.is_char:
-            self._schema_errors.append(
-                "Column '%s' is an auto increment character field: only numeric fields can auto increment" % (self._name)
-            )
-
-        # only a few types of field are allowed to have decimals
-        if not self._column_type.lower() in self.allowed_types:
-            self._schema_errors.append(
-                "Column of type %s is not allowed to have a length for column '%s'" % (self._column_type, self._name)
-            )

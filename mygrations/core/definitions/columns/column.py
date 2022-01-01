@@ -44,15 +44,17 @@ class Column(Base):
         self._values = values
         self._parsing_errors = parsing_errors
         self._parsing_warnings = parsing_warnings
+        self._schema_errors = None
+        self._schema_warnings = None
 
     @property
     def name(self) -> str:
-        """ Public getter.  Returns the name of the column. """
+        """ Returns the name of the column. """
         return self._name
 
     @property
     def length(self) -> Union[str, int]:
-        """ Public getter.  Returns the length of the column as a string or int.
+        """ Returns the length of the column as a string or int.
 
         Some examples of the length for various column definitions:
 
@@ -72,12 +74,12 @@ class Column(Base):
 
     @property
     def null(self) -> bool:
-        """ Public getter.  Returns True/False to denote if the column is allowed to be null """
+        """ Returns True/False to denote if the column is allowed to be null """
         return self._null
 
     @property
     def column_type(self) -> str:
-        """ Public getter.  Returns a string denoting the type of the column.  Always returns in uppercase
+        """ Returns a string denoting the type of the column.  Always returns in uppercase
 
         Some examples of the length for various column definitions:
 
@@ -94,7 +96,7 @@ class Column(Base):
 
     @property
     def default(self) -> Union[str, int]:
-        """ Public getter.  Returns the default value for the column as a string, or None for a default value of null
+        """ Returns the default value for the column as a string, or None for a default value of null
 
         Returns None to represent a default value of null.
         """
@@ -102,7 +104,7 @@ class Column(Base):
 
     @property
     def unsigned(self) -> bool:
-        """ Public getter.  Returns True, False, or None to denote the status of the UNSIGNED property
+        """ Returns True, False, or None to denote the status of the UNSIGNED property
 
         ==================  ====================
         Return Value        Meaning
@@ -116,7 +118,7 @@ class Column(Base):
 
     @property
     def character_set(self) -> str:
-        """ Public getter.  Returns None or a value to denote the CHARACTER_SET property
+        """ Returns None or a value to denote the CHARACTER_SET property
 
         :returns: string, or None
         """
@@ -124,7 +126,7 @@ class Column(Base):
 
     @property
     def collate(self) -> str:
-        """ Public getter.  Returns None or a value to denote the COLLATE property
+        """ Returns None or a value to denote the COLLATE property
 
         :returns: string, or None
         """
@@ -132,7 +134,7 @@ class Column(Base):
 
     @property
     def auto_increment(self) -> bool:
-        """ Public getter.  Returns True, False, or None to denote the status of the AUTO_INCREMENT property
+        """ Returns True, False, or None to denote the status of the AUTO_INCREMENT property
 
         ==================  ====================
         Return Value        Meaning
@@ -146,51 +148,45 @@ class Column(Base):
 
     @property
     def values(self) -> List[str]:
-        """ Public getter.  Returns the allowed values for the column (enum/set only)"""
+        """ Returns the allowed values for the column (enum/set only)"""
         return self._values
 
     @property
-    def parsing_errors(self):
-        """ Public getter.  Returns a list of parsing errors
+    def schema_errors(self) -> List[str]:
+        """ Returns a list of schema errors """
+        if self._schema_errors is None:
+            self._check_for_schema_errors_and_warnings()
+        return self._schema_errors
 
-        :returns: A list of parsing errors
-        :rtype: list
-        """
+    @property
+    def schema_warnings(self) -> List[str]:
+        """ Returns a list of schema warnings """
+        if self._schema_errors is None:
+            self._check_for_schema_errors_and_warnings()
+        return self._schema_warnings
+
+    @property
+    def parsing_errors(self) -> List[str]:
+        """ Returns a list of parsing errors """
         return self._parsing_errors if self._parsing_errors is not None else []
 
     @property
-    def parsing_warnings(self):
-        """ Public getter.  Returns a list of parsing warnings
-
-        :returns: A list of parsing warnings
-        :rtype: list
-        """
+    def parsing_warnings(self) -> List[str]:
+        """ Returns a list of parsing warnings """
         return self._parsing_warnings if self._parsing_warnings is not None else []
 
-    def find_schema_errors(self) -> List[str]:
-        """ Returns any schema errors for the column """
+    def _check_for_schema_errors_and_warnings(self):
+        """ Finds and stores any schema errors/warnings in the appropriate parameters """
+        self._schema_errors = []
+        self._schema_warnings = []
 
-        # we raise an exception (instead of recording an error) if the column type is invalid for the current
-        # class because this represents a bug in mygrations.  I.e. if an INT column_type ends up in the
-        # String() column, then something went wrong with mygrations, not with the SQL the user wrote.
-        if self._allowed_column_types and self.column_type not in self._allowed_column_types:
-            raise ValueError(
-                f'Error in column {self.name}: column type {self.column_type} not allowed for class {self.__class__.__name__}'
-            )
+        if not self.name:
+            self._schema_errors.append("Column does not have a name")
+        if not self.column_type:
+            self._schema_errors.append(f"Missing column_type for column {self.name}")
 
-        errors = []
-        for required in ['name', 'column_type']:
-            if not getattr(self, required):
-                errors.append(f"Missing {required} for column {self.name}")
-
-        return errors
-
-    def find_schema_warnings(self) -> List[str]:
-        """ Runs through the properties of the column and populates self._errors and self._warnings approppriately """
-        warnings = []
-        if self.default is None and not self.null:
-            warnings.append(f'Column {self.name} is not null and has no default')
-        return warnings
+        if self.default is None and not self.null and not self.auto_increment:
+            self._schema_warnings.append(f'Column {self.name} does not allow null values and has no default: you should set a default to avoid MySQL warnings')
 
     def __str__(self) -> str:
         """ Returns the MySQL command that would create the column

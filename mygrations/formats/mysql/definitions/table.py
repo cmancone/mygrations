@@ -14,7 +14,7 @@ from ..mygrations.operations.create_table import CreateTable
 from ..mygrations.operations.row_delete import RowDelete
 from ..mygrations.operations.row_insert import RowInsert
 from ..mygrations.operations.row_update import RowUpdate
-from mygrations.core.definitions import Table as BaseTable
+from mygrations.core.definitions.table import Table as BaseTable
 
 class Table(BaseTable):
 

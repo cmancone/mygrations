@@ -6,3 +6,11 @@ class TestOption(unittest.TestCase):
 
         self.assertEquals('my_option', option.name)
         self.assertEquals('my_value', option.value)
+
+    def test_required_value(self):
+        option = Option('my_option', '')
+
+        self.assertEquals(
+            ['Missing value for option my_option'],
+            option.schema_errors
+        )

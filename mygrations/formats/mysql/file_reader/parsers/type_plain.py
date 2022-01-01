@@ -1,5 +1,5 @@
 from mygrations.core.parse.parser import Parser
-from mygrations.formats.mysql.definitions.column import Column
+from mygrations.core.definitions.columns.column import Column
 from .type import Type
 class TypePlain(Parser, Type):
 
@@ -47,9 +47,3 @@ class TypePlain(Parser, Type):
         # make sense of the default
         if self._default and self._default.lower() == 'null':
             self._default = None
-
-        if self._default is None and not self._null:
-            self._schema_warnings.append(
-                "Column '%s' is not null and has no default: you should set a default to avoid MySQL warnings" %
-                (self._name)
-            )

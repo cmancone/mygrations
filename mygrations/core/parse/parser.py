@@ -7,6 +7,7 @@ class Parser:
     rule_types = {'children': RuleChildren, 'delimited': RuleDelimited, 'literal': RuleLiteral, 'regexp': RuleRegexp}
     _parsing_errors = None
     _parsing_warnings = None
+    _values = None
 
     @property
     def parsing_errors(self):
@@ -65,11 +66,13 @@ class Parser:
         # first thing first, some initial string cleaning.  Clean spaces
         # from start and end and replace any multi-spaces with a single space.
         string = re.sub('\s+', ' ', string).strip()
+        number_rules = len(self.rules)
+        self._values = {}
 
         for (rule_index, rule) in enumerate(self.rules):
 
             # do we have a next rule?
-            next_rule = self.rules[rule_index + 1] if rule_index < self.num_rules - 1 else False
+            next_rule = self.rules[rule_index + 1] if rule_index < number_rules - 1 else False
 
             # now we can parse
             rule_parser = self.get_rule_parser(rule, next_rule)
@@ -97,7 +100,7 @@ class Parser:
         # rules left that haven't been matched, then we don't match.
 
         # did we check every required rule?
-        for check_index in range(rule_index + 1, self.num_rules):
+        for check_index in range(rule_index + 1, number_rules):
             rule = self.rules[check_index]
             if not 'optional' in rule or not rule['optional']:
                 self.matched = False

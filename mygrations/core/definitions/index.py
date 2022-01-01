@@ -6,8 +6,10 @@ class Index:
     _name: str = ''
     _index_type: str = ''
     _columns: List[str] = None
-    _errors: List[str] = None
-    _warnings: List[str] = None
+    _schema_errors: List[str] = None
+    _schema_warnings: List[str] = None
+    _parsing_errors: List[str] = None
+    _parsing_warnings: List[str] = None
 
     def __init__(self, name: str, columns: List[str], index_type: str = 'INDEX'):
         """ Index constructor
@@ -19,7 +21,10 @@ class Index:
         self._name = name
         self._index_type = index_type
         self._columns = columns
-        self._check_for_errors_and_warnings()
+        self._schema_errors = None
+        self._schema_warnings = None
+        self._parsing_errors = None
+        self._parsing_warnings = None
 
     @property
     def name(self) -> str:
@@ -45,33 +50,41 @@ class Index:
 
     @property
     def columns(self) -> List[Column]:
-        """ Public getter.  Returns a list of the columns on the index. """
+        """ Returns a list of the columns on the index. """
         return self._columns
 
     @property
-    def errors(self) -> List[str]:
-        """ Public getter.  Returns a list of parsing errors
-
-        :returns: A list of parsing errors
-        """
-        return [] if self._errors is None else self._errors
+    def schema_errors(self) -> List[str]:
+        """ Returns a list of schema errors """
+        if self._schema_errors is None:
+            self._check_for_schema_errors_and_warnings()
+        return self._schema_errors
 
     @property
-    def warnings(self) -> List[str]:
-        """ Public getter.  Returns a list of parsing/table warnings
+    def schema_warnings(self) -> List[str]:
+        """ Returns a list of schema warnings """
+        if self._schema_errors is None:
+            self._check_for_schema_errors_and_warnings()
+        return self._schema_warnings
 
-        :returns: A list of parsing/table warnings
-        """
-        return [] if self._warnings is None else self._warnings
+    @property
+    def parsing_errors(self) -> List[str]:
+        """ Returns a list of parsing errors """
+        return self._parsing_errors if self._parsing_errors is not None else []
 
-    def _check_for_errors_and_warnings(self):
-        self._errors = []
-        self._warnings = []
+    @property
+    def parsing_warnings(self) -> List[str]:
+        """ Returns a list of parsing/table warnings """
+        return self._parsing_warnings if self._parsing_warnings is not None else []
+
+    def _check_for_schema_errors_and_warnings(self):
+        self._schema_errors = []
+        self._schema_warnings = []
         for required in ['name', 'index_type', 'columns']:
             if not getattr(self, required):
-                self._errors.append(f"Missing {required} for index {self.name}")
+                self._schema_errors.append(f"Missing {required} for index {self.name}")
         if len(self.name) > 64:
-            self._errors.append('Key name %s must be <=64 characters long' % (self._name))
+            self._schema_errors.append('Key name %s must be <=64 characters long' % (self._name))
 
     def __str__(self):
         """ Returns the MySQL command that would create the index
