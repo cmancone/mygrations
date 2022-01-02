@@ -59,7 +59,7 @@ class String(Column):
         character_set: str = None,
         collate: str = None,
         auto_increment: bool = False,
-        values: List[str] = None,
+        enum_values: List[str] = None,
         parsing_errors: List[str] = None,
         parsing_warnings: List[str] = None,
     ):
@@ -75,7 +75,7 @@ class String(Column):
             character_set=character_set,
             collate=collate,
             auto_increment=auto_increment,
-            values=values,
+            enum_values=enum_values,
             parsing_errors=parsing_errors,
             parsing_warnings=parsing_warnings,
         )
@@ -117,7 +117,7 @@ class String(Column):
         if self.length and self.column_type not in self._allowed_length:
             self._schema_errors.append(f'Column {self.name} of type {self.column_type} cannot have a length')
 
-        if self.values and self.column_type not in self._allowed_default_list:
+        if self.enum_values and self.column_type not in self._allowed_default_list:
             self._schema_errors.append(
                 "Column '%s' of type %s is not allowed to have a list of values for its length" %
                 (self.name, self.column_type)

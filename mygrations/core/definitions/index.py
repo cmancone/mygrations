@@ -11,7 +11,7 @@ class Index:
     _parsing_errors: List[str] = None
     _parsing_warnings: List[str] = None
 
-    def __init__(self, name: str, columns: List[str], index_type: str = 'INDEX'):
+    def __init__(self, name: str = '', columns: List[str] = None, index_type: str = None):
         """ Index constructor
 
         :param name: The name of the index
@@ -19,12 +19,14 @@ class Index:
         :param index_type: The type of the index (INDEX, UNIQUE, or PRIMARY)
         """
         self._name = name
-        self._index_type = index_type
-        self._columns = columns
+        self._columns = [*columns] if columns else []
         self._schema_errors = None
         self._schema_warnings = None
         self._parsing_errors = None
         self._parsing_warnings = None
+        # this is often set at the class level by a parser, so we only want to set it if provided
+        if index_type is not None:
+            self._index_type = index_type
 
     @property
     def name(self) -> str:
@@ -32,7 +34,12 @@ class Index:
 
         :returns: The index name
         """
-        return self._name
+        # if we don't have a name then assume it's name matches the name of our first column
+        if self._name:
+            return self._name
+        if len(self._columns) > 0:
+            return self._columns[0] if type(self._columns[0]) == str else self._columns[0].name
+        return ''
 
     @property
     def index_type(self) -> str:

@@ -27,7 +27,7 @@ class Numeric(Column):
         character_set: str = None,
         collate: str = None,
         auto_increment: bool = False,
-        values: List[str] = None,
+        enum_values: List[str] = None,
         parsing_errors: List[str] = None,
         parsing_warnings: List[str] = None,
     ):
@@ -43,7 +43,7 @@ class Numeric(Column):
             character_set=character_set,
             collate=collate,
             auto_increment=auto_increment,
-            values=values,
+            enum_values=enum_values,
             parsing_errors=parsing_errors,
             parsing_warnings=parsing_warnings,
         )
@@ -83,7 +83,7 @@ class Numeric(Column):
         if self.auto_increment and self.column_type in no_auto_increment:
             self._schema_errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot be an AUTO_INCREMENT")
 
-        if self.values:
+        if self.enum_values:
             self._schema_errors.append(
                 "Column '%s' of type %s is not allowed to have a list of values for its length" %
                 (self.name, self.column_type)

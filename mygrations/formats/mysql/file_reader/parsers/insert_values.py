@@ -22,12 +22,6 @@ class InsertValues(Parser):
         'name': 'ending_comma'
     }]
 
-    def __init__(self, rules=[]):
-
-        super().__init__(rules)
-
-        self.values = []
-
     def process(self):
 
         self.values = [

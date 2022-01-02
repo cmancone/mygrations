@@ -18,7 +18,7 @@ class Enum(String):
         character_set: str = None,
         collate: str = None,
         auto_increment: bool = False,
-        values: List[str] = None,
+        enum_values: List[str] = None,
         parsing_errors: List[str] = None,
         parsing_warnings: List[str] = None,
     ):
@@ -34,7 +34,7 @@ class Enum(String):
             character_set=character_set,
             collate=collate,
             auto_increment=auto_increment,
-            values=values,
+            enum_values=enum_values,
             parsing_errors=parsing_errors,
             parsing_warnings=parsing_warnings,
         )
@@ -42,10 +42,10 @@ class Enum(String):
     def _check_for_schema_errors_and_warnings(self):
         super()._check_for_schema_errors_and_warnings()
 
-        if not self.values or type(self.values) != list:
+        if not self.enum_values or type(self.enum_values) != list:
             self._schema_errors.append(f"column '{self.name}' of type '{self.column_type}' must have a list of values")
 
-        if self.default and self.default not in self.values:
+        if self.default and self.default not in self.enum_values:
             self._schema_errors.append(
                 f"Default value for '{self.column_type}' column '{self.name}' is not in the list of allowed values"
             )

@@ -13,7 +13,7 @@ class Column(Base):
     _null: bool = None
     _unsigned: bool = None
     _allowed_column_types = []
-    _values: List[str] = None    # enum/set only
+    _enum_values: List[str] = None    # enum/set only
     _parsing_errors: List[str] = None
     _parsing_warnings: List[str] = None
 
@@ -28,7 +28,7 @@ class Column(Base):
         character_set: str = None,
         collate: str = None,
         auto_increment: bool = False,
-        values: List[str] = None,
+        enum_values: List[str] = None,
         parsing_errors: List[str] = None,
         parsing_warnings: List[str] = None,
     ):
@@ -41,7 +41,7 @@ class Column(Base):
         self._name = name
         self._null = null
         self._unsigned = unsigned
-        self._values = values
+        self._enum_values = enum_values
         self._parsing_errors = parsing_errors
         self._parsing_warnings = parsing_warnings
         self._schema_errors = None
@@ -147,9 +147,9 @@ class Column(Base):
         return self._auto_increment
 
     @property
-    def values(self) -> List[str]:
+    def enum_values(self) -> List[str]:
         """ Returns the allowed values for the column (enum/set only)"""
-        return self._values
+        return self._enum_values
 
     @property
     def schema_errors(self) -> List[str]:
@@ -199,8 +199,8 @@ class Column(Base):
         parts.append('`%s`' % self.name)
 
         type_string = self.column_type
-        if self.values:
-            type_string += "('%s')" % ("', '".join(self.values))
+        if self.enum_values:
+            type_string += "('%s')" % ("', '".join(self.enum_values))
         elif self.length is not None:
             type_string += '(%s)' % self.length
         parts.append(type_string)

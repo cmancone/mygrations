@@ -1,6 +1,6 @@
 from mygrations.core.parse.parser import Parser
-from mygrations.core.definitions.columns.column import Column
-class TypeEnum(Parser, Column):
+from .type import Type
+class TypeEnum(Parser, Type):
 
     allowed_types = {'set': True, 'enum': True}
 
@@ -21,7 +21,7 @@ class TypeEnum(Parser, Column):
         'value': '('
     }, {
         'type': 'delimited',
-        'name': 'values',
+        'name': 'enum_values',
         'quote': "'",
         'separator': ','
     }, {
@@ -53,12 +53,6 @@ class TypeEnum(Parser, Column):
         'name': 'ending_comma'
     }]
 
-    def __init__(self, rules=[]):
-
-        super().__init__(rules)
-
-        self.values = []
-
     def process(self):
 
         self.has_comma = True if 'ending_comma' in self._values else False
@@ -69,8 +63,8 @@ class TypeEnum(Parser, Column):
         self._schema_warnings = []
         self._name = self._values['name'].strip('`')
         self._column_type = self._values['type']
-        self.values = self._values['values']
-        self._length = self.values
+        self._enum_values = self._values['enum_values']
+        self._length = self._enum_values
         self._null = False if 'NOT NULL' in self._values else True
         self._default = self._values['default'] if 'default' in self._values else None
         self._character_set = self._values['character_set'] if 'character_set' in self._values else None

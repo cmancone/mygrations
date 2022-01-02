@@ -35,13 +35,6 @@ class InsertParser(Parser, Rows):
         'name': 'closing_semicolon'
     }]
 
-    def __init__(self, rules=[]):
-
-        super().__init__(rules=rules)
-
-        self._columns = []
-        self._raw_rows = []
-
     def process(self):
 
         self._table = self._values['table'].strip('`')

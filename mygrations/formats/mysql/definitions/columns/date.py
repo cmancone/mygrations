@@ -13,7 +13,7 @@ class Date(DateBase):
         character_set: str = None,
         collate: str = None,
         auto_increment: bool = False,
-        values: List[str] = None,
+        enum_values: List[str] = None,
         parsing_errors: List[str] = None,
         parsing_warnings: List[str] = None,
     ):
@@ -28,7 +28,7 @@ class Date(DateBase):
             character_set=character_set,
             collate=collate,
             auto_increment=auto_increment,
-            values=values,
+            enum_values=enum_values,
             parsing_errors=parsing_errors,
             parsing_warnings=parsing_warnings,
         )

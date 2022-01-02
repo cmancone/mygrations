@@ -56,9 +56,6 @@ class CreateParser(Table, Parser):
         'name': 'closing_semicolon'
     }]
 
-    def __init__(self):
-        super().__init__('')
-
     def process(self):
 
         self.semicolon = True if 'closing_semicolon' in self._values else False
@@ -98,7 +95,7 @@ class CreateParser(Table, Parser):
                 self._options.append(definition)
 
             else:
-                raise ValueError("Found unknown definition of type " . type(definition))
+                raise ValueError("Found unknown definition of type " . definition.__class__)
 
         if not self.semicolon:
             self._global_errors.append("Missing ending semicolon for table %s" % self._name)

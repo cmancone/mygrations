@@ -25,7 +25,7 @@ class Table:
 
 
     def __init__(
-        self, name: str,
+        self, name: str = '',
         columns: List[Column] = None,
         indexes: List[Index] = None,
         constraints: List[Constraint] = None,
@@ -116,7 +116,7 @@ class Table:
         """
         if self._schema_errors is None:
             self._find_all_errors()
-        return self._schema_errors
+        return self._parsing_errors
 
     @property
     def parsing_warnings(self):
@@ -127,7 +127,7 @@ class Table:
         """
         if self._schema_errors is None:
             self._find_all_errors()
-        return self._schema_warnings
+        return self._parsing_warnings
 
     @property
     def name(self):
@@ -220,7 +220,7 @@ class Table:
         for index in self._indexes.values():
             for column in index.columns:
                 if not column in self.columns:
-                    self.schema_errors.append(
+                    self._schema_errors.append(
                         f"Table '{self.name}' has index '{index.name}' that references non-existent column '{column}'"
                     )
 

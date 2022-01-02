@@ -16,7 +16,7 @@ CREATE TABLE `test_table` (
         self.assertTrue('test_table' in database.tables)
         self.assertEqual(1, len(database.errors))
         self.assertEqual(
-            "Column 'numeric_column' has a numeric type but its default value is a string in table test_table",
+            "Column 'numeric_column' of type 'TINYINT' cannot have a string value as a default in table 'test_table'",
             database.errors[0]
         )
 
@@ -79,13 +79,13 @@ CREATE TABLE `roles` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
-  KEY `account_id` (`account_id`)
+  KEY `account_id_key` (`account_id`)
 );
         """)
 
         self.assertTrue('roles' in database.tables)
         self.assertEqual(1, len(database.errors))
         self.assertEqual(
-            "Constraint error for foreign key `people_role_id_fk`: sets constraint on column `people`.`roles_id`, but this column does not exist",
+            "Table 'roles' has index 'account_id_key' that references non-existent column 'account_id'",
             database.errors[0]
         )

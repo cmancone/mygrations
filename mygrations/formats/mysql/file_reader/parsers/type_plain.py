@@ -1,5 +1,4 @@
 from mygrations.core.parse.parser import Parser
-from mygrations.core.definitions.columns.column import Column
 from .type import Type
 class TypePlain(Parser, Type):
 

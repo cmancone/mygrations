@@ -1,6 +1,6 @@
 from mygrations.core.parse.parser import Parser
-from mygrations.core.definitions.columns.column import Column
-class TypeText(Parser, Column):
+from .type import Type
+class TypeText(Parser, Type):
 
     #***** Lint error if default is found for text field ******
     allowed_types = {

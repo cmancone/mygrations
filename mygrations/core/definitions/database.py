@@ -257,25 +257,25 @@ class Database:
         :rtype: string|None
         """
 
-        if constraint.foreign_table not in self.tables:
+        if constraint.foreign_table_name not in self.tables:
             return "Constraint error for foreign key `%s`: `%s`.`%s` references `%s`.`%s`, but table `%s` does not exist" % (
                 constraint.name, table.name, constraint.column, constraint.foreign_table, constraint.foreign_column,
                 constraint.foreign_table
             )
-        foreign_table = self.tables[constraint.foreign_table]
-        if constraint.foreign_column not in foreign_table.columns:
+        foreign_table = self.tables[constraint.foreign_table_name]
+        if constraint.foreign_column_name not in foreign_table.columns:
             return "Constraint error for foreign key `%s`: `%s`.`%s` references `%s`.`%s`, but column `%s`.`%s` does not exist" % (
                 constraint.name, table.name, constraint.column, constraint.foreign_table, constraint.foreign_column,
                 constraint.foreign_table, constraint.foreign_column
             )
 
         # the column exists but we may still have a constraint error.  That can happen in a few ways
-        if constraint.column not in table.columns:
+        if constraint.column_name not in table.columns:
             return "Constraint error for foreign key `%s`: sets constraint on column `%s`.`%s`, but this column does not exist" % (
-                constraint.name, table.name, constraint.column
+                constraint.name, table.name, constraint.column_name
             )
-        table_column = table.columns[constraint.column]
-        foreign_column = foreign_table.columns[constraint.foreign_column]
+        table_column = table.columns[constraint.column_name]
+        foreign_column = foreign_table.columns[constraint.foreign_column_name]
 
         if not table.column_is_indexed(table.columns[table_column.name]):
             return "Constraint error for foreign key `%s`: missing index. `%s`.`%s` does not have an index and therefore cannot be used in a foreign key constraint" % (

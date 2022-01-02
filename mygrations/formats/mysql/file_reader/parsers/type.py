@@ -58,7 +58,7 @@ class Type:
             character_set=getattr(self, '_character_set', None),
             collate=getattr(self, '_collate', None),
             auto_increment=getattr(self, '_auto_increment', None),
-            values=getattr(self, '_values', None),
+            enum_values=getattr(self, 'enum_values', None),
             parsing_errors=getattr(self, '_parsing_errors', None),
             parsing_warnings=getattr(self, '_parsing_warnings', None),
         )

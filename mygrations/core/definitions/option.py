@@ -7,7 +7,7 @@ class Option:
     _parsing_errors: List[str] = None
     _parsing_warnings: List[str] = None
 
-    def __init__(self, name: str, value: str):
+    def __init__(self, name: str = '', value: str = ''):
         self._name = name
         self._value = value
         self._schema_errors = None

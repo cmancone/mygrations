@@ -1,6 +1,6 @@
 from mygrations.core.parse.parser import Parser
-from mygrations.core.definitions.columns.column import Column
-class TypeNumeric(Parser, Column):
+from .type import Type
+class TypeNumeric(Parser, Type):
 
     allowed_types = {
         'bit': True,
