@@ -45,10 +45,10 @@ class Mygration:
 
         # first things first: stop if we have any FK errors in the database
         # we are migrating to
-        self._errors_1215 = []
-        self._errors_1215 = self.db_to.errors_1215
+        self._errors = []
+        self._errors = self.db_to.errors
 
-        if not self._errors_1215:
+        if not self._errors:
             self._operations = self._process()
         else:
             self._operations = None
@@ -72,13 +72,13 @@ class Mygration:
         return self._operations
 
     @property
-    def errors_1215(self):
+    def errors(self):
         """ Public getter.  Returns list of 1215 errors (as strings)
 
         :returns: A list of 1215 error messages
         :rtype: [string]
         """
-        return self._errors_1215
+        return self._errors
 
     def __len__(self):
         return len(self._operations)
