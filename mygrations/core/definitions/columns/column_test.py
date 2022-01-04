@@ -54,9 +54,9 @@ class TestColumn(unittest.TestCase):
             default=None,
         )
         self.assertEquals(
-            ['Column test_column is not null and has no default'],
-            column.warnings,
+            ['Column test_column does not allow null values and has no default: you should set a default to avoid warnings'],
+            column.schema_warnings,
         )
 
         column = MockColumn('test_column', 'INT')
-        self.assertEquals([], column.warnings)
+        self.assertEquals([], column.schema_warnings)

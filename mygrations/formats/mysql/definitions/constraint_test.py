@@ -15,4 +15,5 @@ class TestConstraint(unittest.TestCase):
             'CONSTRAINT `user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE',
             str(constraint)
         )
-        self.assertEquals([], constraint.errors)
+        self.assertEquals([], constraint.schema_errors)
+        self.assertEquals([], constraint.schema_warnings)

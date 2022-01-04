@@ -19,7 +19,7 @@ class TestIndex(unittest.TestCase):
         self.assertEquals([], index.parsing_warnings)
 
     def test_string_conversion(self):
-        index = Index('test_index', self.columns, index_type='UNIQUE')
+        index = Index(name='test_index', columns=self.columns, index_type='UNIQUE')
 
         self.assertEquals('UNIQUE KEY `test_index` (`name`,`description`)', str(index))
 
@@ -28,9 +28,9 @@ class TestIndex(unittest.TestCase):
         index = Index(too_long, self.columns, index_type='UNIQUE')
         self.assertEquals([f'Key name {too_long} must be <=64 characters long'], index.schema_errors)
 
-    def test_missing_name(self):
-        index = Index('', ['hey'], index_type='sup')
-        self.assertEquals(['Missing name for index '], index.schema_errors)
+    def test_missing_name_use_column(self):
+        index = Index(name='', columns=['hey'], index_type='sup')
+        self.assertEquals('hey', index.name)
 
     def test_missing_things(self):
         index = Index('blah', [], index_type='')
