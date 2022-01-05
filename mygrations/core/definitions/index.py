@@ -108,7 +108,7 @@ class Index:
             parts.append('UNIQUE')
         parts.append('KEY')
 
-        if self.name:
+        if self._name:
             parts.append('`%s`' % self.name)
         parts.append('(`%s`)' % ("`,`".join(self.columns)))
 

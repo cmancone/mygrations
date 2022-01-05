@@ -201,7 +201,7 @@ class Column(Base):
         type_string = self.column_type
         if self.enum_values:
             type_string += "('%s')" % ("', '".join(self.enum_values))
-        elif self.length is not None:
+        elif self.length is not None and self.length != '':
             type_string += '(%s)' % self.length
         parts.append(type_string)
 

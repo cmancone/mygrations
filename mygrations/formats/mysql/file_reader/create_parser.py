@@ -3,9 +3,7 @@ from collections import OrderedDict
 from mygrations.core.parse.parser import Parser
 from mygrations.formats.mysql.definitions.constraint import Constraint
 from mygrations.formats.mysql.definitions.index import Index
-from mygrations.core.definitions.columns.column import Column
 from mygrations.formats.mysql.definitions.table import Table
-from mygrations.core.definitions.option import Option
 
 from .parsers import *
 class CreateParser(Table, Parser):
@@ -65,7 +63,6 @@ class CreateParser(Table, Parser):
         self._columns = OrderedDict()
         self._indexes = OrderedDict()
         self._constraints = OrderedDict()
-        self._options = []
         self._primary = ''
 
         # ignore the AUTO_INCREMENT option: there is no reason for us to ever manage that
@@ -90,9 +87,6 @@ class CreateParser(Table, Parser):
                     continue
 
                 self.add_constraint(definition)
-
-            elif isinstance(definition, Option):
-                self._options.append(definition)
 
             else:
                 raise ValueError("Found unknown definition of type " . definition.__class__)

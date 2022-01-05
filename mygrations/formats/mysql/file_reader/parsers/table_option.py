@@ -1,7 +1,6 @@
 from mygrations.core.parse.parser import Parser
-from mygrations.core.definitions.option import Option
 
-class TableOption(Option, Parser):
+class TableOption(Parser):
 
     name = ''
     value = ''
@@ -20,9 +19,14 @@ class TableOption(Option, Parser):
         'name': 'value'
     }]
 
-    def __init__(self):
-        super().__init__('', '')
-
     def process(self):
         self._name = self._values['name'].strip()
         self._value = self._values['value'].strip()
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def value(self):
+        return self._value

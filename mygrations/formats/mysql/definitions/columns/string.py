@@ -31,4 +31,5 @@ class String(StringBase):
             enum_values=enum_values,
             parsing_errors=parsing_errors,
             parsing_warnings=parsing_warnings,
+            unsigned=unsigned,
         )
