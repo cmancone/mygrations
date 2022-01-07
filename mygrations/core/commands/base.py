@@ -1,6 +1,6 @@
 import os, os.path
 from mygrations.helpers.dotenv import dotenv
-from mygrations.helpers.db_credentials import db_credentials
+from mygrations.helpers.db_credentials import DbCredentials
 class Base(object):
 
     credentials = {}
@@ -25,7 +25,7 @@ class Base(object):
         self.options['env'] = self._relative_to_config_abs_path(self.options['env'], config_abs_path)
 
         # and load up the database credentials
-        self.credentials = db_credentials(self.options['env'], self.config)
+        self.credentials = DbCredentials(self.options['env'], self.config)
 
         if not 'files_directory' in self.config:
             raise ValueError('Missing files_directory configuration setting in configuration file')

@@ -299,9 +299,9 @@ class Table:
         """
         self._schema_errors = None
         self._schema_warnings = None
-        if not isinstance(rows, rows_definition):
+        if not isinstance(rows, Rows):
             raise ValueError(
-                'Only objects of class mygrations.formats.mysql.definitions.rows can be added as rows to a table'
+                f"Only objects of class mygrations.core.definitions.rows can be added as rows to a table.  Instead I received an object of class '{rows.__class__.__name__}'"
             )
 
         # we can't process guys with errors
@@ -320,7 +320,10 @@ class Table:
         for values in rows.raw_rows:
             # rows without explicit columns must be checked for matching columns
             if not rows.num_explicit_columns and len(values) != len(columns):
-                return 'Insert values has wrong number of values for table %s and row %s' % (self._name, values)
+                self._global_errors.append(
+                    'Insert values has wrong number of values for table %s and row %s' % (self._name, values)
+                )
+                continue
 
             # we need to know the id of this record, which means we need
             # to know where in the list of values the id column lives
@@ -332,10 +335,16 @@ class Table:
 
             self._auto_increment = max(self._auto_increment, row_id + 1)
             if row_id in self._rows:
-                return 'Duplicate row id found for table %s and row %s' % (self.name, values)
+                self._global_errors.append(
+                    'Duplicate row id found for table %s and row %s' % (self.name, values)
+                )
+                continue
 
             if not row_id:
-                return 'Invalid row id of %s found for table %s' % (row_id, self.name)
+                self._global_errors.append(
+                    'Invalid row id of %s found for table %s' % (row_id, self.name)
+                )
+                continue
 
             self._rows[row_id] = OrderedDict(zip(columns, values))
 

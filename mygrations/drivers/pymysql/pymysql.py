@@ -1,24 +1,30 @@
-import MySQLdb
-import MySQLdb.cursors
-
+import pymysql as pymysql_driver # alias to avoid confusion
 from collections import OrderedDict
-class mysqldb(object):
+
+
+class PyMySQL(object):
     """ High level driver for a MySQLdb connection """
     execute_cursor = None
 
-    def __init__(self, credentials):
-        """ Initialize the MySQLdb connection
+    def __init__(self, credentials=None, connection=None):
+        """ Initialize the PyMySQL connection
 
-        Accepts either a dictionary with mysqldb connnection credentials
-        or any MySQL database connection which implements the Python DB API spec v2.0
-
-        :param credentials: The database credentials to connect with or a database connection
-        :type credentials: dict|mygrations.helpers.db_credentials
+        Accepts either a dictionary with mysql connnection credentials or a PyMySQL connection object.
         """
-        if issubclass(type(credentials), dict):
-            self.conn = MySQLdb.connect(**credentials)
+        if credentials is not None:
+            self.connection = pymysql_driver.connect(
+                user=credentials['user'],
+                password=credentials['password'],
+                host=credentials['host'],
+                database=credentials['database'],
+                autocommit=False,
+                connect_timeout=2,
+                cursorclass=pymysql_driver.cursors.DictCursor
+            )
+        elif connection is not None:
+            self.connection = connection
         else:
-            self.conn = credentials
+            raise ValueError("Must provide either the database credentials or connection object")
 
     def tables(self):
         """ Returns the tables in the connected database
@@ -26,7 +32,7 @@ class mysqldb(object):
         :returns: An ordered dict with table definitions by table name
         :rtype: OrderedDict
         """
-        cursor = self.conn.cursor()
+        cursor = self.connection.cursor()
 
         # not returning an iterator: just fetch everything.
         # I'm guessing this will be fine for any realistic database
@@ -60,9 +66,9 @@ class mysqldb(object):
         # still sticking to full caching client-side without
         # support for memory-preserving iterators.  Given our
         # use case, I think this will be fine.  Can always change later
-        cursor = self.conn.cursor(MySQLdb.cursors.DictCursor)
+        cursor = self.connection.cursor()
         cursor.execute('SELECT * FROM %s' % table_name)
-        rows = cursor.fetchall()
+        rows = [row for row in cursor]
         cursor.close()
 
         return rows
@@ -71,8 +77,8 @@ class mysqldb(object):
         if isinstance(queries, str):
             queries = [queries]
 
-        cursor = self.conn.cursor(MySQLdb.cursors.DictCursor)
+        cursor = self.connection.cursor()
         for query in queries:
             cursor.execute(query)
-        self.conn.commit()
+        self.connection.commit()
         cursor.close()

@@ -9,7 +9,7 @@ class Rows:
     _table: str = ''
     _warnings: List[str] = None
 
-    def __init__(self, table: str, raw_rows: List[List[str]], columns: List[Column] = None, num_explicit_columns=0):
+    def __init__(self, table: str = '', raw_rows: List[List[str]] = [], columns: List[Column] = None, num_explicit_columns=0):
         self._columns = columns if columns is not None else []
         self._errors = []
         self._num_explicit_columns = num_explicit_columns

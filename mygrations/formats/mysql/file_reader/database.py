@@ -48,6 +48,8 @@ class Database(BaseDatabase):
         else:
             self._read(string)
 
+        self._combine_tables_and_rows()
+
     def _process_directory(self, directory):
         """ Processes a directory.
 
@@ -64,6 +66,10 @@ class Database(BaseDatabase):
 
         for filename in glob.glob('%s*.sql' % directory):
             self._read(filename)
+
+        # we do this last so we won't generate errors if the rows are in separate files
+        # and processed before the tables (which will generate a "found rows without a table" error)
+        self._combine_tables_and_rows()
 
     def _read(self, contents):
         """ Processes a file or string of SQL.
@@ -89,31 +95,20 @@ class Database(BaseDatabase):
                 self.errors.append('Found two definitions for table %s' % table.name)
             self._tables[table.name] = table
 
-        for (table_name, rows) in reader.rows.items():
-            if not table_name in self._rows:
-                self._rows[table_name] = []
-            self._rows[table_name].extend(rows)
-
         self._global_errors.extend(reader._global_errors)
         self._global_warnings.extend(reader._global_warnings)
 
-    #def store_rows_with_tables(self):
-    #""" Processes table rows and adds them to the appropriate tables
+        for rows_list in reader.rows.values():
+            for rows in rows_list:
+                if rows.table not in self._rows:
+                    self._rows[rows.table] = []
+                self._rows[rows.table].append(rows)
 
-    #Table rows are stored with tables for comparison purposes, but might
-    #come in through their own separate files.  This method puts the two
-    #together.
-    #"""
-    #for rows in self._rows:
-    #if not rows.table in self._tables:
-    #self._errors.append('Found rows for table %s but that table does not have a definition' % rows.table)
-    #continue
-
-    #returned = self._tables[rows.table].add_rows(rows)
-    #if isinstance(returned, str):
-    #self._errors.append(returned)
-
-    #def as_database(self):
-    #database = []
-    #database.store_rows_with_tables()
-    #return database
+    def _combine_tables_and_rows(self):
+        for (table_name, rows_list) in self._rows.items():
+            if table_name not in self._tables:
+                self._global_errors.extend(
+                    f"Found rows for table {table_name}, but this table does not exist in the database"
+                )
+            for rows in rows_list:
+                self._tables[table_name].add_rows(rows)
