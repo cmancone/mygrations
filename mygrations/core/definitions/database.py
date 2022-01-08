@@ -288,7 +288,7 @@ class Database:
             foreign_value = getattr(foreign_column, attr)
             if table_value != foreign_value:
                 return "Constraint error for foreign key `%s`: %s mismatch. `%s`.`%s` is '%s' but `%s`.`%s` is '%s'" % (
-                    constraint.name, attr.replace('_', ' '), table.name, constraint.column, table_value,
+                    constraint.name, attr.replace('_', ' '), table.name, constraint.column_name, table_value,
                     foreign_table.name, foreign_column.name, foreign_value
                 )
 
