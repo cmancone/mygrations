@@ -304,9 +304,10 @@ class Table:
                 f"Only objects of class mygrations.core.definitions.rows can be added as rows to a table.  Instead I received an object of class '{rows.__class__.__name__}'"
             )
 
-        # we can't process guys with errors
-        if rows._errors:
-            return False
+        if rows.parsing_errors:
+            self._global_errors.extend(rows.parsing_errors)
+        if rows.parsing_warnings:
+            self._global_warnings.extend(rows.parsing_warnings)
 
         self._tracking_rows = True
         if self._rows is None:

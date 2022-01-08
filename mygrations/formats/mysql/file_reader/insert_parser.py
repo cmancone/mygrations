@@ -54,7 +54,7 @@ class InsertParser(Parser, Rows):
                 self._parsing_warnings.append('Missing comma between insert value groups')
 
             if self._num_explicit_columns and len(row.values) != self._num_explicit_columns:
-                self._schema_errors.append('Insert values has wrong number of values for %s' % (row))
+                self._parsing_errors.append('Insert values has different number of columns and values for %s' % (row))
                 continue
 
             self._raw_rows.append(row.values)

@@ -55,16 +55,35 @@ class Numeric(Column):
         no_length = ['FLOAT', 'DOUBLE', 'BIT']
         no_auto_increment = ['FLOAT', 'DOUBLE', 'BIT']
 
-        if self.default is not None and type(self.default) == str:
+        # I should probably have the parser auto-convert the type based on quotes/whatever, but
+        # currently it doesn't and I'm apparently being lazy.  I'll probably regret this.
+        default_type = None
+        if type(self.default) == int:
+            default_type = 'int'
+        elif type(self.default) == float:
+            default_type = 'float'
+        elif type(self.default) == str:
+            default_type = 'str'
+            try:
+                int(self.default)
+                default_type = 'int'
+            except:
+                try:
+                    float(self.default)
+                    default_type = 'float'
+                except:
+                    pass
+
+        if default_type == 'str':
             self._schema_errors.append(
                 f"Column '{self.name}' of type '{self.column_type}' cannot have a string value as a default"
             )
         else:
-            if type(self.default) == float and self.column_type not in allow_float:
+            if default_type == 'float' and self.column_type not in allow_float:
                 self._schema_errors.append(
                     f"Column '{self.name}' of type '{self.column_type}' must have an integer value as a default"
                 )
-            if self.column_type == 'BIT' and self.default != 0 and self.default != 1:
+            if self.column_type == 'BIT' and int(self.default) != 0 and int(self.default) != 1:
                 self._schema_errors.append(f"Column '{self.name}' of type 'BIT' must have a default of 1 or 0")
 
         if self.length:

@@ -259,14 +259,14 @@ class Database:
 
         if constraint.foreign_table_name not in self.tables:
             return "Constraint error for foreign key `%s`: `%s`.`%s` references `%s`.`%s`, but table `%s` does not exist" % (
-                constraint.name, table.name, constraint.column, constraint.foreign_table, constraint.foreign_column,
-                constraint.foreign_table
+                constraint.name, table.name, constraint.column_name, constraint.foreign_table_name, constraint.foreign_column_name,
+                constraint.foreign_table_name
             )
         foreign_table = self.tables[constraint.foreign_table_name]
         if constraint.foreign_column_name not in foreign_table.columns:
             return "Constraint error for foreign key `%s`: `%s`.`%s` references `%s`.`%s`, but column `%s`.`%s` does not exist" % (
-                constraint.name, table.name, constraint.column, constraint.foreign_table, constraint.foreign_column,
-                constraint.foreign_table, constraint.foreign_column
+                constraint.name, table.name, constraint.column_name, constraint.foreign_table_name, constraint.foreign_column_name,
+                constraint.foreign_table_name, constraint.foreign_column_name
             )
 
         # the column exists but we may still have a constraint error.  That can happen in a few ways

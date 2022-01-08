@@ -3,7 +3,10 @@ from typing import Union, List
 from .columns.column import Column
 class Rows:
     _columns: List[Column] = None
-    _errors: List[str] = None
+    _schema_errors: List[str] = None
+    _schema_warnings: List[str] = None
+    _parsing_errors: List[str] = None
+    _parsing_warnings: List[str] = None
     _num_explicit_columns: int = 0
     _raw_rows: List[List[str]] = ''
     _table: str = ''
@@ -11,7 +14,10 @@ class Rows:
 
     def __init__(self, table: str = '', raw_rows: List[List[str]] = [], columns: List[Column] = None, num_explicit_columns=0):
         self._columns = columns if columns is not None else []
-        self._errors = []
+        self._schema_errors = []
+        self._schema_warnings = []
+        self._parsing_errors = []
+        self._parsing_warnings = []
         self._num_explicit_columns = num_explicit_columns
         self._raw_rows = raw_rows
         self._table = table
@@ -19,7 +25,7 @@ class Rows:
 
     @property
     def table(self) -> str:
-        """ Public getter.  Returns the name of the table that records are being inserted for
+        """ Returns the name of the table that records are being inserted for
 
         :returns: The name of the table
         """
@@ -27,7 +33,7 @@ class Rows:
 
     @property
     def raw_rows(self) -> List[List[str]]:
-        """ Public getter.  Returns a list of insert values from the VALUES part of the query
+        """ Returns a list of insert values from the VALUES part of the query
 
         :returns: A list of values for each row
         """
@@ -35,7 +41,7 @@ class Rows:
 
     @property
     def columns(self) -> List[Column]:
-        """ Public getter.  Returns the list of columns for the rows
+        """ Returns the list of columns for the rows
 
         :returns: A list of columns
         """
@@ -43,7 +49,7 @@ class Rows:
 
     @property
     def num_explicit_columns(self) -> int:
-        """ Public getter.  Returns the number of columns specified in the insert query
+        """ Returns the number of columns specified in the insert query
 
         Can be zero if none are specified, which happens for queries like:
         INSERT INTO table (val1, val2, val3...);
@@ -53,18 +59,21 @@ class Rows:
         return self._num_explicit_columns
 
     @property
-    def errors(self) -> List[str]:
-        """ Public getter.  Returns a list of parsing errors
-
-        :returns: A list of parsing errors
-        """
-        return [] if self._errors is None else self._errors
+    def schema_errors(self) -> List[str]:
+        """ Returns a list of schema errors """
+        return [] if self._schema_errors is None else self._schema_errors
 
     @property
-    def warnings(self) -> List[str]:
-        """ Public getter.  Returns a list of parsing/table warnings
+    def schema_warnings(self) -> List[str]:
+        """ Returns a list of schema warnings """
+        return [] if self._schema_warnings is None else self._schema_warnings
 
-        :returns: A list of parsing/table warnings
-        :rtype: list
-        """
-        return [] if self._warnings is None else self._warnings
+    @property
+    def parsing_errors(self) -> List[str]:
+        """ Returns a list of parsing errors """
+        return [] if self._parsing_errors is None else self._parsing_errors
+
+    @property
+    def parsing_warnings(self) -> List[str]:
+        """ Returns a list of parsing warnings """
+        return [] if self._parsing_warnings is None else self._parsing_warnings

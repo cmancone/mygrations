@@ -98,18 +98,8 @@ class TypeText(Parser, Type):
         self._schema_warnings = []
         self._name = self._values['name'].strip('`')
         self._length = ''
-        self._default = None
+        self._default = self._values['default'].strip("'") if 'default' in self._values else None
         self._column_type = self._values['type']
         self._null = False if 'NOT NULL' in self._values else True
         self._character_set = self._values['character_set'].strip("'") if 'character_set' in self._values else ''
         self._collate = self._values['collate'].strip("'") if 'collate' in self._values else ''
-
-        if self._column_type.lower() == 'datetime':
-            pass
-        elif not self._column_type.lower() in self.allowed_types:
-            self._schema_errors.append("Column of type %s must have a length for column '%s'" % (self._column_type, self._name))
-        elif 'default' in self._values:
-            self._schema_errors.append(
-                "Column of type %s is not allowed to have a default value for column '%s'" %
-                (self._column_type, self._name)
-            )
