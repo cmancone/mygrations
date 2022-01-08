@@ -2,7 +2,7 @@ import unittest
 
 from mygrations.formats.mysql.file_reader.reader import Reader
 from mygrations.formats.mysql.file_reader.database import Database
-class test_regressions(unittest.TestCase):
+class RegressionTest(unittest.TestCase):
     """ Some tests based off failing CREATE TABLE commands from our database when things were first being finished """
 
     def test_payment_request_types(self):
