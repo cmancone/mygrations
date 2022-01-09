@@ -7,6 +7,7 @@ class Column(Base):
     _character_set: str = None
     _collate: str = None
     _column_type: str = None
+    _has_default: bool = False
     _default: Union[str, int] = None
     _length: Union[str, int] = None
     _name: str = ''
@@ -23,6 +24,7 @@ class Column(Base):
         column_type: str = '',
         length: Union[str, int] = None,
         null: bool = True,
+        has_default: bool = False,
         default: Union[str, int] = None,
         unsigned: bool = None,
         character_set: str = None,
@@ -36,6 +38,7 @@ class Column(Base):
         self._character_set = character_set
         self._collate = collate
         self._column_type = column_type
+        self._has_default = has_default
         self._default = default
         self._length = length
         self._name = name
@@ -93,6 +96,11 @@ class Column(Base):
         ==================  ====================
         """
         return self._column_type.upper()
+
+    @property
+    def has_default(self) -> bool:
+        """ Returns True/False to denote if the column has a default value defined """
+        return self._has_default
 
     @property
     def default(self) -> Union[str, int]:

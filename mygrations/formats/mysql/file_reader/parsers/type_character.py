@@ -115,6 +115,7 @@ class TypeCharacter(Parser, Type):
         self._column_type = self._values['type']
         self._length = self._values['length']
         self._null = False if 'NOT NULL' in self._values else True
+        self._has_default = 'default' in self._values
         self._default = self._values['default'] if 'default' in self._values else None
         self._character_set = self._values['character_set'] if 'character_set' in self._values else None
         self._collate = self._values['collate'] if 'collate' in self._values else None

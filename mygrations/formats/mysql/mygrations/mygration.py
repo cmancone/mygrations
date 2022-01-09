@@ -137,7 +137,7 @@ class Mygration:
             operations.extend(source_table.to(target_table))
 
         for table_name in tables_to_remove:
-            operations.append(remove_table(table_name))
+            operations.append(RemoveTable(table_name))
 
         if self._disable_fk_checks:
             operations.append(EnableChecks())

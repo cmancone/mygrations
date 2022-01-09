@@ -40,6 +40,7 @@ class TypePlain(Parser, Type):
         self._name = self._values['name'].strip('`')
         self._length = ''
         self._column_type = self._values['type']
+        self._has_default = 'default' in self._values
         self._default = self._values['default'].strip("'") if 'default' in self._values else None
         self._null = False if 'NOT NULL' in self._values else True
 

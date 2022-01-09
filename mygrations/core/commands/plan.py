@@ -3,7 +3,7 @@ from mygrations.formats.mysql.file_reader.database import Database as DatabasePa
 from mygrations.formats.mysql.db_reader.database import Database as DatabaseReader
 from mygrations.formats.mysql.mygrations.mygration import Mygration
 from mygrations.formats.mysql.mygrations.row_mygration import RowMygration
-from mygrations.drivers.mysqldb.mysqldb import mysqldb
+from mygrations.drivers.pymysql.pymysql import PyMySQL
 from mygrations.formats.mysql.mygrations.operations.disable_checks import DisableChecks
 from mygrations.formats.mysql.mygrations.operations.enable_checks import EnableChecks
 import sys
@@ -11,7 +11,7 @@ def execute(options):
 
     obj = Plan(options)
     obj.execute()
-class Plan(base):
+class Plan(Base):
     def execute(self):
 
         commands = self.build_commands()
@@ -29,18 +29,11 @@ class Plan(base):
             for error in files_database.errors:
                 print(error, file=sys.stderr)
 
-        # or 1215 errors?
-        if files_database.errors_1215 and not self.options['force']:
-            print('1215 errors encountered', sys.stderr)
-            quit_early = True
-            for error in files_database.errors_1215:
-                print(error, file=sys.stderr)
-
         if quit_early:
             return []
 
         # use the credentials to load up a database connection
-        live_database = DatabaseReader(mysqldb(self.credentials))
+        live_database = DatabaseReader(PyMySQL(self.credentials))
 
         # we have to tell the live database to load records
         # for any tables we are tracking records for.
@@ -63,7 +56,7 @@ class Plan(base):
         if mygrate.operations:
             ops.extend(mygrate.operations)
 
-        rows = row_mygration(files_database, live_database)
+        rows = RowMygration(files_database, live_database)
         if rows.operations:
             ops.extend(rows.operations)
 
@@ -71,7 +64,7 @@ class Plan(base):
             return []
 
         return [
-            disable_checks(),
+            DisableChecks(),
             *ops,
-            enable_checks(),
+            EnableChecks(),
         ]

@@ -41,7 +41,7 @@ class TestString(unittest.TestCase):
             'JSON',
         ]
         for column_type in no_default:
-            column = String('test', column_type, default='Hey')
+            column = String('test', column_type, default='Hey', has_default=True)
             self.assertEquals(
                 [f"Column 'test' of type '{column_type}' cannot have a default"],
                 column.schema_errors,

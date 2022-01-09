@@ -75,6 +75,7 @@ class TypeNumeric(Parser, Type):
         self._length = self._values['length']
         self._unsigned = True if 'UNSIGNED' in self._values else False
         self._null = False if 'NOT NULL' in self._values else True
+        self._has_default = 'default' in self._values
         self._default = self._values['default'] if 'default' in self._values else None
         self._auto_increment = True if 'AUTO_INCREMENT' in self._values else False
         self.is_char = self._column_type in ['char', 'varchar']

@@ -43,7 +43,7 @@ class TestTable(unittest.TestCase):
         self.assertEquals(["Table 'no_cols' does not have any columns"], table.schema_errors)
 
     def test_include_child_errors(self):
-        bad_column = String('text', 'TEXT', default='')
+        bad_column = String('text', 'TEXT', default='', has_default=True)
         bad_index = Index('no_cols', [], 'INDEX')
         bad_constraint = Constraint('user_id_fk', 'user_id', 'users', 'id', on_delete='CASCAD')
         table = Table(

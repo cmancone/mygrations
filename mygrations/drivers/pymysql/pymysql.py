@@ -40,8 +40,9 @@ class PyMySQL(object):
         # at the same time.
         cursor.execute('SHOW TABLES')
         table_names = []
-        for (table_name, ) in cursor:
-            table_names.append(table_name)
+        for result_data in cursor:
+            for table_name in result_data.values():
+                table_names.append(table_name)
 
         definitions = OrderedDict()
         for table_name in table_names:
@@ -49,8 +50,8 @@ class PyMySQL(object):
             if not cursor.rowcount:
                 raise ValueError("Failed to execute SHOW CREATE TABLE command on table %s" % table_name)
 
-            (tbl_name, create_table) = cursor.fetchone()
-            definitions[table_name] = create_table
+            result_data = cursor.fetchone()
+            definitions[table_name] = result_data['Create Table']
 
         cursor.close()
 

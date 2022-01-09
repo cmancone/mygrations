@@ -48,8 +48,8 @@ class DbStructure:
         tables = [val for val in self.tables.keys()]
         tables.sort()
 
-        # results needs to be a list of tuples
-        self.results = [(val, ) for val in tables]
+        # results needs to be a list with a dictionary of table names as values (the key is ignored)
+        self.results = [{table: table for table in tables}]
 
     def _load_show_create_result(self, query):
         """ Loads up a result set internally to act as if a SHOW CREATE TABLE query was executed
@@ -58,12 +58,12 @@ class DbStructure:
         :type query: string
         """
         table_name = query.split()[-1]
-        if not table_name in self.tables:
+        if table_name not in self.tables:
             raise ValueError(
                 "Cannot mock cursor.execute for query %s because table %s was not set" % (query, table_name)
             )
 
-        self.results = [(table_name, self.tables[table_name])]
+        self.results = [{'Create Table': self.tables[table_name]}]
 
     def _load_select_all_result(self, query):
         """ Loads up a result set internally to act as if a SELECT * FROM query was executed

@@ -54,6 +54,7 @@ class String(Column):
         column_type: str = '',
         length: Union[str, int] = None,
         null: bool = True,
+        has_default: bool = False,
         default: Union[str, int] = None,
         unsigned: bool = None,
         character_set: str = None,
@@ -70,6 +71,7 @@ class String(Column):
             column_type=column_type,
             length=length,
             null=null,
+            has_default=has_default,
             default=default,
             unsigned=unsigned,
             character_set=character_set,
@@ -93,7 +95,7 @@ class String(Column):
     def _check_for_schema_errors_and_warnings(self):
         super()._check_for_schema_errors_and_warnings()
 
-        if self.default is not None and self.column_type not in self._allowed_default:
+        if self.has_default and self.column_type not in self._allowed_default:
             self._schema_errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot have a default")
 
         if self.auto_increment:

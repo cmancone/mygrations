@@ -53,6 +53,7 @@ class Type:
             column_type=column_type,
             length=getattr(self, '_length', None),
             null=getattr(self, '_null', None),
+            has_default=getattr(self, '_has_default', False),
             default=getattr(self, '_default', None),
             unsigned=getattr(self, '_unsigned', None),
             character_set=getattr(self, '_character_set', None),

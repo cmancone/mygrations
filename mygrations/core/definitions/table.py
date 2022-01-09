@@ -206,15 +206,16 @@ class Table:
         # auto increment checks
         if self._columns:
             auto_increment = list(filter(lambda column: column.auto_increment, self._columns.values()))
-            if len(auto_increment) > 1:
-                self._schema_errors.append(f"Table '{self.name}' has more than one AUTO_INCREMENT column")
-            elif not primaries:
-                self._schema_errors.append(f"Table '{self.name}' has an AUTO_INCREMENT column but is missing the PRIMARY index")
-            elif primaries[0].columns[0] != auto_increment[0].name:
-                self.schema_errors.append(
-                    "Mismatched indexes in table '%s': column '%s' is the AUTO_INCREMENT column but '%s' is the PRIMARY index column"
-                    % (self.name, auto_increment[0].name, primaries[0].columns[0])
-                )
+            if len(auto_increment):
+                if len(auto_increment) > 1:
+                    self._schema_errors.append(f"Table '{self.name}' has more than one AUTO_INCREMENT column")
+                elif not primaries:
+                    self._schema_errors.append(f"Table '{self.name}' has an AUTO_INCREMENT column but is missing the PRIMARY index")
+                elif primaries[0].columns[0] != auto_increment[0].name:
+                    self.schema_errors.append(
+                        "Mismatched indexes in table '%s': column '%s' is the AUTO_INCREMENT column but '%s' is the PRIMARY index column"
+                        % (self.name, auto_increment[0].name, primaries[0].columns[0])
+                    )
 
         # indexes on non-existent columns
         for index in self._indexes.values():

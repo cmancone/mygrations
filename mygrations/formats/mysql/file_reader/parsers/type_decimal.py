@@ -67,6 +67,7 @@ class TypeDecimal(Parser, Type):
         self.decimals = self._values['decimals']
         self._length = '%s,%s' % (self._values['length'], self._values['decimals'])
         self._unsigned = True if 'UNSIGNED' in self._values else False
+        self._has_default = 'default' in self._values
         self._null = False if 'NOT NULL' in self._values else True
         self._default = self._values['default'] if 'default' in self._values else None
 

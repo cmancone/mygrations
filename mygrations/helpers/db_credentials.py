@@ -3,7 +3,7 @@ class DbCredentials:
     config = None
     env = None
     credentials = None
-    key_map = {'hostname_key': 'host', 'database_key': 'db', 'username_key': 'user', 'password_key': 'password'}
+    key_map = {'hostname_key': 'host', 'database_key': 'database', 'username_key': 'user', 'password_key': 'password'}
 
     def __init__(self, env, config):
         # Config represents the contents of the mygrate.conf file.

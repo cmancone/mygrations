@@ -66,6 +66,7 @@ class TypeEnum(Parser, Type):
         self._enum_values = self._values['enum_values']
         self._length = self._enum_values
         self._null = False if 'NOT NULL' in self._values else True
+        self._has_default = 'default' in self._values
         self._default = self._values['default'] if 'default' in self._values else None
         self._character_set = self._values['character_set'] if 'character_set' in self._values else None
         self._collate = self._values['collate'] if 'collate' in self._values else None
