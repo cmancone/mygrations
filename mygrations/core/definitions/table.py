@@ -8,7 +8,6 @@ from .index import Index
 from .constraint import Constraint
 from ..operations.create_table import CreateTable
 class Table:
-    _auto_increment: int = 1
     _columns: Dict[str, Column] = None
     _constraints: Dict[str, Constraint] = None
     _indexes: Dict[str, Constraint] = None
@@ -276,11 +275,6 @@ class Table:
         return self._primary
 
     @property
-    def auto_increment(self) -> int:
-        """ Public getter.  Returns the autoincrement value for the table """
-        return self._auto_increment
-
-    @property
     def rows(self) -> Dict[int, List[Union[str, int]]]:
         """ Public getter.  Returns an ordered dictionary with row data by id """
         return None if self._rows is None else self._rows
@@ -318,6 +312,12 @@ class Table:
         # remember that self._columns is an OrderedDict so converting its keys to a list
         # actually preserves the order (which is a requirement for us)
         columns = rows.columns if rows.num_explicit_columns else list(self._columns.keys())
+        if 'id' not in columns:
+            self._global_errors.append(
+                "A column named 'id' is required to manage rows in the table, but the id column is missing in the rows for table %s" % (self._name,)
+            )
+            return
+        id_index = columns.index('id')
 
         for values in rows.raw_rows:
             # rows without explicit columns must be checked for matching columns
@@ -327,15 +327,14 @@ class Table:
                 )
                 continue
 
-            # we need to know the id of this record, which means we need
-            # to know where in the list of values the id column lives
-            try:
-                id_index = columns.index('id')
-                row_id = int(values[id_index])
-            except ValueError:
-                row_id = self._auto_increment
+            # we need to know the id of this record
+            row_id = str(values[id_index])
+            if not row_id:
+                self._global_errors.append(
+                    'Row is missing a value for the id column for table %s and row %s' % (self._name, values)
+                )
+                continue
 
-            self._auto_increment = max(self._auto_increment, row_id + 1)
             if row_id in self._rows:
                 self._global_errors.append(
                     'Duplicate row id found for table %s and row %s' % (self.name, values)
@@ -349,6 +348,7 @@ class Table:
                 continue
 
             self._rows[row_id] = OrderedDict(zip(columns, values))
+            self._rows[row_id]['id'] = row_id
 
         return True
 
@@ -367,8 +367,9 @@ class Table:
         if self._rows is None:
             self._rows = OrderedDict()
 
-        row_id = row['id'] if 'id' in row else self._auto_increment
-        self._auto_increment = max(self._auto_increment, row_id + 1)
+        row_id = str(row.get('id'))
+        if not row_id:
+            raise ValueError("Cannot manage records without an 'id' column and value")
         if row_id in self._rows:
             return 'Duplicate row id found for table %s and row %s' % (self._name, row)
 
@@ -379,6 +380,7 @@ class Table:
                 converted_row[column] = row[column]
             else:
                 converted_row[column] = self._columns[column].default
+        converted_row['id'] = row_id
 
         self._rows[row_id] = converted_row
 

@@ -64,5 +64,5 @@ class MygrateNullsTest(unittest.TestCase):
         ops = [str(op) for op in mygrate]
         self.assertEquals(3, len(ops))
         self.assertTrue("INSERT INTO `logs` (`id`, `message`, `traceback`) VALUES ('4', 'Insert Null', NULL);" in ops)
-        self.assertTrue("UPDATE `logs` SET `message`='from null to value', `traceback`='HEY' WHERE id=1;" in ops)
-        self.assertTrue("UPDATE `logs` SET `message`='from value to null', `traceback`=NULL WHERE id=2;" in ops)
+        self.assertTrue("UPDATE `logs` SET `message`='from null to value', `traceback`='HEY' WHERE id='1';" in ops)
+        self.assertTrue("UPDATE `logs` SET `message`='from value to null', `traceback`=NULL WHERE id='2';" in ops)

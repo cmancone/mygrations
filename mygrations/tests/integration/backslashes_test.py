@@ -53,6 +53,6 @@ class test_backslashes(unittest.TestCase):
         ops = [str(op) for op in mygrate]
         self.assertEquals(1, len(ops))
         self.assertEquals(
-            "UPDATE `logs` SET `message`='bob\\\\test', `traceback`='forever' WHERE id=2;",
+            "UPDATE `logs` SET `message`='bob\\\\test', `traceback`='forever' WHERE id='2';",
             ops[0]
         )

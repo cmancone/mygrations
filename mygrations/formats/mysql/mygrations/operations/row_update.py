@@ -25,4 +25,4 @@ class RowUpdate:
             "`%s`='%s'" % (key, str(val).replace('\\', '\\\\')) if val is not None else ('`%s`=NULL' % key)
             for (key, val) in self.data.items() if key != 'id'
         ])
-        return 'UPDATE `%s` SET %s WHERE id=%s;' % (self._table_name, updates, self.data['id'])
+        return "UPDATE `%s` SET %s WHERE id='%s';" % (self._table_name, updates, self.data['id'])

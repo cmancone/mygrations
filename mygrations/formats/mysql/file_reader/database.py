@@ -32,6 +32,8 @@ class Database(BaseDatabase):
         for string in strings:
             self.process(string)
 
+        self._combine_tables_and_rows()
+
     def process(self, string):
         """ Processes a string.
 
@@ -47,8 +49,6 @@ class Database(BaseDatabase):
             self._read(string)
         else:
             self._read(string)
-
-        self._combine_tables_and_rows()
 
     def _process_directory(self, directory):
         """ Processes a directory.
@@ -66,10 +66,6 @@ class Database(BaseDatabase):
 
         for filename in glob.glob('%s*.sql' % directory):
             self._read(filename)
-
-        # we do this last so we won't generate errors if the rows are in separate files
-        # and processed before the tables (which will generate a "found rows without a table" error)
-        self._combine_tables_and_rows()
 
     def _read(self, contents):
         """ Processes a file or string of SQL.

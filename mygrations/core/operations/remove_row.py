@@ -15,4 +15,4 @@ class RemoveRow:
         return self._table_name
 
     def __str__(self):
-        return 'DELETE FROM `%s` WHERE id=%s;' % (self._table_name, self.row_id)
+        return "DELETE FROM `%s` WHERE id='%s';" % (self._table_name, self.row_id)

@@ -89,7 +89,7 @@ class MygrateRowsSimpleTest(unittest.TestCase):
 
         operations = [str(op) for op in RowMygration(database, database_from).operations]
         self.assertEquals(1, len(operations))
-        self.assertEquals("UPDATE `logs` SET `message`='hey', `traceback`='never' WHERE id=1;", operations[0])
+        self.assertEquals("UPDATE `logs` SET `message`='hey', `traceback`='never' WHERE id='1';", operations[0])
 
     def test_delete_rows(self):
 
@@ -116,7 +116,7 @@ class MygrateRowsSimpleTest(unittest.TestCase):
 
         operations = [str(op) for op in RowMygration(database, database_from).operations]
         self.assertEquals(1, len(operations))
-        self.assertEquals("DELETE FROM `logs` WHERE id=1;", operations[0])
+        self.assertEquals("DELETE FROM `logs` WHERE id='1';", operations[0])
 
     def test_all(self):
 
@@ -157,5 +157,5 @@ class MygrateRowsSimpleTest(unittest.TestCase):
         self.assertTrue(
             "INSERT INTO `logs` (`id`, `message`, `traceback`) VALUES ('3', 'okay', 'always');" in operations
         )
-        self.assertTrue("DELETE FROM `logs` WHERE id=1;" in operations)
-        self.assertTrue("UPDATE `logs` SET `message`='sup', `traceback`='whatever' WHERE id=2;" in operations)
+        self.assertTrue("DELETE FROM `logs` WHERE id='1';" in operations)
+        self.assertTrue("UPDATE `logs` SET `message`='sup', `traceback`='whatever' WHERE id='2';" in operations)
