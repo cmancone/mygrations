@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/cmancone/mygrations.svg?branch=master)](https://travis-ci.org/cmancone/mygrations)
-
 # mygrations
 
 A stateless database migrator via Schema as Code!
@@ -17,6 +15,16 @@ The main disadvantage with `mygrations` stems from one of its key advantages (st
 ```
 pip3 install mygrations
 ```
+
+Then you just need to download and install the mygrations runner. Something like this works:
+
+```
+wget 'https://raw.githubusercontent.com/cmancone/mygrations/master/mygrate.py'
+chmod a+x mygrate.py
+sudo mv mygrate.py /usr/local/bin/mygrate.py
+```
+
+Your mileage may vary.
 
 ## Setup
 

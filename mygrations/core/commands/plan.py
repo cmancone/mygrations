@@ -12,6 +12,7 @@ def execute(options):
     obj = Plan(options)
     obj.execute()
 class Plan(Base):
+    needs_cursor = True
     def execute(self):
 
         commands = self.build_commands()

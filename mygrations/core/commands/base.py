@@ -2,9 +2,9 @@ import os, os.path
 from mygrations.helpers.dotenv import dotenv
 from mygrations.helpers.db_credentials import DbCredentials
 class Base(object):
-
-    credentials = {}
-    config = {}
+    needs_cursor = False
+    credentials = None
+    config = None
 
     def __init__(self, options):
 
