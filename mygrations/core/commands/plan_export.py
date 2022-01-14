@@ -14,10 +14,10 @@ def execute(options):
 class PlanExport(base):
     def execute(self):
 
-        files_database = DatabaseParser(self.config['files_directory'])
+        files_database = DatabaseParser(self.get_sql_files())
 
         # use the credentials to load up a database connection
-        live_database = DatabaseReader(mysqldb(self.credentials))
+        live_database = DatabaseReader(self.get_driver())
 
         # we aren't outputting operations.  Instead we just need to know what tables
         # have changed (either structure or records).  The easiest (and slightly hack)

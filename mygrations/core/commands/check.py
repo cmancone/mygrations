@@ -6,7 +6,7 @@ def execute(options):
     obj.execute()
 class Check(Base):
     def execute(self):
-        files_database = DatabaseParser(self.config['files_directory'])
+        files_database = DatabaseParser(self.get_sql_files())
 
         # any errors or warnings?
         errors = False

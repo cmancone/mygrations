@@ -3,7 +3,6 @@ from mygrations.formats.mysql.file_reader.database import Database as DatabasePa
 from mygrations.formats.mysql.db_reader.database import Database as DatabaseReader
 from mygrations.formats.mysql.mygrations.mygration import Mygration
 from mygrations.formats.mysql.mygrations.row_mygration import RowMygration
-from mygrations.drivers.pymysql.pymysql import PyMySQL
 from mygrations.formats.mysql.mygrations.operations.disable_checks import DisableChecks
 from mygrations.formats.mysql.mygrations.operations.enable_checks import EnableChecks
 import sys
@@ -20,7 +19,7 @@ class Plan(Base):
 
     def build_commands(self):
 
-        files_database = DatabaseParser(self.config['files_directory'])
+        files_database = DatabaseParser(self.get_sql_files())
 
         # any errors or warnings?
         quit_early = False
@@ -34,7 +33,7 @@ class Plan(Base):
             return []
 
         # use the credentials to load up a database connection
-        live_database = DatabaseReader(PyMySQL(self.credentials))
+        live_database = DatabaseReader(self.get_driver())
 
         # we have to tell the live database to load records
         # for any tables we are tracking records for.

@@ -1,5 +1,4 @@
 from .plan import Plan
-from mygrations.drivers.pymysql.pymysql import PyMySQL
 def execute(options):
 
     obj = Apply(options)
@@ -9,5 +8,5 @@ class Apply(Plan):
     def execute(self):
 
         commands = self.build_commands()
-        connection = self.get_cursor()
+        connection = self.get_driver()
         connection.execute(['%s' % command for command in commands])

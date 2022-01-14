@@ -26,7 +26,7 @@ sudo mv mygrate.py /usr/local/bin/mygrate.py
 
 Your mileage may vary.
 
-## Setup
+## Command line setup
 
 The calling sequence of the mygration runner is not yet very flexible, requiring you to have your environment setup in a particular way.  Right now it assumes:
 
@@ -60,15 +60,16 @@ hostname_key = "DB_HOSTNAME"
 username_key = "DB_USERNAME"
 password_key = "DB_PASSWORD"
 database_key = "DB_DATABASE"
+env_file = ".env"
 
 files_directory = "database/"
 ```
 
-To be clear, you don't put your database credentials in your `mygrate.conf` file: instead you simply tell it which keys to grab the database credentials out of from your `.env` file.  This way you can just have one `mygrate.conf` file that works in all environments.  The files directory tells it where to find your `*.sql` files.  You simply specify the location of the directory containing those files, relative to the `mygrate.conf` file.  It will automatically read any `*.sql` files in that directory and use the structure in those files to determine the "truth" of what your database should look like.
+To be clear, you don't put your database credentials in your `mygrate.conf` file: instead you simply tell it which keys to grab the database credentials out of from your `.env` file.  This way you can just have one `mygrate.conf` file that works in all environments.  The files directory tells it where to find your `*.sql` files.  You simply specify the location of the directory containing those files, relative to the `mygrate.conf` file.  It will automatically read any `*.sql` files in that directory and use the structure in those files to determine the "truth" of what your database should look like.  Finally, the `env_file` setting tells mygrations where to find your `.env` file.  It should be relative to the location of your `mygrate.conf` file (i.e. `.env` if the file is in the same directory or `sub_directory/.env` if the `.env` file lives in a sub directory relative to the `mygrate.conf` file).
 
 To make things super clear I have created an example repository that is ready to run mygrations.  Instructions [here](https://github.com/cmancone/mygrations_example).
 
-## Usage
+## Command line usage
 
 Currently the system supports 5 modes:
 
@@ -85,6 +86,29 @@ Each should be executed by running the mygration command with the desired mode a
 ```mygrate.py [mode]```
 
 The typical use case would be to run `mygrate.py plan` and inspect the results.  If things seem reasonable then simply  `mygrate.py execute`
+
+## Calling from python
+
+If you happen to be using python then you can call mygrations directly if you prefer.  This allows you to manage the connection to the database yourself (but still requires pymysql).  Here's a quick and dirty example (in lieu of proper documentation):
+
+```
+from mygrations.core.commands import execute
+import pymysql
+
+connection = pymysql.connect(
+    user='[DATABASE_USERNAME]',
+    password='[DATABASE_PASSWORD]',
+    host='[DATABASE_HOST]',
+    database='[DATABASE_NAME]',
+    autocommit=False,
+    connect_timeout=2,
+    cursorclass=pymysql.cursors.DictCursor
+)
+
+execute('plan', {'connection': connection, 'sql_files': '/folder/with/sql/files'})
+execute('apply', {'connection': connection, 'sql_files': '/folder/with/sql/files'})
+```
+`sql_files` can be the absolute path to a folder that contains your SQL files, or it can be a string with actual SQL (as always, just separate multiple SQL commands with a semi-colon).
 
 ## Advantages
 

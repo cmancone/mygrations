@@ -1,4 +1,4 @@
-__ver__ = '0.1'
+__ver__ = '1.0'
 
 from .core import commands
 class mygrate:

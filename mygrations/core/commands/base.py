@@ -1,41 +1,73 @@
 import os, os.path
 from mygrations.helpers.dotenv import dotenv
 from mygrations.helpers.db_credentials import DbCredentials
+from mygrations.drivers.pymysql.pymysql import PyMySQL
 class Base(object):
-    needs_cursor = False
-    credentials = None
+    options = None
     config = None
+    _config_loaded = False
 
     def __init__(self, options):
-
         self.options = options
 
-        if not 'env' in self.options:
-            raise ValueError('Missing "env" in options for commands.import_files')
+    def get_env(self):
+        if 'env' not in self.options:
+            raise KeyError(f"'env' was not provided in options for command '{self.__class__.__name__}'")
 
-        if not 'config' in self.options:
-            raise ValueError('Missing "config" in options for commands.import_files')
+    def get_driver(self):
+        if 'driver' not in self.options:
+            if 'connection' in self.options:
+                self.options['driver'] = PyMySQL(connection=self.options['connection'])
+            else:
+                self._load_config()
+                self.options['driver'] = PyMySQL(DbCredentials(self.config['env_file'], self.config))
+        return self.options['driver']
+
+    def get_sql_files(self):
+        if 'sql_files' not in self.options:
+            self._load_config()
+            self.options['sql_files'] = self.config['files_directory']
+        return self.options['sql_files']
+
+    def _load_config(self):
+        if self._config_loaded:
+            return True
+
+        if 'config' not in self.options:
+            raise ValueError(f"Missing required 'config' parameter in options for commands '{self.__class__.__name__}'")
+
+        if 'env' not in self.options:
+            raise ValueError(f"Missing required 'env' parameter in options for command '{self.__class__.__name__}'")
 
         # load up the mygration configuration (which includes the path to the files we will import)
-        config_abs_path = self._resolve_and_check_config_file(self.options['config'])
+        # note that self.options['config'] is supposed to contain the filename or absolute path to the
+        # mygrations configuration file.  By default, this is called `mygrate.conf`.  In return
+        # we get the absolute path to this file, which contains the config we need to do anything from
+        # the command line (we shouldn't end up here if called programmatically).
+
+        # this can be slightly confusing because of the mixture of self.config and self.options.  It's a simple
+        # difference though: self.options is a dictionary passed in by whoever calls us (probably the command line runner),
+        # while self.config is a dictionary containing configuration settings loaded out of the mygrate.conf file.
+        config_abs_path = self._resolve_and_check_config_file_path(self.options['config'])
         self.config = dotenv(config_abs_path)
+        if 'files_directory' not in self.config:
+            raise ValueError("Configuration file is missing 'files_directory' configuration, which should point to the directory containing your *.sql files")
         self.config['files_directory'] = self._relative_to_config_abs_path(
             self.config['files_directory'], config_abs_path
         )
-        self.options['env'] = self._relative_to_config_abs_path(self.options['env'], config_abs_path)
 
-        # and load up the database credentials
-        self.credentials = DbCredentials(self.options['env'], self.config)
-
-        if not 'files_directory' in self.config:
-            raise ValueError('Missing files_directory configuration setting in configuration file')
+        if 'env_file' not in self.config:
+            raise ValueError("Configuration file is missing 'env_file' configuration, which should point to the .env file for your application (so mygrations can fetch database credentials")
+        # convert the env file path to an absolute path
+        self.config['env_file'] = self._relative_to_config_abs_path(self.config['env_file'], config_abs_path)
+        self._config_loaded = True
 
     def execute(self):
         raise NotImplementedError()
 
-    def _resolve_and_check_config_file(self, file_path):
+    def _resolve_and_check_config_file_path(self, file_path):
         if not len(file_path):
-            raise ValueError('Missing path to env file')
+            raise ValueError('Missing path to configuration file')
 
         # We want to find the location of the mygrate.conf file.  For the most part expect file_path to literally
         # be `mygrate.conf`, as that is the default sent in by the runner.  However the user could have specified
@@ -44,7 +76,7 @@ class Base(object):
         # want to search for the given file in current directory or its parents.
         if file_path[0] == '/':
             if not os.path.isfile(file_path):
-                raise ValueError("Specified env file '%s' does not exist" % file_path)
+                raise ValueError("Specified configuration file '%s' does not exist" % file_path)
             return file_path
 
         directories = ('%s/%s' % (os.getcwd(), file_path)).strip('/').split('/')
@@ -55,7 +87,7 @@ class Base(object):
             if os.path.isfile(abs_path):
                 return abs_path
 
-        raise ValueError("Could not find env file '%s' in current directory or parents" % file_path)
+        raise ValueError("Could not find configuration file '%s' in current directory or parents" % file_path)
 
     def _relative_to_config_abs_path(self, relative_path, config_abs_path):
         # Our file directory and our .env file path should both be relative to the location of the mygrate.conf file.

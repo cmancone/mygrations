@@ -12,7 +12,6 @@ parser.add_argument(
     choices=['version', 'apply', 'check', 'import', 'plan', 'plan_export'],
     help='Action to execute (default: version)'
 )
-parser.add_argument('--env', default='.env', help='Location of environment file (default: .env)')
 parser.add_argument(
     '--config', default='mygrate.conf', help='Location of mygrate configuration file (default: mygrate.conf)'
 )
