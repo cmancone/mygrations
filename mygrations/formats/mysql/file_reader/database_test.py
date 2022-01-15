@@ -157,3 +157,19 @@ CREATE TABLE `roles` (
             "Table 'roles' has index 'account_id_key' that references non-existent column 'account_id'",
             database.errors[0]
         )
+
+    def test_mismatched_column(self):
+        database = Database("""
+CREATE TABLE `roles` (
+    `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(255) NOT NULL DEFAULT '',
+    PRIMARY KEY (`id`)
+);
+INSERT INTO `roles` (`id`,`name`,`description`) VALUES (1,'asdf','more');
+        """)
+
+        self.assertEqual(1, len(database.errors))
+        self.assertEquals(
+            "Insert error: insert command attempts to set column 'description' for table 'roles' but the column does not exist in the table.",
+            database.errors[0]
+        )

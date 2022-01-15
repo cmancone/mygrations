@@ -95,17 +95,17 @@ class Database:
 
                 # verify the columns which the inserts reference make sense
                 if table_name not in self.tables:
-                    errors.extend(f"Insert error: found an insert for table '{table_name}' but this table does not exist")
+                    errors.append(f"Insert error: found an insert for table '{table_name}' but this table does not exist")
 
                 elif row.num_explicit_columns:
                     table = self.tables[table_name]
                     for column_name in row.columns:
                         if column_name not in table.columns:
-                            errors.extend(f"Insert error: insert command attempts to set column '{column_name}' for table '{table_name}' but the column does not exist in the table.")
+                            errors.append(f"Insert error: insert command attempts to set column '{column_name}' for table '{table_name}' but the column does not exist in the table.")
                 else:
                     for row_values in row.raw_rows:
                         if len(row_values) != len(table.columns):
-                            errors.extend(f"Insert error for table '{table_name}': insert command does not explicitly set column names and has a different number of values than the number of columns in the table")
+                            errors.append(f"Insert error for table '{table_name}': insert command does not explicitly set column names and has a different number of values than the number of columns in the table")
 
         return errors
 
