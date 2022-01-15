@@ -1,6 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.column import column
-class type_enum(parser, column):
+from mygrations.core.parse.parser import Parser
+from .type import Type
+class TypeEnum(Parser, Type):
 
     allowed_types = {'set': True, 'enum': True}
 
@@ -21,7 +21,7 @@ class type_enum(parser, column):
         'value': '('
     }, {
         'type': 'delimited',
-        'name': 'values',
+        'name': 'enum_values',
         'quote': "'",
         'separator': ','
     }, {
@@ -53,23 +53,20 @@ class type_enum(parser, column):
         'name': 'ending_comma'
     }]
 
-    def __init__(self, rules=[]):
-
-        super().__init__(rules)
-
-        self._errors = []
-        self._warnings = []
-        self.values = []
-
     def process(self):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
+        self._parsing_errors = []
+        self._parsing_warnings = []
+        self._schema_errors = []
+        self._schema_warnings = []
         self._name = self._values['name'].strip('`')
         self._column_type = self._values['type']
-        self.values = self._values['values']
-        self._length = self.values
+        self._enum_values = self._values['enum_values']
+        self._length = self._enum_values
         self._null = False if 'NOT NULL' in self._values else True
+        self._has_default = 'default' in self._values
         self._default = self._values['default'] if 'default' in self._values else None
         self._character_set = self._values['character_set'] if 'character_set' in self._values else None
         self._collate = self._values['collate'] if 'collate' in self._values else None
@@ -88,24 +85,6 @@ class type_enum(parser, column):
             if self._default.lower() == 'null':
                 self._default = None
             else:
-                self._warnings.append(
+                self._parsing_warnings.append(
                     'Default value of "%s" should have quotes for field %s' % (self._default, self._name)
                 )
-
-        if self._default and not (self._default in self.values):
-            self._errors.append(
-                "Column %s has default value of %s but this is not an allowed value" % (self._name, self._default)
-            )
-
-        if self._default is None and not self._null:
-            self._warnings.append(
-                'Column %s is not null and has no default: you should set a default to avoid MySQL warnings' %
-                (self._name)
-            )
-
-        # only a few types of field are allowed to use this
-        if not self._column_type.lower() in self.allowed_types:
-            self._errors.append(
-                'Column of type %s is not allowed to have a list of values for column %s' %
-                (self._column_type, self._name)
-            )

@@ -1,5 +1,5 @@
-from .rule_base import rule_base
-class rule_children(rule_base):
+from .rule_base import RuleBase
+class RuleChildren(RuleBase):
     """ rule = rule_children( parser, rule, next_rule )
 
     rule_children constructor.  Pass in the parser object that the rule is for, the rule

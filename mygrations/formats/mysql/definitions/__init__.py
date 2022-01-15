@@ -1,6 +1,6 @@
-from .constraint import constraint
-from .index import index
-from .column import column
-from .table import table
+from .constraint import Constraint
+from .index import Index
+from .table import Table
+from . import columns
 
-__all__ = ['constraint', 'index', 'column', 'table']
+__all__ = ['Constraint', 'Index', 'Table', 'columns']

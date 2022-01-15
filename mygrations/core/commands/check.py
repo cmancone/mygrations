@@ -1,31 +1,27 @@
-import MySQLdb
-
-from .base import base
-from mygrations.formats.mysql.file_reader.database import database as database_parser
-from mygrations.formats.mysql.db_reader.database import database as database_reader
-from mygrations.formats.mysql.mygrations.mygration import mygration
+from .base import Base
+from mygrations.formats.mysql.file_reader.database import Database as DatabaseParser
+from mygrations.formats.mysql.mygrations.mygration import Mygration
 def execute(options):
-
-    obj = check(options)
+    obj = Check(options)
     obj.execute()
-class check(base):
+class Check(Base):
     def execute(self):
-        files_database = database_parser(self.config['files_directory'])
+        files_database = DatabaseParser(self.get_sql_files())
 
         # any errors or warnings?
         errors = False
         if files_database.errors:
-            print('Errors found in *.sql files')
+            print('Errors found in *.sql files:')
             errors = True
             for error in files_database.errors:
                 print(error)
 
-        errors_1215 = files_database.errors_1215
-        if errors_1215:
-            print('1215 Errors encountered')
+        warnings = files_database.warnings
+        if warnings:
+            print('Warnings found in *.sql files:')
             errors = True
-            for error in errors_1215:
-                print(error)
+            for warning in warnings:
+                print(warning)
 
         if not errors:
             print("No problems found")

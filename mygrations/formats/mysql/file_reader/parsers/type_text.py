@@ -1,6 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.column import column
-class type_text(parser, column):
+from mygrations.core.parse.parser import Parser
+from .type import Type
+class TypeText(Parser, Type):
 
     #***** Lint error if default is found for text field ******
     allowed_types = {
@@ -92,22 +92,26 @@ class type_text(parser, column):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        self._errors = []
-        self._warnings = []
+        self._parsing_errors = []
+        self._parsing_warnings = []
+        self._schema_errors = []
+        self._schema_warnings = []
         self._name = self._values['name'].strip('`')
         self._length = ''
-        self._default = None
+        self._has_default = 'default' in self._values
+        self._default = self._values['default'] if 'default' in self._values else None
         self._column_type = self._values['type']
         self._null = False if 'NOT NULL' in self._values else True
         self._character_set = self._values['character_set'].strip("'") if 'character_set' in self._values else ''
         self._collate = self._values['collate'].strip("'") if 'collate' in self._values else ''
 
-        if self._column_type.lower() == 'datetime':
-            pass
-        elif not self._column_type.lower() in self.allowed_types:
-            self._errors.append('Column of type %s must have a length for column %s' % (self._column_type, self._name))
-        elif 'default' in self._values:
-            self._errors.append(
-                'Column of type %s is not allowed to have a default value for column %s' %
-                (self._column_type, self._name)
-            )
+        # slightly more work on the default
+        if self._default and len(self._default) >= 2 and self._default[0] == "'" and self._default[-1] == "'":
+            self._default = self._default.strip("'")
+        elif self._default:
+            if self._default.lower() == 'null':
+                self._default = None
+            elif not self._default.isdigit():
+                self._parsing_warnings.append(
+                    'Default value of "%s" should have quotes for field %s' % (self._default, self._name)
+                )

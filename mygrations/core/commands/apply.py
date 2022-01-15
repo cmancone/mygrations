@@ -1,12 +1,13 @@
-from .plan import plan
-from mygrations.drivers.mysqldb.mysqldb import mysqldb
+from .plan import Plan
 def execute(options):
 
-    obj = apply(options)
+    obj = Apply(options)
     obj.execute()
-class apply(plan):
+class Apply(Plan):
+    needs_cursor = False
+
     def execute(self):
 
         commands = self.build_commands()
-        connection = mysqldb(self.credentials)
+        connection = self.get_driver()
         connection.execute(['%s' % command for command in commands])

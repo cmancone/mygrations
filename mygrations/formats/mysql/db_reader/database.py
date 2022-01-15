@@ -1,9 +1,8 @@
 import os
 import glob
-
-from ..file_reader.reader import reader as sql_reader
-from mygrations.formats.mysql.definitions.database import database as database_definition
-class database(database_definition):
+from ..file_reader.reader import Reader as Reader
+from mygrations.formats.mysql.definitions.database import Database as DatabaseDefinition
+class Database(DatabaseDefinition):
     def __init__(self, conn):
         """ Constructor.  Accepts a mygrations db wrapper
 
@@ -11,10 +10,10 @@ class database(database_definition):
         :type conn: mygrations.drivers.mysqldb.mysqldb
         """
         self.conn = conn
-        self._warnings = []
-        self._errors = []
         self._tables = {}
         self._rows = []
+        self._global_errors = []
+        self._global_warnings = []
 
         # _load_tables will get the party started
         self._load_tables(self.conn)
@@ -29,23 +28,15 @@ class database(database_definition):
         """
         for (table, create_table) in conn.tables().items():
             try:
-                reader = sql_reader()
+                reader = Reader()
                 reader.parse(create_table)
 
             except ValueError as e:
                 print("Error in table %s: %s" % (create_table, e))
 
-            # we shouldn't get any errors, of course, because
-            # this is coming out of MySQL.  However, it may still
-            # get some warnings (due to lint settings (maybe)).  Either way,
-            # keep around the errors just because, even if it is
-            # always empty.
-            self._errors.extend(reader.errors)
-            self._warnings.extend(reader.warnings)
-
             for (table_name, table) in reader.tables.items():
                 if table.name in self._tables:
-                    self.errors.append('Found two definitions for table %s' % table.name)
+                    self._global_errors.append('Found two definitions for table %s' % table.name)
 
                 # our reader will return table objects
                 # from the file_reader namespace.  These expect

@@ -1,6 +1,5 @@
-class row_delete:
+class RowDelete:
     """ Generates an SQL command to delete a record """
-
     def __init__(self, table_name, row_id):
         if type(table_name) != str:
             self._table_name = table_name.name
@@ -19,4 +18,4 @@ class row_delete:
         return self._table_name
 
     def __str__(self):
-        return 'DELETE FROM `%s` WHERE id=%s;' % (self._table_name, self.row_id)
+        return "DELETE FROM `%s` WHERE id='%s';" % (self._table_name, self.row_id)

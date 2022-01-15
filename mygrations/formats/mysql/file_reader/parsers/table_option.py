@@ -1,5 +1,5 @@
-from mygrations.core.parse.parser import parser
-class table_option(parser):
+from mygrations.core.parse.parser import Parser
+class TableOption(Parser):
 
     name = ''
     value = ''
@@ -19,8 +19,13 @@ class table_option(parser):
     }]
 
     def process(self):
+        self._name = self._values['name'].strip()
+        self._value = self._values['value'].strip()
 
-        self._errors = []
-        self._warnings = []
-        self.name = self._values['name'].strip()
-        self.value = self._values['value'].strip()
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def value(self):
+        return self._value

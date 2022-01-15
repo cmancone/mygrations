@@ -1,6 +1,5 @@
-class remove_table:
+class RemoveTable:
     """ Generates an SQL command to drop a table """
-
     def __init__(self, table_name):
         if type(table_name) != str:
             self._table_name = table_name.name

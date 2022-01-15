@@ -1,5 +1,5 @@
-from mygrations.core.parse.parser import parser
-class comment_parser(parser):
+from mygrations.core.parse.parser import Parser
+class CommentParser(Parser):
 
     rules = ['nope']
     sql = ''
@@ -8,9 +8,11 @@ class comment_parser(parser):
 
         # we're not yet a rules-based parser (I may do that eventually), so
         # I don't want to run the normal parser __init__()
-        self.errors = []
-        self.warnings = []
         self.matched = False
+        self._parsing_errors = []
+        self._parsing_warnings = []
+        self._schema_errors = []
+        self._schema_warnings = []
 
     def parse(self, sql):
         """ res = paser.parse()
@@ -61,7 +63,7 @@ class comment_parser(parser):
             raise ValueError('SQL passed to comment parser did not start with a comment')
 
         if not self.sql.count('*/'):
-            self.errors.append('Could not find closing comment indicator, */')
+            self._parsing_errors.append('Could not find closing comment indicator, */')
             return self.sql
 
         # otherwise this is very straight-forward

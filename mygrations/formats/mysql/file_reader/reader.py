@@ -1,14 +1,18 @@
 import io, os
-from .comment_parser import comment_parser
-from .create_parser import create_parser
-from .insert_parser import insert_parser
-class reader(object):
+from .comment_parser import CommentParser
+from .create_parser import CreateParser
+from .insert_parser import InsertParser
+class Reader:
     def __init__(self):
 
         self._tables = {}
         self._rows = {}
-        self._errors = []
-        self._warnings = []
+        self._global_errors = []
+        self._global_warnings = []
+        self._parsing_errors = []
+        self._parsing_warnings = []
+        self._schema_errors = []
+        self._schema_warnings = []
         self._matched = False
 
     @property
@@ -21,29 +25,65 @@ class reader(object):
         return self._matched
 
     @property
-    def errors(self):
+    def parsing_errors(self):
         """ Public getter.  Returns a list of parsing errors
 
         :returns: A list of parsing errors
         :rtype: list
         """
-        return [] if self._errors is None else self._errors
+        return [] if self._parsing_errors is None else self._parsing_errors
 
     @property
-    def warnings(self):
+    def parsing_warnings(self):
         """ Public getter.  Returns a list of parsing/table warnings
 
         :returns: A list of parsing/table warnings
         :rtype: list
         """
-        return [] if self._warnings is None else self._warnings
+        return [] if self._parsing_warnings is None else self._parsing_warnings
+
+    @property
+    def schema_errors(self):
+        """ Public getter.  Returns a list of schema errors
+
+        :returns: A list of schema errors
+        :rtype: list
+        """
+        return [] if self._schema_errors is None else self._schema_errors
+
+    @property
+    def schema_warnings(self):
+        """ Public getter.  Returns a list of schema warnings
+
+        :returns: A list of schema warnings
+        :rtype: list
+        """
+        return [] if self._schema_warnings is None else self._schema_warnings
+
+    @property
+    def global_errors(self):
+        """ Public getter.  Returns a list of schema errors
+
+        :returns: A list of schema errors
+        :rtype: list
+        """
+        return [] if self._global_errors is None else self._global_errors
+
+    @property
+    def global_warnings(self):
+        """ Public getter.  Returns a list of schema warnings
+
+        :returns: A list of schema warnings
+        :rtype: list
+        """
+        return [] if self._global_warnings is None else self._global_warnings
 
     @property
     def tables(self):
         """ Public getter.  Returns a list of table definitions
 
         :returns: A list of table definitions
-        :rtype: [mygrations.formats.mysql.definitions.table]
+        :rtype: dict[mygrations.formats.mysql.definitions.table]
         """
         return self._tables
 
@@ -127,16 +167,16 @@ class reader(object):
             # now we are looking for one of three things:
             # comment, create, insert
             if data[:2] == '--' or data[:2] == '/*' or data[0] == '#':
-                parser = comment_parser()
+                parser = CommentParser()
                 data = parser.parse(data)
 
             elif data[:6].lower() == 'create':
-                parser = create_parser()
+                parser = CreateParser()
                 data = parser.parse(data)
                 self._tables[parser.name] = parser
 
             elif data[:6].lower() == 'insert':
-                parser = insert_parser()
+                parser = InsertParser()
                 data = parser.parse(data)
                 if not parser.table in self._rows:
                     self._rows[parser.table] = []
@@ -144,13 +184,10 @@ class reader(object):
                 self._rows[parser.table].append(parser)
 
             else:
-                self._errors.append("Unrecognized MySQL command: %s%s" % (data, self._filename_notice()))
+                if self._global_errors is None:
+                    self._global_errors = []
+                self._global_errors.append("Unrecognized MySQL command: %s%s" % (data, self._filename_notice()))
                 return data
-
-            for error in parser.errors:
-                self._errors.append('%s%s' % (error, self._filename_notice()))
-            for warning in parser.warnings:
-                self._warnings.append('%s%s' % (warning, self._filename_notice()))
 
         self._matched = True
         return data

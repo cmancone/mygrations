@@ -1,6 +1,5 @@
-class row_update:
+class RowUpdate:
     """ Generates an SQL command to update a record """
-
     def __init__(self, table_name, data):
         if 'id' not in data:
             raise KeyError('Missing `id` column needed for update')
@@ -26,4 +25,4 @@ class row_update:
             "`%s`='%s'" % (key, str(val).replace('\\', '\\\\')) if val is not None else ('`%s`=NULL' % key)
             for (key, val) in self.data.items() if key != 'id'
         ])
-        return 'UPDATE `%s` SET %s WHERE id=%s;' % (self._table_name, updates, self.data['id'])
+        return "UPDATE `%s` SET %s WHERE id='%s';" % (self._table_name, updates, self.data['id'])

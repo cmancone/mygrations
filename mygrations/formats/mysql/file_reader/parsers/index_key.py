@@ -1,7 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.index import index
-class index_key(parser, index):
-
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.index import Index
+class IndexKey(Parser, Index):
     _index_type = 'index'
     has_comma = False
 
@@ -32,19 +31,7 @@ class index_key(parser, index):
         'name': 'ending_comma'
     }]
 
-    def __init__(self, rules=[]):
-
-        super().__init__(rules)
-
-        self._errors = []
-        self._warnings = []
-        self._columns = []
-
     def process(self):
-
         self._name = self._values['name'].strip().strip('`')
         self._columns = self._values['columns']
         self.has_comma = True if 'ending_comma' in self._values else False
-
-        if len(self.name) > 64:
-            self._errors.append('Key name %s is too long' % (self.name))

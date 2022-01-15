@@ -1,6 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.constraint import constraint
-class constraint_foreign(parser, constraint):
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.constraint import Constraint
+class ConstraintForeign(Parser, Constraint):
 
     has_comma = False
 
@@ -17,21 +17,21 @@ class constraint_foreign(parser, constraint):
         'value': 'FOREIGN KEY ('
     }, {
         'type': 'regexp',
-        'name': 'column',
+        'name': 'column_name',
         'value': '[^\(\s\)]+'
     }, {
         'type': 'literal',
         'value': ') REFERENCES'
     }, {
         'type': 'regexp',
-        'name': 'foreign_table',
+        'name': 'foreign_table_name',
         'value': '[^\(]+'
     }, {
         'type': 'literal',
         'value': '('
     }, {
         'type': 'regexp',
-        'name': 'foreign_column',
+        'name': 'foreign_column_name',
         'value': '[^\)]+'
     }, {
         'type': 'literal',
@@ -85,12 +85,12 @@ class constraint_foreign(parser, constraint):
 
     def process(self):
 
-        self._errors = []
-        self._warnings = []
+        self._parsing_errors = []
+        self._parsing_warnings = []
         self._name = self._values['name'].strip().strip('`')
-        self._column = self._values['column'].strip().strip('`')
-        self._foreign_table = self._values['foreign_table'].strip().strip('`')
-        self._foreign_column = self._values['foreign_column'].strip().strip('`')
+        self._column_name = self._values['column_name'].strip().strip('`')
+        self._foreign_table_name = self._values['foreign_table_name'].strip().strip('`')
+        self._foreign_column_name = self._values['foreign_column_name'].strip().strip('`')
 
         # figure out what our rules are
         self._on_delete = self.find_action('DELETE')
@@ -98,11 +98,7 @@ class constraint_foreign(parser, constraint):
 
         self.has_comma = True if 'ending_comma' in self._values else False
 
-        if len(self._name) > 64:
-            self._errors.append('Key name %s is too long' % (self._name))
-
     def find_action(self, update_type):
-
         # watch for more than one action for this type
         found = ''
         for action in ['CASCADE', 'NO ACTION', 'RESTRICT', 'SET DEFAULT', 'SET NULL']:
@@ -110,7 +106,7 @@ class constraint_foreign(parser, constraint):
                 continue
 
             if found:
-                self._errors.append('Found contradictory rules in foreign constraint for ON %s' % update_type)
+                self._parsing_errors.append('Found contradictory rules in foreign constraint for ON %s' % update_type)
             else:
                 found = action
 

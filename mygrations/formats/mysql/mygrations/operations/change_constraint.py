@@ -1,6 +1,5 @@
-class change_constraint:
+class ChangeConstraint:
     """ Generates a partial SQL command to change a foreign key in a table """
-
     def __init__(self, constraint):
         self.constraint = constraint
 

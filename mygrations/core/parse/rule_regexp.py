@@ -1,6 +1,6 @@
-from .rule_base import rule_base
+from .rule_base import RuleBase
 import re
-class rule_regexp(rule_base):
+class RuleRegexp(RuleBase):
     """ rule = rule_regexp( parser, rule, next_rule )
 
     rule_literal constructor.  Pass in the parser object that the rule is for, the rule

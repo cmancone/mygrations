@@ -1,8 +1,7 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.rows import rows
-
-from .parsers.insert_values import insert_values
-class insert_parser(parser, rows):
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.rows import Rows
+from .parsers.insert_values import InsertValues
+class InsertParser(Parser, Rows):
 
     rules = [{
         'type': 'literal',
@@ -28,7 +27,7 @@ class insert_parser(parser, rows):
     }, {
         'type': 'children',
         'name': 'inserts',
-        'classes': [insert_values]
+        'classes': [InsertValues]
     }, {
         'type': 'literal',
         'value': ';',
@@ -36,31 +35,26 @@ class insert_parser(parser, rows):
         'name': 'closing_semicolon'
     }]
 
-    def __init__(self, rules=[]):
-
-        super().__init__(rules)
-
-        self._columns = []
-        self._raw_rows = []
-
     def process(self):
 
         self._table = self._values['table'].strip('`')
         self._columns = self._values['columns']
         self._raw_rows = []
         self._num_explicit_columns = len(self._columns) if self._columns else 0
-        self._errors = []
-        self._warnings = []
+        self._schema_errors = []
+        self._schema_warnings = []
+        self._parsing_errors = []
+        self._parsing_warnings = []
         self.has_semicolon = True if 'closing_semicolon' in self._values else False
 
         had_comma = True
         for row in self._values['inserts']:
 
             if not had_comma:
-                self._warnings.append('Missing comma between insert value groups')
+                self._parsing_warnings.append('Missing comma between insert value groups')
 
             if self._num_explicit_columns and len(row.values) != self._num_explicit_columns:
-                self._errors.append('Insert values has wrong number of values for %s' % (row))
+                self._parsing_errors.append('Insert values has different number of columns and values for %s' % (row))
                 continue
 
             self._raw_rows.append(row.values)

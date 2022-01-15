@@ -1,6 +1,6 @@
-from mygrations.core.parse.parser import parser
-from mygrations.formats.mysql.definitions.index import index
-class index_primary(parser, index):
+from mygrations.core.parse.parser import Parser
+from mygrations.formats.mysql.definitions.index import Index
+class IndexPrimary(Parser, Index):
 
     _index_type = 'primary'
     has_comma = False
@@ -26,14 +26,6 @@ class index_primary(parser, index):
         'optional': True,
         'name': 'ending_comma'
     }]
-
-    def __init__(self, rules=[]):
-
-        super().__init__(rules)
-
-        self._errors = []
-        self._warnings = []
-        self._columns = []
 
     def process(self):
 

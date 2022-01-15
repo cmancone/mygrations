@@ -1,9 +1,8 @@
 import os
 import glob
-
-from .reader import reader as sql_reader
-from mygrations.formats.mysql.definitions.database import database as database_definition
-class database(database_definition):
+from .reader import Reader
+from mygrations.formats.mysql.definitions.database import Database as BaseDatabase
+class Database(BaseDatabase):
     def __init__(self, strings):
         """ Constructor.  Accepts a string or list of strings with different possible contents
 
@@ -22,10 +21,10 @@ class database(database_definition):
         :type strings: string|list
         """
 
-        self._warnings = []
-        self._errors = []
         self._tables = {}
-        self._rows = []
+        self._rows = {}
+        self._global_errors = []
+        self._global_warnings = []
 
         if isinstance(strings, str):
             strings = [strings]
@@ -33,7 +32,7 @@ class database(database_definition):
         for string in strings:
             self.process(string)
 
-        self.store_rows_with_tables()
+        self._combine_tables_and_rows()
 
     def process(self, string):
         """ Processes a string.
@@ -80,15 +79,11 @@ class database(database_definition):
         """
 
         try:
-            reader = sql_reader()
+            reader = Reader()
             reader.parse(contents)
 
         except ValueError as e:
             print("Error in file %s: %s" % (contents, e))
-
-        # pull in all errors and warnings
-        self._errors.extend(reader.errors)
-        self._warnings.extend(reader.warnings)
 
         # keep rows and tables separate while we are reading
         for (table_name, table) in reader.tables.items():
@@ -96,5 +91,20 @@ class database(database_definition):
                 self.errors.append('Found two definitions for table %s' % table.name)
             self._tables[table.name] = table
 
-        for (table_name, rows) in reader.rows.items():
-            self._rows.extend(rows)
+        self._global_errors.extend(reader._global_errors)
+        self._global_warnings.extend(reader._global_warnings)
+
+        for rows_list in reader.rows.values():
+            for rows in rows_list:
+                if rows.table not in self._rows:
+                    self._rows[rows.table] = []
+                self._rows[rows.table].append(rows)
+
+    def _combine_tables_and_rows(self):
+        for (table_name, rows_list) in self._rows.items():
+            if table_name not in self._tables:
+                self._global_errors.extend(
+                    f"Found rows for table {table_name}, but this table does not exist in the database"
+                )
+            for rows in rows_list:
+                self._tables[table_name].add_rows(rows)

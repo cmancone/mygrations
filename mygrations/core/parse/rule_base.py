@@ -1,4 +1,4 @@
-class rule_base(object):
+class RuleBase:
     """ rule = rule_base( parser, rule, next_rule )
 
     Base class for rule parsers: the smallest part of our rule based parsing.  Each rule parser

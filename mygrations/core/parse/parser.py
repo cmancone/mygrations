@@ -1,36 +1,31 @@
 import re
+from .rule_children import RuleChildren
+from .rule_delimited import RuleDelimited
+from .rule_literal import RuleLiteral
+from .rule_regexp import RuleRegexp
+class Parser:
+    rule_types = {'children': RuleChildren, 'delimited': RuleDelimited, 'literal': RuleLiteral, 'regexp': RuleRegexp}
+    _parsing_errors = None
+    _parsing_warnings = None
+    _values = None
 
-from .rule_children import rule_children
-from .rule_delimited import rule_delimited
-from .rule_literal import rule_literal
-from .rule_regexp import rule_regexp
-class parser(object):
+    @property
+    def parsing_errors(self):
+        """ Public getter.  Returns a list of parsing errors
 
-    rule_types = {
-        'children': rule_children,
-        'delimited': rule_delimited,
-        'literal': rule_literal,
-        'regexp': rule_regexp
-    }
+        :returns: A list of parsing errors
+        :rtype: list
+        """
+        return self._parsing_errors if self._parsing_errors is not None else []
 
-    def __init__(self, rules=[]):
+    @property
+    def parsing_warnings(self):
+        """ Public getter.  Returns a list of parsing warnings
 
-        self._values = {}
-
-        # rules should be defined by the subclass
-        if rules:
-            self.rules = rules
-
-        if not self.rules:
-            raise NotImplementedError("Cannot extend parser without providing rules in %s" % (self.__class__))
-
-        for (rule_index, rule) in enumerate(self.rules):
-
-            # we always need a type
-            if not 'type' in rule:
-                raise ValueError('Missing type for rule %s in %s' % (rule, self.__class__))
-
-        self.num_rules = len(self.rules)
+        :returns: A list of parsing warnings
+        :rtype: list
+        """
+        return self._parsing_warnings if self._parsing_warnings is not None else []
 
     def __getitem__(self, key):
 
@@ -71,11 +66,13 @@ class parser(object):
         # first thing first, some initial string cleaning.  Clean spaces
         # from start and end and replace any multi-spaces with a single space.
         string = re.sub('\s+', ' ', string).strip()
+        number_rules = len(self.rules)
+        self._values = {}
 
         for (rule_index, rule) in enumerate(self.rules):
 
             # do we have a next rule?
-            next_rule = self.rules[rule_index + 1] if rule_index < self.num_rules - 1 else False
+            next_rule = self.rules[rule_index + 1] if rule_index < number_rules - 1 else False
 
             # now we can parse
             rule_parser = self.get_rule_parser(rule, next_rule)
@@ -103,7 +100,7 @@ class parser(object):
         # rules left that haven't been matched, then we don't match.
 
         # did we check every required rule?
-        for check_index in range(rule_index + 1, self.num_rules):
+        for check_index in range(rule_index + 1, number_rules):
             rule = self.rules[check_index]
             if not 'optional' in rule or not rule['optional']:
                 self.matched = False
