@@ -4,7 +4,6 @@ from mygrations.formats.mysql.file_reader.reader import Reader
 from mygrations.formats.mysql.file_reader.database import Database
 class RegressionTest(unittest.TestCase):
     """ Some tests based off failing CREATE TABLE commands from our database when things were first being finished """
-
     def test_payment_request_types(self):
 
         parser = Reader()
@@ -62,9 +61,6 @@ INSERT INTO `employee_contract_list` (`id`, `account_id`, `name`, `display`, `ta
 (12, 1, 'fed_i9', 'Federal I-9', 'employee_fed_i9s', 'fed_i9_id', 'hr/tax_forms/complete_fed_i9');"""
         )
 
-        self.assertEquals(
-            [
-                'Constraint error for foreign key `employee_contact_list_account_id_ref_accounts_id`: `employee_contract_list`.`account_id` references `accounts`.`id`, but table `accounts` does not exist'
-            ],
-            db.errors
-        )
+        self.assertEquals([
+            'Constraint error for foreign key `employee_contact_list_account_id_ref_accounts_id`: `employee_contract_list`.`account_id` references `accounts`.`id`, but table `accounts` does not exist'
+        ], db.errors)

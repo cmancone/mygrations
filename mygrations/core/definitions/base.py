@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import List
-
 class Base:
     _parsing_errors = None
     _parsing_warnings = None

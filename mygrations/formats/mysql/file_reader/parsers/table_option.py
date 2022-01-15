@@ -1,5 +1,4 @@
 from mygrations.core.parse.parser import Parser
-
 class TableOption(Parser):
 
     name = ''

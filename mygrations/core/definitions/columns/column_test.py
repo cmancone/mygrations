@@ -54,7 +54,9 @@ class TestColumn(unittest.TestCase):
             default=None,
         )
         self.assertEquals(
-            ['Column test_column does not allow null values and has no default: you should set a default to avoid warnings'],
+            [
+                'Column test_column does not allow null values and has no default: you should set a default to avoid warnings'
+            ],
             column.schema_warnings,
         )
 

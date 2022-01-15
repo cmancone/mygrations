@@ -22,9 +22,9 @@ class Table:
     _global_errors: List[str] = None
     _global_warnings: List[str] = None
 
-
     def __init__(
-        self, name: str = '',
+        self,
+        name: str = '',
         columns: List[Column] = None,
         indexes: List[Index] = None,
         constraints: List[Constraint] = None,
@@ -183,7 +183,11 @@ class Table:
 
         # duplicate names.  This shouldn't really be possible anymore because the add_ methods will
         # throw an exception if we try to add a duplicate, but I'll leave this in just in case.
-        for (name, to_check) in {'columns': self._columns, 'constraints': self._constraints, 'indexes': self._indexes}.items():
+        for (name, to_check) in {
+            'columns': self._columns,
+            'constraints': self._constraints,
+            'indexes': self._indexes
+        }.items():
             if len(to_check) == len(getattr(self, name)):
                 continue
             label = name.rstrip('es').rstrip('s')
@@ -209,7 +213,9 @@ class Table:
                 if len(auto_increment) > 1:
                     self._schema_errors.append(f"Table '{self.name}' has more than one AUTO_INCREMENT column")
                 elif not primaries:
-                    self._schema_errors.append(f"Table '{self.name}' has an AUTO_INCREMENT column but is missing the PRIMARY index")
+                    self._schema_errors.append(
+                        f"Table '{self.name}' has an AUTO_INCREMENT column but is missing the PRIMARY index"
+                    )
                 elif primaries[0].columns[0] != auto_increment[0].name:
                     self.schema_errors.append(
                         "Mismatched indexes in table '%s': column '%s' is the AUTO_INCREMENT column but '%s' is the PRIMARY index column"
@@ -314,7 +320,8 @@ class Table:
         columns = rows.columns if rows.num_explicit_columns else list(self._columns.keys())
         if 'id' not in columns:
             self._global_errors.append(
-                "A column named 'id' is required to manage rows in the table, but the id column is missing in the rows for table %s" % (self._name,)
+                "A column named 'id' is required to manage rows in the table, but the id column is missing in the rows for table %s"
+                % (self._name, )
             )
             return
         id_index = columns.index('id')
@@ -336,15 +343,11 @@ class Table:
                 continue
 
             if row_id in self._rows:
-                self._global_errors.append(
-                    'Duplicate row id found for table %s and row %s' % (self.name, values)
-                )
+                self._global_errors.append('Duplicate row id found for table %s and row %s' % (self.name, values))
                 continue
 
             if not row_id:
-                self._global_errors.append(
-                    'Invalid row id of %s found for table %s' % (row_id, self.name)
-                )
+                self._global_errors.append('Invalid row id of %s found for table %s' % (row_id, self.name))
                 continue
 
             self._rows[row_id] = OrderedDict(zip(columns, values))

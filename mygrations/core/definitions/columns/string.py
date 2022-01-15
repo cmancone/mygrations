@@ -1,6 +1,5 @@
 from .column import Column
 from typing import List, Union
-
 class String(Column):
     _allowed_column_types = [
         'CHAR',

@@ -51,13 +51,17 @@ class Base(object):
         config_abs_path = self._resolve_and_check_config_file_path(self.options['config'])
         self.config = dotenv(config_abs_path)
         if 'files_directory' not in self.config:
-            raise ValueError("Configuration file is missing 'files_directory' configuration, which should point to the directory containing your *.sql files")
+            raise ValueError(
+                "Configuration file is missing 'files_directory' configuration, which should point to the directory containing your *.sql files"
+            )
         self.config['files_directory'] = self._relative_to_config_abs_path(
             self.config['files_directory'], config_abs_path
         )
 
         if 'env_file' not in self.config:
-            raise ValueError("Configuration file is missing 'env_file' configuration, which should point to the .env file for your application (so mygrations can fetch database credentials")
+            raise ValueError(
+                "Configuration file is missing 'env_file' configuration, which should point to the .env file for your application (so mygrations can fetch database credentials"
+            )
         # convert the env file path to an absolute path
         self.config['env_file'] = self._relative_to_config_abs_path(self.config['env_file'], config_abs_path)
         self._config_loaded = True

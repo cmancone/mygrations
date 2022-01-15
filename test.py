@@ -2,7 +2,6 @@
 import unittest
 import sys, os
 
-
 sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 glob = '?*test.py'
 if len(sys.argv) > 1:

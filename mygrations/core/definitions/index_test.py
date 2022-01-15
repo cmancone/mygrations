@@ -34,10 +34,7 @@ class TestIndex(unittest.TestCase):
 
     def test_missing_things(self):
         index = Index('blah', [], index_type='')
-        self.assertEquals(
-            [
-                'Missing index_type for index blah',
-                'Missing columns for index blah',
-            ],
-            index.schema_errors
-        )
+        self.assertEquals([
+            'Missing index_type for index blah',
+            'Missing columns for index blah',
+        ], index.schema_errors)

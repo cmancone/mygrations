@@ -77,10 +77,8 @@ class CreateParserTest(unittest.TestCase):
         # and we should have some errors
         self.assertEquals(2, len(parser.schema_errors))
         self.assertEquals(
-            "Column 'task' of type 'TEXT' cannot have a default in table 'tasks'",
-            parser.schema_errors[0]
+            "Column 'task' of type 'TEXT' cannot have a default in table 'tasks'", parser.schema_errors[0]
         )
         self.assertEquals(
-            "Table 'tasks' has an AUTO_INCREMENT column but is missing the PRIMARY index",
-            parser.schema_errors[1]
+            "Table 'tasks' has an AUTO_INCREMENT column but is missing the PRIMARY index", parser.schema_errors[1]
         )

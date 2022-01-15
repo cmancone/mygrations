@@ -38,7 +38,6 @@ setup(
     ],
     keywords='setuptools development migrations mysql',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
-
     python_requires=">=3.6",
     install_requires=[
         'PyMySQL',

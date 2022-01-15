@@ -1,6 +1,5 @@
 from .column import Column
 from typing import List, Union
-
 class Date(Column):
     _allowed_column_types = [
         'DATE',
@@ -61,7 +60,6 @@ class Date(Column):
                 "Column '%s' of type %s is not allowed to have a list of values for its length" %
                 (self.name, self.column_type)
             )
-
 
         if self.unsigned:
             self._schema_errors.append("Column %s cannot be unsigned" % self._name)

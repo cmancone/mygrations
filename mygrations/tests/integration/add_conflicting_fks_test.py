@@ -32,10 +32,7 @@ PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;"""
         db = DatabaseReader(tables)
         mygrate = Mygration(db)
 
-        self.assertEquals(
-            [
-                "Duplicate foreign key: foreign key named 'account_id_tasks_fk' exists in tables 'tasks' and 'repeating_tasks'"
-            ],
-            mygrate.errors
-        )
+        self.assertEquals([
+            "Duplicate foreign key: foreign key named 'account_id_tasks_fk' exists in tables 'tasks' and 'repeating_tasks'"
+        ], mygrate.errors)
         self.assertEquals(None, mygrate.operations)

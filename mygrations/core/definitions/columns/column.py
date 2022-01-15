@@ -1,7 +1,6 @@
 from __future__ import annotations
 from typing import Union, List
 from ..base import Base
-
 class Column(Base):
     _auto_increment: bool = None
     _character_set: str = None
@@ -194,7 +193,9 @@ class Column(Base):
             self._schema_errors.append(f"Missing column_type for column {self.name}")
 
         if self.default is None and not self.null and not self.auto_increment:
-            self._schema_warnings.append(f'Column {self.name} does not allow null values and has no default: you should set a default to avoid warnings')
+            self._schema_warnings.append(
+                f'Column {self.name} does not allow null values and has no default: you should set a default to avoid warnings'
+            )
 
     def __str__(self) -> str:
         """ Returns the MySQL command that would create the column

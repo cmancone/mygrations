@@ -35,4 +35,3 @@ class IndexKey(Parser, Index):
         self._name = self._values['name'].strip().strip('`')
         self._columns = self._values['columns']
         self.has_comma = True if 'ending_comma' in self._values else False
-

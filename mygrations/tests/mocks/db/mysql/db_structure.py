@@ -5,7 +5,6 @@ class DbStructure:
     This handles just a few simple queries: SHOW TABLES, SHOW CREATE TABLE,
     and SELECT * FROM
     """
-
     def __init__(self, tables, table_rows):
 
         self.tables = tables

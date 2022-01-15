@@ -69,7 +69,6 @@ class DatabaseTest(unittest.TestCase):
         self.assertEquals(1, len(database.errors))
         self.assertTrue("Column 'message' of type 'TEXT' cannot have a default in table 'logs'" in database.errors[0])
 
-
     def test_check_mismatched_default_value_and_column(self):
         database = Database(
             """
@@ -89,7 +88,8 @@ CREATE TABLE `test_table` (
         )
 
     def test_duplicate_foreign_key_name(self):
-        database = Database("""
+        database = Database(
+            """
 CREATE TABLE `roles` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `people_id` INT(10) UNSIGNED NOT NULL,
@@ -107,7 +107,8 @@ CREATE TABLE `people` (
   KEY `people_role_id` (`role_id`),
   CONSTRAINT `people_role_id_fk` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-        """)
+        """
+        )
         self.assertTrue('roles' in database.tables)
         self.assertTrue('people' in database.tables)
         self.assertEqual(1, len(database.errors))
@@ -117,7 +118,8 @@ CREATE TABLE `people` (
         )
 
     def test_foreign_key_non_column(self):
-        database = Database("""
+        database = Database(
+            """
 CREATE TABLE `roles` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL DEFAULT '',
@@ -132,7 +134,8 @@ CREATE TABLE `people` (
   KEY `people_role_id` (`role_id`),
   CONSTRAINT `people_role_id_fk` FOREIGN KEY (`roles_id`) REFERENCES `roles` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
-        """)
+        """
+        )
         self.assertTrue('roles' in database.tables)
         self.assertTrue('people' in database.tables)
         self.assertEqual(1, len(database.errors))
@@ -142,14 +145,16 @@ CREATE TABLE `people` (
         )
 
     def test_missing_key_column(self):
-        database = Database("""
+        database = Database(
+            """
 CREATE TABLE `roles` (
   `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`),
   KEY `account_id_key` (`account_id`)
 );
-        """)
+        """
+        )
 
         self.assertTrue('roles' in database.tables)
         self.assertEqual(1, len(database.errors))
@@ -159,14 +164,16 @@ CREATE TABLE `roles` (
         )
 
     def test_mismatched_column(self):
-        database = Database("""
+        database = Database(
+            """
 CREATE TABLE `roles` (
     `id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(255) NOT NULL DEFAULT '',
     PRIMARY KEY (`id`)
 );
 INSERT INTO `roles` (`id`,`name`,`description`) VALUES (1,'asdf','more');
-        """)
+        """
+        )
 
         self.assertEqual(1, len(database.errors))
         self.assertEquals(

@@ -74,7 +74,7 @@ class CreateParser(Table, Parser):
                     self._global_errors.append(f"Table '{self._name}' has two columns named '{definition._name}'")
                     continue
 
-                self.add_column(definition.as_definition()) # see notes on definition.as_definition()
+                self.add_column(definition.as_definition())    # see notes on definition.as_definition()
             elif isinstance(definition, Index):
                 if definition._name in self._indexes:
                     self._global_errors.append(f"Table '{self._name}' has two indexes named '{definition._name}'")
@@ -89,7 +89,7 @@ class CreateParser(Table, Parser):
                 self.add_constraint(definition)
 
             else:
-                raise ValueError("Found unknown definition of type " . definition.__class__)
+                raise ValueError("Found unknown definition of type ".definition.__class__)
 
         if not self.semicolon:
             self._global_errors.append("Missing ending semicolon for table %s" % self._name)

@@ -95,17 +95,23 @@ class Database:
 
                 # verify the columns which the inserts reference make sense
                 if table_name not in self.tables:
-                    errors.append(f"Insert error: found an insert for table '{table_name}' but this table does not exist")
+                    errors.append(
+                        f"Insert error: found an insert for table '{table_name}' but this table does not exist"
+                    )
 
                 elif row.num_explicit_columns:
                     table = self.tables[table_name]
                     for column_name in row.columns:
                         if column_name not in table.columns:
-                            errors.append(f"Insert error: insert command attempts to set column '{column_name}' for table '{table_name}' but the column does not exist in the table.")
+                            errors.append(
+                                f"Insert error: insert command attempts to set column '{column_name}' for table '{table_name}' but the column does not exist in the table."
+                            )
                 else:
                     for row_values in row.raw_rows:
                         if len(row_values) != len(table.columns):
-                            errors.append(f"Insert error for table '{table_name}': insert command does not explicitly set column names and has a different number of values than the number of columns in the table")
+                            errors.append(
+                                f"Insert error for table '{table_name}': insert command does not explicitly set column names and has a different number of values than the number of columns in the table"
+                            )
 
         return errors
 
@@ -164,10 +170,11 @@ class Database:
                     errors.append(error)
 
                 if constraint.name in constraint_tables:
-                    errors.append(f"Duplicate foreign key: foreign key named '{constraint.name}' exists in tables '{constraint_tables[constraint.name]}' and '{table.name}'")
+                    errors.append(
+                        f"Duplicate foreign key: foreign key named '{constraint.name}' exists in tables '{constraint_tables[constraint.name]}' and '{table.name}'"
+                    )
                 else:
                     constraint_tables[constraint.name] = table.name
-
 
         return errors
 
@@ -259,14 +266,14 @@ class Database:
 
         if constraint.foreign_table_name not in self.tables:
             return "Constraint error for foreign key `%s`: `%s`.`%s` references `%s`.`%s`, but table `%s` does not exist" % (
-                constraint.name, table.name, constraint.column_name, constraint.foreign_table_name, constraint.foreign_column_name,
-                constraint.foreign_table_name
+                constraint.name, table.name, constraint.column_name, constraint.foreign_table_name,
+                constraint.foreign_column_name, constraint.foreign_table_name
             )
         foreign_table = self.tables[constraint.foreign_table_name]
         if constraint.foreign_column_name not in foreign_table.columns:
             return "Constraint error for foreign key `%s`: `%s`.`%s` references `%s`.`%s`, but column `%s`.`%s` does not exist" % (
-                constraint.name, table.name, constraint.column_name, constraint.foreign_table_name, constraint.foreign_column_name,
-                constraint.foreign_table_name, constraint.foreign_column_name
+                constraint.name, table.name, constraint.column_name, constraint.foreign_table_name,
+                constraint.foreign_column_name, constraint.foreign_table_name, constraint.foreign_column_name
             )
 
         # the column exists but we may still have a constraint error.  That can happen in a few ways

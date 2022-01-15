@@ -15,9 +15,7 @@ from ..mygrations.operations.row_delete import RowDelete
 from ..mygrations.operations.row_insert import RowInsert
 from ..mygrations.operations.row_update import RowUpdate
 from mygrations.core.definitions.table import Table as BaseTable
-
 class Table(BaseTable):
-
     def create(self, nice=False):
         """ Returns a create table operation that can create this table
 

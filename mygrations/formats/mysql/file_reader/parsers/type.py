@@ -1,6 +1,5 @@
 from mygrations.formats.mysql.definitions import columns
 from mygrations.core.definitions.columns.column import Column
-
 class Type:
     column_type_map = {
         'INTEGER': columns.Numeric,
@@ -46,7 +45,9 @@ class Type:
         """
         column_type = self._column_type.upper()
         if column_type not in self.column_type_map:
-            raise ValueError(f"Found an unknown column type, '{column_type}' that does not have a corresponding column class")
+            raise ValueError(
+                f"Found an unknown column type, '{column_type}' that does not have a corresponding column class"
+            )
         column_class = self.column_type_map[column_type]
         return column_class(
             name=self._name,

@@ -1,7 +1,5 @@
-import pymysql as pymysql_driver # alias to avoid confusion
+import pymysql as pymysql_driver    # alias to avoid confusion
 from collections import OrderedDict
-
-
 class PyMySQL(object):
     """ High level driver for a MySQLdb connection """
     execute_cursor = None

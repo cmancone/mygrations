@@ -1,6 +1,5 @@
 from .string import String
 from typing import List, Union
-
 class Enum(String):
     _allowed_column_types = [
         'ENUM',

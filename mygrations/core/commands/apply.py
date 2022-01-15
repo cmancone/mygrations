@@ -5,6 +5,7 @@ def execute(options):
     obj.execute()
 class Apply(Plan):
     needs_cursor = False
+
     def execute(self):
 
         commands = self.build_commands()

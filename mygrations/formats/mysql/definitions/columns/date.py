@@ -1,6 +1,5 @@
 from mygrations.core.definitions.columns.date import Date as DateBase
 from typing import List, Union
-
 class Date(DateBase):
     def __init__(
         self,
