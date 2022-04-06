@@ -6,17 +6,19 @@ from mygrations.formats.mysql.mygrations.row_mygration import RowMygration
 from mygrations.formats.mysql.mygrations.operations.disable_checks import DisableChecks
 from mygrations.formats.mysql.mygrations.operations.enable_checks import EnableChecks
 import sys
-def execute(options):
+def execute(options, print_results=True):
 
     obj = Plan(options)
-    obj.execute()
+    return obj.execute(print_results=print_results)
 class Plan(Base):
     needs_cursor = True
 
-    def execute(self):
+    def execute(self, print_results=True):
 
-        commands = self.build_commands()
-        print(''.join(['%s\n' % command for command in commands]))
+        commands = ['%s' % command for command in self.build_commands()]
+        if print_results:
+            print("\n".join(commands))
+        return commands
 
     def build_commands(self):
 
@@ -24,7 +26,7 @@ class Plan(Base):
 
         # any errors or warnings?
         quit_early = False
-        if files_database.errors and not self.options['force']:
+        if files_database.errors and not self.options.get('force'):
             print('Errors found in *.sql files', file=sys.stderr)
             quit_early = True
             for error in files_database.errors:

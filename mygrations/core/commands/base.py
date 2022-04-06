@@ -10,10 +10,6 @@ class Base(object):
     def __init__(self, options):
         self.options = options
 
-    def get_env(self):
-        if 'env' not in self.options:
-            raise KeyError(f"'env' was not provided in options for command '{self.__class__.__name__}'")
-
     def get_driver(self):
         if 'driver' not in self.options:
             if 'connection' in self.options:
@@ -35,9 +31,6 @@ class Base(object):
 
         if 'config' not in self.options:
             raise ValueError(f"Missing required 'config' parameter in options for commands '{self.__class__.__name__}'")
-
-        if 'env' not in self.options:
-            raise ValueError(f"Missing required 'env' parameter in options for command '{self.__class__.__name__}'")
 
         # load up the mygration configuration (which includes the path to the files we will import)
         # note that self.options['config'] is supposed to contain the filename or absolute path to the

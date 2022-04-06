@@ -1,27 +1,26 @@
 from .base import Base
 from mygrations.formats.mysql.file_reader.database import Database as DatabaseParser
 from mygrations.formats.mysql.mygrations.mygration import Mygration
-def execute(options):
+def execute(options, print_results=True):
     obj = Check(options)
-    obj.execute()
+    return obj.execute(print_results=print_results)
 class Check(Base):
-    def execute(self):
+    def execute(self, print_results=True):
         files_database = DatabaseParser(self.get_sql_files())
 
         # any errors or warnings?
-        errors = False
+        errors = []
         if files_database.errors:
-            print('Errors found in *.sql files:')
-            errors = True
-            for error in files_database.errors:
-                print(error)
+            errors.append('Errors found in *.sql files:')
+            errors.extend(files_database.errors)
 
-        warnings = files_database.warnings
-        if warnings:
-            print('Warnings found in *.sql files:')
-            errors = True
-            for warning in warnings:
-                print(warning)
+        if files_database.warnings:
+            errors.append('Warnings found in *.sql files:')
+            errors.extend(files_database.warnings)
 
-        if not errors:
-            print("No problems found")
+        if print_results:
+            if not errors:
+                print("No problems found")
+            else:
+                print("\n".join(errors))
+        return errors

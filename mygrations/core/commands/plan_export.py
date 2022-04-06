@@ -7,12 +7,12 @@ from mygrations.formats.mysql.mygrations.mygration import Mygration
 from mygrations.formats.mysql.mygrations.row_mygration import RowMygration
 from mygrations.formats.mysql.mygrations.operations.row_insert import RowInsert
 from mygrations.drivers.mysqldb.mysqldb import mysqldb
-def execute(options):
+def execute(options, print_results=True):
 
     obj = PlanExport(options)
-    obj.execute()
+    return obj.execute(print_results=print_results)
 class PlanExport(base):
-    def execute(self):
+    def execute(self, print_results=True):
 
         files_database = DatabaseParser(self.get_sql_files())
 
@@ -44,12 +44,21 @@ class PlanExport(base):
             for op in rows.operations:
                 self.modified_tables[op.table_name] = True
 
+        operations = []
         for table_name in self.modified_tables.keys():
-            print('\033[1;33m\033[41m%s\033[0m' % table_name)
+            if print_results:
+                print('\033[1;33m\033[41m%s\033[0m' % table_name)
             table = live_database.tables[table_name]
-            print(table.nice())
+            operations.append(table.nice())
+            if print_results:
+                print(table.nice())
 
             if table.tracking_rows:
-                print('\n')
+                if print_results:
+                    print('\n')
                 for row in table.rows.values():
-                    print(row_insert(table.name, row))
+                    operation = row_insert(table.name, row)
+                    if print_results:
+                        print(operation)
+                    operations.append(operation)
+        return operations
