@@ -18,4 +18,4 @@ class Apply(Plan):
                 print("\n".join(to_apply))
             else:
                 print('No changes required')
-        return to_apply
+        return (to_apply, True)

@@ -1,5 +1,5 @@
-__ver__ = '1.0'
-
+__ver__ = '1.0.1'
+import sys
 from .core import commands
 class mygrate:
 
@@ -22,4 +22,5 @@ class mygrate:
 
     def execute(self):
 
-        commands.execute(self.command, self.options)
+        (output, success) = commands.execute(self.command, self.options)
+        sys.exit(0 if success else 1)

@@ -23,4 +23,4 @@ class Check(Base):
                 print("No problems found")
             else:
                 print("\n".join(errors))
-        return errors
+        return (errors, True if not len(errors) else False)

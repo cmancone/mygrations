@@ -18,7 +18,7 @@ class Plan(Base):
         commands = ['%s' % command for command in self.build_commands()]
         if print_results:
             print("\n".join(commands))
-        return commands
+        return (commands, True)
 
     def build_commands(self):
 

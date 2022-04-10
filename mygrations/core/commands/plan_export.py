@@ -61,4 +61,4 @@ class PlanExport(base):
                     if print_results:
                         print(operation)
                     operations.append(operation)
-        return operations
+        return (operations, True)

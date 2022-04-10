@@ -13,4 +13,4 @@ class Version(base):
         ]
         if print_results:
             "\n".join(version_info)
-        return print_results
+        return (print_results, True)
