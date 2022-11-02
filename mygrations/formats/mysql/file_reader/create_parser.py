@@ -37,7 +37,7 @@ class CreateParser(Table, Parser):
         'definitions',
         'classes': [
             IndexPrimary, IndexKey, IndexUnique, ConstraintForeign, TypeCharacter, TypeNumeric, TypeDecimal, TypeText,
-            TypeEnum, TypePlain
+            TypeEnum, TypePlain, TypeDateTime
         ]
     }, {
         'type': 'literal',
