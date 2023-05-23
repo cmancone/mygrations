@@ -15,6 +15,10 @@ class TypePlain(Parser, Type):
         'name': 'type'
     }, {
         'type': 'literal',
+        'value': 'UNSIGNED',
+        'optional': True
+    }, {
+        'type': 'literal',
         'value': 'NOT NULL',
         'optional': True
     }, {
