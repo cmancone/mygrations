@@ -250,7 +250,7 @@ class Database:
         warnings = []
         for (table_name, rows) in self.rows.items():
             for row in rows:
-                if hasattr(table, 'parsing_warnings'):
+                if hasattr(row, 'parsing_warnings'):
                     warnings.extend(row.parsing_warnings)
         return warnings
 
