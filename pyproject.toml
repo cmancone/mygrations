@@ -64,7 +64,7 @@ ignore = [
     "F405",   # may be undefined from star imports — follows from F403
     "F541",   # f-string without placeholders — minor
     "F811",   # redefinition of unused name — test code patterns
-    "F821",   # undefined name — real bugs, but fix separately
+    "F821",   # undefined name — blanket suppress; add inline `# noqa: F821` on new violations instead of expanding this
     "F841",   # local variable assigned but never used — fix separately
     "W605",   # invalid escape sequence — auto-fixable, but large blast radius
 ]

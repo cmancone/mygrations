@@ -191,26 +191,6 @@ class Table:
                     for warning in to_check.global_warnings:
                         self._final_global_warnings.append(f"{warning} in table '{self.name}'")
 
-        # duplicate names.  This shouldn't really be possible anymore because the add_ methods will
-        # throw an exception if we try to add a duplicate, but I'll leave this in just in case.
-        for name, to_check in {
-            "columns": self._columns,
-            "constraints": self._constraints,
-            "indexes": self._indexes,
-        }.items():
-            if len(to_check) == len(getattr(self, name)):
-                continue
-            label = name.rstrip("es").rstrip("s")
-            found = {}
-            duplicates = {}
-            for item in to_check:
-                if item.name in found:
-                    duplicates[item.name] = True
-                    continue
-                found[item.name] = True
-            for key in duplicates.keys():
-                self._schema_errors.append(f"Duplicate {label} name found in table '{self.name}': '{key}'")
-
         # more than one primary key
         primaries = list(filter(lambda index: index.is_primary(), self._indexes.values()))
         if len(primaries) > 1:

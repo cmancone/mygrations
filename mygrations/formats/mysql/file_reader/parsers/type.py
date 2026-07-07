@@ -68,6 +68,10 @@ class Type:
     # MySQL type synonyms: map the synonym to the canonical name that
     # SHOW CREATE TABLE produces.  This prevents false-positive CHANGE
     # operations when the SQL file uses the synonym form.
+    #
+    # BOOLEAN/BOOL are intentionally absent — TypePlain.process() handles
+    # them separately because they also require length normalisation (→ TINYINT(1))
+    # and default value mapping (TRUE→1, FALSE→0).
     _type_synonyms = {
         "integer": "int",
     }

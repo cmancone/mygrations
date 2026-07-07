@@ -9,10 +9,13 @@ class TypePlain(Parser, Type):
     # The NULL / NOT NULL rules are repeated before and after DEFAULT to support
     # both orderings (`NOT NULL DEFAULT x` and `DEFAULT x NOT NULL`), following
     # the same pattern used by TypeCharacter and TypeText for repeated optional rules.
+    # "bare_null" tokens are parsed only to consume the NULL keyword from the
+    # remaining input — the actual nullability logic in process() uses "NOT NULL".
     rules = [
         {"type": "regexp", "value": "[^\(\s\)]+", "name": "name"},
         {"type": "regexp", "value": "\w+", "name": "type"},
         {"type": "literal", "value": "UNSIGNED", "optional": True},
+        # Consume bare NULL before DEFAULT so it doesn't confuse subsequent rules.
         {"type": "literal", "value": "NULL", "optional": True, "name": "bare_null"},
         {"type": "literal", "value": "NOT NULL", "optional": True},
         {"type": "literal", "value": "PRIMARY KEY", "optional": True},
@@ -22,6 +25,7 @@ class TypePlain(Parser, Type):
             "optional": True,
             "name": "default",
         },
+        # Consume bare NULL after DEFAULT for `DEFAULT x NULL` ordering.
         {"type": "literal", "value": "NULL", "optional": True, "name": "bare_null"},
         {"type": "literal", "value": "NOT NULL", "optional": True},
         {"type": "literal", "value": "PRIMARY KEY", "optional": True},

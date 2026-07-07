@@ -20,19 +20,19 @@ class RuleRegexpTest(unittest.TestCase):
 
     def test_can_init_with_name_and_value(self):
 
-        rule = self.get_rule('bob', '\S+')
+        rule = self.get_rule('bob', r'\S+')
         self.assertEqual(rule.name, 'bob')
-        self.assertEqual(rule.regexp, '\S+')
+        self.assertEqual(rule.regexp, r'\S+')
 
     def test_match_beginning_only(self):
 
-        rule = self.get_rule('bob', '\d+')
+        rule = self.get_rule('bob', r'\d+')
         self.assertFalse(rule.parse('hey 123'))
         self.assertEqual('', rule.result)
 
     def test_leftovers_is_input_for_no_match(self):
 
-        rule = self.get_rule('bob', '\d+')
+        rule = self.get_rule('bob', r'\d+')
         string = 'hey 123'
         rule.parse(string)
 
@@ -40,7 +40,7 @@ class RuleRegexpTest(unittest.TestCase):
 
     def test_no_leftovers_for_full_match(self):
 
-        rule = self.get_rule('bob', '\d+')
+        rule = self.get_rule('bob', r'\d+')
         string = '23483438'
 
         self.assertTrue(rule.parse(string))
@@ -49,7 +49,7 @@ class RuleRegexpTest(unittest.TestCase):
 
     def test_return_group_only(self):
 
-        rule = self.get_rule('bob', '\d+\s+(\w+)')
+        rule = self.get_rule('bob', r'\d+\s+(\w+)')
 
         string = '999 bob'
 
@@ -59,7 +59,7 @@ class RuleRegexpTest(unittest.TestCase):
 
     def test_calc_leftovers_trim(self):
 
-        rule = self.get_rule('bob', '\d+')
+        rule = self.get_rule('bob', r'\d+')
 
         string = '999 bob'
 

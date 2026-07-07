@@ -7,7 +7,6 @@ from mygrations.formats.mysql.definitions.index import Index
 from mygrations.formats.mysql.definitions.table import Table
 
 from .parsers import *
-from .parsers.constraint_foreign import ConstraintForeignBare
 
 
 class CreateParser(Table, Parser):
@@ -134,7 +133,7 @@ class CreateParser(Table, Parser):
                         self.add_index(Index(name=col, columns=[col], index_type="index"))
 
             else:
-                raise ValueError("Found unknown definition of type ".definition.__class__)
+                raise ValueError(f"Found unknown definition of type {definition.__class__}")
 
         if not self.semicolon:
             self._global_errors.append("Missing ending semicolon for table %s" % self._name)

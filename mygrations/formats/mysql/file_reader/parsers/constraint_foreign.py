@@ -57,7 +57,10 @@ class ConstraintForeign(Parser, Constraint):
         return found.upper()
 
 
-class ConstraintForeignBare(Parser, Constraint):
+class ConstraintForeignBare(ConstraintForeign):
+    # FOREIGN KEY (`col`) REFERENCES `other_table` (`other_col`) [ON DELETE ...] [ON UPDATE ...]
+    # No CONSTRAINT name prefix. A placeholder name is set in process(); CreateParser.process()
+    # overwrites it with '{table}_{col}_{ref}_fk' once the source table name is known.
     rules = [
         {"type": "literal", "value": "FOREIGN KEY ("},
         {"type": "regexp", "name": "column_name", "value": "[^\(\s\)]+"},
@@ -80,13 +83,14 @@ class ConstraintForeignBare(Parser, Constraint):
     ]
 
     def process(self):
-
         self._parsing_errors = []
         self._parsing_warnings = []
         self._column_name = self._values["column_name"].strip().strip("`")
         self._foreign_table_name = self._values["foreign_table_name"].strip().strip("`")
         self._foreign_column_name = self._values["foreign_column_name"].strip().strip("`")
+        # Placeholder — overwritten by CreateParser.process() once the source
+        # table name is available to produce '{table}_{col}_{ref}_fk'.
         self._name = "%s_%s_fk" % (self._column_name, self._foreign_table_name)
 
-        self._on_delete = ConstraintForeign.find_action(self, "DELETE")
-        self._on_update = ConstraintForeign.find_action(self, "UPDATE")
+        self._on_delete = self.find_action("DELETE")
+        self._on_update = self.find_action("UPDATE")
