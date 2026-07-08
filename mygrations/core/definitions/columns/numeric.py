@@ -1,24 +1,26 @@
 from .column import Column
 from typing import List, Union
+
+
 class Numeric(Column):
     _allowed_column_types = [
-        'INTEGER',
-        'INT',
-        'SMALLINT',
-        'TINYINT',
-        'MEDIUMINT',
-        'BIGINT',
-        'DECIMAL',
-        'NUMERIC',
-        'FLOAT',
-        'DOUBLE',
-        'BIT',
+        "INTEGER",
+        "INT",
+        "SMALLINT",
+        "TINYINT",
+        "MEDIUMINT",
+        "BIGINT",
+        "DECIMAL",
+        "NUMERIC",
+        "FLOAT",
+        "DOUBLE",
+        "BIT",
     ]
 
     def __init__(
         self,
-        name: str = '',
-        column_type: str = '',
+        name: str = "",
+        column_type: str = "",
         length: Union[str, int] = None,
         null: bool = True,
         has_default: bool = False,
@@ -52,45 +54,45 @@ class Numeric(Column):
     def _check_for_schema_errors_and_warnings(self):
         super()._check_for_schema_errors_and_warnings()
 
-        allow_float = ['DECIMAL', 'NUMERIC', 'FLOAT', 'DOUBLE']
-        no_length = ['FLOAT', 'DOUBLE', 'BIT']
-        no_auto_increment = ['FLOAT', 'DOUBLE', 'BIT']
+        allow_float = ["DECIMAL", "NUMERIC", "FLOAT", "DOUBLE"]
+        no_length = ["FLOAT", "DOUBLE", "BIT"]
+        no_auto_increment = ["FLOAT", "DOUBLE", "BIT"]
 
         # I should probably have the parser auto-convert the type based on quotes/whatever, but
         # currently it doesn't and I'm apparently being lazy.  I'll probably regret this.
         default_type = None
         if type(self.default) == int:
-            default_type = 'int'
+            default_type = "int"
         elif type(self.default) == float:
-            default_type = 'float'
+            default_type = "float"
         elif type(self.default) == str:
-            default_type = 'str'
+            default_type = "str"
             try:
                 int(self.default)
-                default_type = 'int'
+                default_type = "int"
             except:
                 try:
                     float(self.default)
-                    default_type = 'float'
+                    default_type = "float"
                 except:
                     pass
 
-        if default_type == 'str':
+        if default_type == "str":
             self._schema_errors.append(
                 f"Column '{self.name}' of type '{self.column_type}' cannot have a string value as a default"
             )
         else:
-            if default_type == 'float' and self.column_type not in allow_float:
+            if default_type == "float" and self.column_type not in allow_float:
                 self._schema_errors.append(
                     f"Column '{self.name}' of type '{self.column_type}' must have an integer value as a default"
                 )
-            if self.column_type == 'BIT' and int(self.default) != 0 and int(self.default) != 1:
+            if self.column_type == "BIT" and int(self.default) != 0 and int(self.default) != 1:
                 self._schema_errors.append(f"Column '{self.name}' of type 'BIT' must have a default of 1 or 0")
 
         if self.length:
             if self.column_type in no_length:
                 self._schema_errors.append(f"Column '{self.name}' of type '{self.column_type}' cannot have a length")
-            elif type(self.length) == str and ',' in self.length and self.column_type not in allow_float:
+            elif type(self.length) == str and "," in self.length and self.column_type not in allow_float:
                 self._schema_errors.append(
                     f"Column '{self.name}' of type '{self.column_type}' must have an integer value as its length"
                 )
@@ -105,19 +107,48 @@ class Numeric(Column):
 
         if self.enum_values:
             self._schema_errors.append(
-                "Column '%s' of type %s is not allowed to have a list of values for its length" %
-                (self.name, self.column_type)
+                "Column '%s' of type %s is not allowed to have a list of values for its length"
+                % (self.name, self.column_type)
             )
 
+    # MySQL 8.0.17+ deprecated display widths for integer types (WL#13127),
+    # and 8.0.22+ strips them from SHOW CREATE TABLE output (WL#13528).
+    _integer_types_with_deprecated_width = [
+        "INT",
+        "INTEGER",
+        "TINYINT",
+        "SMALLINT",
+        "MEDIUMINT",
+        "BIGINT",
+    ]
+
+    def is_really_the_same_as(self, column: Column) -> bool:
+        if self.column_type in self._integer_types_with_deprecated_width:
+            for attr in ["name", "null", "column_type"]:
+                if getattr(self, attr) != getattr(column, attr):
+                    return False
+            if bool(self.unsigned) != bool(column.unsigned):
+                return False
+            if self._default_none_mismatch(column):
+                return False
+            if not self._is_really_the_same_default(column):
+                return False
+            return True
+        return super().is_really_the_same_as(column)
+
     def _is_really_the_same_default(self, column: Column) -> bool:
-        if self.column_type != 'DECIMAL':
+        if self.default is None and column.default is None:
+            return True
+        if self.default is None or column.default is None:
+            return False
+        if self.column_type != "DECIMAL":
             return float(self.default) == float(column.default)
 
         # Default equality is mildly tricky for decimals because 0 and 0.000 are the same,
         # and if there are 4 digits after the decimal than 0.0000 and 0.00001 are the same too
         # This will come up if someone sets a default in an SQL file with too many (or too few) decimals,
         # while MySQL will report it properly rounded to the exact number of decimal places
-        split = self.length.split(',')
+        split = self.length.split(",")
         if len(split) == 2:
             ndecimals = int(split[1])
             if round(float(self.default), ndecimals) == round(float(column.default), ndecimals):

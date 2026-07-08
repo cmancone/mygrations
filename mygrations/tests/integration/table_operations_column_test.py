@@ -28,7 +28,7 @@ class TableOperationsColumnTest(unittest.TestCase):
         table.add_column(self._get_new_column(), 'task')
 
         self.assertTrue('description' in table.columns)
-        self.assertEquals('task', table.column_before('description'))
+        self.assertEqual('task', table.column_before('description'))
 
     def test_add_column_first(self):
         table = self._get_default_table()
@@ -42,7 +42,7 @@ class TableOperationsColumnTest(unittest.TestCase):
         table.add_column(self._get_new_column(), False)
 
         self.assertTrue('description' in table.columns)
-        self.assertEquals('subject', table.column_before('description'))
+        self.assertEqual('subject', table.column_before('description'))
 
     def test_add_column_after_non_existent(self):
         table = self._get_default_table()
@@ -65,7 +65,7 @@ class TableOperationsColumnTest(unittest.TestCase):
         new_subject = Column(**{"name": "subject", "column_type": "TEXT", "length": ""})
         table.change_column(new_subject)
 
-        self.assertEquals('`subject` TEXT', str(table.columns['subject']))
+        self.assertEqual('`subject` TEXT', str(table.columns['subject']))
 
     def test_change_column_no_rename(self):
         table = self._get_default_table()

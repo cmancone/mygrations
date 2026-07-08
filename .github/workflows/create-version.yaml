@@ -1,0 +1,130 @@
+name: Bump Version and Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump_type:
+        description: 'The type of version bump'
+        required: true
+        type: choice
+        default: 'patch'
+        options:
+          - patch
+          - minor
+          - major
+          - stable # For going from pre-release to stable
+          - alpha
+          - beta
+          - rc # release candidate
+          - post # post-release
+          - dev # dev-release
+
+jobs:
+  run-tests-and-wait:
+    uses: ./.github/workflows/run-tests.yml
+
+  bump-version:
+    name: Bump Version
+    runs-on: ubuntu-latest
+    needs: run-tests-and-wait
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.12'
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+
+      - name: Configure Git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version and get new tag
+        id: bump
+        run: |
+          uv version --bump ${{ inputs.bump_type }}
+          NEW_VERSION=$(grep '^version = ' pyproject.toml | cut -d '"' -f 2)
+          echo "tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
+          uv lock
+
+      # STEP 1: Generate all changelog files using the --bump flag
+      - name: Update Main Changelog File
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --tag ${{ steps.bump.outputs.tag }} --output CHANGELOG.md
+
+      - name: Extract Latest Changelog for Release Body
+        id: changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --unreleased --tag ${{ steps.bump.outputs.tag }} --strip all
+        env:
+          OUTPUT: LATEST_CHANGELOG.md
+
+      # STEP 2: Commit all file changes together
+      - name: Commit All Changes
+        run: |
+          git add pyproject.toml CHANGELOG.md uv.lock
+          git commit -m "chore(release): bump version to ${{ steps.bump.outputs.tag }}"
+
+      # STEP 3: Create the tag for the final commit
+      - name: Create Git Tag
+        run: |
+          git tag -a "${{ steps.bump.outputs.tag }}" -m "Release ${{ steps.bump.outputs.tag }}"
+
+      # STEP 4: Push the commit and the tag
+      - name: Push All Changes
+        run: |
+          git push --follow-tags
+
+      - name: uv build
+        run: |
+          uv build
+
+      # STEP 5: Create the release
+      - name: Create Stable GitHub Release
+        if: "!(contains(inputs.bump_type, 'alpha') || contains(inputs.bump_type, 'beta') || contains(inputs.bump_type, 'rc'))"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.bump.outputs.tag }} \
+            --title "Release ${{ steps.bump.outputs.tag }}" \
+            --notes-file ${{ steps.changelog.outputs.changelog }} \
+            dist/* # <-- This uploads the build files
+
+      - name: Create Pre-Release on GitHub
+        if: "contains(inputs.bump_type, 'alpha') || contains(inputs.bump_type, 'beta') || contains(inputs.bump_type, 'rc')"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.bump.outputs.tag }} \
+            --title "Release ${{ steps.bump.outputs.tag }}" \
+            --notes-file ${{ steps.changelog.outputs.changelog }} \
+            --prerelease \
+            dist/* # <-- This uploads the build files
+
+      - name: Fetch pypi token from Akeyless
+        uses: LanceMcCarthy/akeyless-action@d42e07875b1cc7162afd290722babbaf879a86e6
+        id: fetch-secrets
+        with:
+          access-id: ${{ secrets.AKEYLESS_ACCESS_ID }}
+          static-secrets: '{"/pypi":"pypi"}'
+
+      - name: Publish to PyPi
+        run: |
+          uv publish --token ${{ steps.fetch-secrets.outputs.pypi }}

@@ -1,56 +1,58 @@
 from .column import Column
 from typing import List, Union
+
+
 class String(Column):
     _allowed_column_types = [
-        'CHAR',
-        'VARCHAR',
-        'BINARY',
-        'VARBINARY',
-        'TINYBLOB',
-        'BLOB',
-        'MEDIUMBLOB',
-        'LONGBLOB',
-        'TINYTEXT',
-        'TEXT',
-        'MEDIUMTEXT',
-        'LONGTEXT',
-        'JSON',
+        "CHAR",
+        "VARCHAR",
+        "BINARY",
+        "VARBINARY",
+        "TINYBLOB",
+        "BLOB",
+        "MEDIUMBLOB",
+        "LONGBLOB",
+        "TINYTEXT",
+        "TEXT",
+        "MEDIUMTEXT",
+        "LONGTEXT",
+        "JSON",
     ]
 
     _allowed_default = [
-        'CHAR',
-        'VARCHAR',
-        'BINARY',
-        'VARBINARY',
-        'ENUM',
-        'SET',
+        "CHAR",
+        "VARCHAR",
+        "BINARY",
+        "VARBINARY",
+        "ENUM",
+        "SET",
     ]
 
     _allowed_collation = [
-        'CHAR',
-        'VARCHAR',
-        'BINARY',
-        'VARBINARY',
-        'ENUM',
-        'SET',
+        "CHAR",
+        "VARCHAR",
+        "BINARY",
+        "VARBINARY",
+        "ENUM",
+        "SET",
     ]
 
     _allowed_length = [
-        'CHAR',
-        'VARCHAR',
-        'BINARY',
-        'VARBINARY',
+        "CHAR",
+        "VARCHAR",
+        "BINARY",
+        "VARBINARY",
     ]
 
     _allowed_default_list = [
-        'ENUM',
-        'SET',
+        "ENUM",
+        "SET",
     ]
 
     def __init__(
         self,
-        name: str = '',
-        column_type: str = '',
+        name: str = "",
+        column_type: str = "",
         length: Union[str, int] = None,
         null: bool = True,
         has_default: bool = False,
@@ -102,30 +104,53 @@ class String(Column):
                 f"Column '{self.name}' of type '{self.column_type}' cannot be an AUTO_INCREMENT: only numeric columns can"
             )
 
-        if (self.character_set or self.collate):
+        if self.character_set or self.collate:
             if self.column_type not in self._allowed_collation:
                 self._schema_errors.append(
                     f"Column '{self.name}' of type '{self.column_type}' cannot have a collation/character set"
                 )
-            is_binary = self.column_type == 'BINARY' or self.column_type == 'VARBINARY'
-            binary_collation = 'BINARY' if self.collate is None else self.collate
-            binary_character_set = 'BINARY' if self.character_set is None else self.character_set
-            if is_binary and (binary_collation != 'BINARY' or binary_character_set != 'BINARY'):
+            is_binary = self.column_type == "BINARY" or self.column_type == "VARBINARY"
+            binary_collation = "BINARY" if self.collate is None else self.collate
+            binary_character_set = "BINARY" if self.character_set is None else self.character_set
+            if is_binary and (binary_collation != "BINARY" or binary_character_set != "BINARY"):
                 self._schema_errors.append(
                     f"Column '{self.name}' of type '{self.column_type}' can only have a collate/character set of BINARY"
                 )
 
         if self.length and self.column_type not in self._allowed_length:
-            self._schema_errors.append(f'Column {self.name} of type {self.column_type} cannot have a length')
+            self._schema_errors.append(f"Column {self.name} of type {self.column_type} cannot have a length")
 
         if self.enum_values and self.column_type not in self._allowed_default_list:
             self._schema_errors.append(
-                "Column '%s' of type %s is not allowed to have a list of values for its length" %
-                (self.name, self.column_type)
+                "Column '%s' of type %s is not allowed to have a list of values for its length"
+                % (self.name, self.column_type)
             )
 
         if self.unsigned:
             self._schema_errors.append("Column %s cannot be unsigned" % self._name)
+
+    # MySQL silently discards literal DEFAULT on these types (only expression-form DEFAULT works since 8.0.13)
+    _no_literal_default_types = [
+        "TINYBLOB",
+        "BLOB",
+        "MEDIUMBLOB",
+        "LONGBLOB",
+        "TINYTEXT",
+        "TEXT",
+        "MEDIUMTEXT",
+        "LONGTEXT",
+        "JSON",
+    ]
+
+    def _default_none_mismatch(self, column: Column) -> bool:
+        if self.column_type in self._no_literal_default_types:
+            return False
+        return super()._default_none_mismatch(column)
+
+    def _is_really_the_same_default(self, column: Column) -> bool:
+        if self.column_type in self._no_literal_default_types:
+            return True
+        return super()._is_really_the_same_default(column)
 
     def is_really_the_same_as(self, column: Column) -> bool:
         if not super().is_really_the_same_as(column):
@@ -133,7 +158,7 @@ class String(Column):
 
         # if collate or character_set are different and *both* have a value,
         # then these aren't really the same
-        for attr in ['collate', 'character_set']:
+        for attr in ["collate", "character_set"]:
             my_val = getattr(self, attr)
             that_val = getattr(column, attr)
             if my_val and that_val and my_val != that_val:

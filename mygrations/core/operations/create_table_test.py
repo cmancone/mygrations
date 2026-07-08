@@ -12,14 +12,14 @@ class CreateTableTest(unittest.TestCase):
                 String('name', 'VARCHAR', length=255)
             ], [Index('id', ['id'], 'PRIMARY')], [], [Option('ENGINE', 'InnoDB')]
         )
-        self.assertEquals(
+        self.assertEqual(
             """CREATE TABLE `test_table` (
   `id` INT(10) UNSIGNED AUTO_INCREMENT,
   `name` VARCHAR(255),
   PRIMARY KEY `id` (`id`)
 ) ENGINE=InnoDB;""", str(CreateTable(table, True))
         )
-        self.assertEquals(
+        self.assertEqual(
             """CREATE TABLE `test_table` (`id` INT(10) UNSIGNED AUTO_INCREMENT,`name` VARCHAR(255),PRIMARY KEY `id` (`id`)) ENGINE=InnoDB;""",
             str(CreateTable(table, False))
         )

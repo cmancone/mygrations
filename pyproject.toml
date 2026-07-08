@@ -1,0 +1,71 @@
+[project]
+name = "mygrations"
+version = "1.0.7"
+description = "A general purpose migration tool for managing MySQL updates"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Conor Mancone", email = "cmancone@gmail.com" }
+]
+keywords = ["setuptools", "development", "migrations", "mysql"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Build Tools",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "PyMySQL",
+]
+
+[project.urls]
+Homepage = "https://github.com/cmancone/mygrations"
+Download = "https://github.com/cmancone/mygrations/archive/v1.0.0.tar.gz"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mygrations"]
+
+[dependency-groups]
+dev = [
+    "git-cliff>=2.12.0",
+    "pytest>=9.0.2",
+    "ruff>=0.15.7",
+    "ty>=0.0.25",
+]
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py310"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.ruff.lint]
+# Start with a minimal set: skip rules that fire heavily across the codebase
+select = ["E", "F", "W"]
+ignore = [
+    "E501",   # line too long — many long strings in SQL/test data, fix separately
+    "E401",   # multiple imports on one line — legacy style
+    "E712",   # avoid equality comparisons to True — widespread pattern
+    "E713",   # not in — widespread pattern, auto-fixable
+    "E721",   # type comparison — widespread pattern
+    "E722",   # bare except — intentional in numeric parsing
+    "F401",   # unused imports — needs careful per-file review
+    "F403",   # star imports — intentional in create_parser.py
+    "F405",   # may be undefined from star imports — follows from F403
+    "F541",   # f-string without placeholders — minor
+    "F811",   # redefinition of unused name — test code patterns
+    "F821",   # undefined name — blanket suppress; add inline `# noqa: F821` on new violations instead of expanding this
+    "F841",   # local variable assigned but never used — fix separately
+    "W605",   # invalid escape sequence — auto-fixable, but large blast radius
+]
+

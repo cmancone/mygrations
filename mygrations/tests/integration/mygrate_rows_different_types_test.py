@@ -43,4 +43,4 @@ class MygrateRowsDifferentTypesTest(unittest.TestCase):
         database_from.read_rows('logs')
 
         operations = [str(op) for op in RowMygration(database, database_from).operations]
-        self.assertEquals(0, len(operations))
+        self.assertEqual(0, len(operations))

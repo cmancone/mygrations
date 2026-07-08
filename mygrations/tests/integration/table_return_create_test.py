@@ -14,7 +14,7 @@ class TableDifferenceTest(unittest.TestCase):
         """
         )
 
-        self.assertEquals(
+        self.assertEqual(
             str(a).replace("\n", ' '),
             "CREATE TABLE `tasks` (`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT, `account_id` INT(10), `task` VARCHAR(255), PRIMARY KEY (`id`));"
         )
@@ -31,7 +31,7 @@ class TableDifferenceTest(unittest.TestCase):
         """
         )
 
-        self.assertEquals(
+        self.assertEqual(
             str(a).replace("\n", ' '),
             "CREATE TABLE `tasks` (`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT, `account_id` INT(10), PRIMARY KEY (`id`), CONSTRAINT `tasks_fk` FOREIGN KEY (`account_id`) REFERENCES `accounts` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT);"
         )
@@ -48,7 +48,7 @@ class TableDifferenceTest(unittest.TestCase):
         """
         )
 
-        self.assertEquals(
+        self.assertEqual(
             str(a).replace("\n", ' '),
             "CREATE TABLE `tasks` (`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT, `account_id` INT(10), `task` VARCHAR(255), PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
         )

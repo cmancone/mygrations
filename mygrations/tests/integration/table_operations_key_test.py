@@ -51,7 +51,7 @@ class TableOperationsKeyTest(unittest.TestCase):
         self.assertTrue(table.column_is_indexed('account_id'))
 
         table.change_index(Index('tasks_account_id', ['account_id', 'task']))
-        self.assertEquals('KEY `tasks_account_id` (`account_id`,`task`)', str(table.indexes['tasks_account_id']))
+        self.assertEqual('KEY `tasks_account_id` (`account_id`,`task`)', str(table.indexes['tasks_account_id']))
         self.assertTrue(table.column_is_indexed('account_id'))
 
     def test_cannot_change_missing_key(self):

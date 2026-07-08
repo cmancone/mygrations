@@ -1,117 +1,96 @@
 from mygrations.core.parse.parser import Parser
 from mygrations.formats.mysql.definitions.constraint import Constraint
+
+
 class ConstraintForeign(Parser, Constraint):
-
-    has_comma = False
-
     # CONSTRAINT `accounts_status_id_ref_account_statuses_id` FOREIGN KEY (`status_id`) REFERENCES `account_statuses` (`id`) ON UPDATE CASCADE
-    rules = [{
-        'type': 'literal',
-        'value': 'CONSTRAINT'
-    }, {
-        'type': 'regexp',
-        'name': 'name',
-        'value': '[^\(\s\)]+'
-    }, {
-        'type': 'literal',
-        'value': 'FOREIGN KEY ('
-    }, {
-        'type': 'regexp',
-        'name': 'column_name',
-        'value': '[^\(\s\)]+'
-    }, {
-        'type': 'literal',
-        'value': ') REFERENCES'
-    }, {
-        'type': 'regexp',
-        'name': 'foreign_table_name',
-        'value': '[^\(]+'
-    }, {
-        'type': 'literal',
-        'value': '('
-    }, {
-        'type': 'regexp',
-        'name': 'foreign_column_name',
-        'value': '[^\)]+'
-    }, {
-        'type': 'literal',
-        'value': ')'
-    }, {
-        'type': 'literal',
-        'value': 'ON DELETE CASCADE',
-        'optional': True
-    }, {
-        'type': 'literal',
-        'value': 'ON DELETE NO ACTION',
-        'optional': True
-    }, {
-        'type': 'literal',
-        'value': 'ON DELETE RESTRICT',
-        'optional': True
-    }, {
-        'type': 'literal',
-        'value': 'ON DELETE SET DEFAULT',
-        'optional': True
-    }, {
-        'type': 'literal',
-        'value': 'ON DELETE SET NULL',
-        'optional': True
-    }, {
-        'type': 'literal',
-        'value': 'ON UPDATE CASCADE',
-        'optional': True
-    }, {
-        'type': 'literal',
-        'value': 'ON UPDATE NO ACTION',
-        'optional': True
-    }, {
-        'type': 'literal',
-        'value': 'ON UPDATE RESTRICT',
-        'optional': True
-    }, {
-        'type': 'literal',
-        'value': 'ON UPDATE SET DEFAULT',
-        'optional': True
-    }, {
-        'type': 'literal',
-        'value': 'ON UPDATE SET NULL',
-        'optional': True
-    }, {
-        'type': 'literal',
-        'value': ',',
-        'optional': True,
-        'name': 'ending_comma'
-    }]
+    rules = [
+        {"type": "literal", "value": "CONSTRAINT"},
+        {"type": "regexp", "name": "name", "value": "[^\(\s\)]+"},
+        {"type": "literal", "value": "FOREIGN KEY ("},
+        {"type": "regexp", "name": "column_name", "value": "[^\(\s\)]+"},
+        {"type": "literal", "value": ") REFERENCES"},
+        {"type": "regexp", "name": "foreign_table_name", "value": "[^\(]+"},
+        {"type": "literal", "value": "("},
+        {"type": "regexp", "name": "foreign_column_name", "value": "[^\)]+"},
+        {"type": "literal", "value": ")"},
+        {"type": "literal", "value": "ON DELETE CASCADE", "optional": True},
+        {"type": "literal", "value": "ON DELETE NO ACTION", "optional": True},
+        {"type": "literal", "value": "ON DELETE RESTRICT", "optional": True},
+        {"type": "literal", "value": "ON DELETE SET DEFAULT", "optional": True},
+        {"type": "literal", "value": "ON DELETE SET NULL", "optional": True},
+        {"type": "literal", "value": "ON UPDATE CASCADE", "optional": True},
+        {"type": "literal", "value": "ON UPDATE NO ACTION", "optional": True},
+        {"type": "literal", "value": "ON UPDATE RESTRICT", "optional": True},
+        {"type": "literal", "value": "ON UPDATE SET DEFAULT", "optional": True},
+        {"type": "literal", "value": "ON UPDATE SET NULL", "optional": True},
+        {"type": "literal", "value": ",", "optional": True, "name": "ending_comma"},
+    ]
 
     def process(self):
 
         self._parsing_errors = []
         self._parsing_warnings = []
-        self._name = self._values['name'].strip().strip('`')
-        self._column_name = self._values['column_name'].strip().strip('`')
-        self._foreign_table_name = self._values['foreign_table_name'].strip().strip('`')
-        self._foreign_column_name = self._values['foreign_column_name'].strip().strip('`')
+        self._name = self._values["name"].strip().strip("`")
+        self._column_name = self._values["column_name"].strip().strip("`")
+        self._foreign_table_name = self._values["foreign_table_name"].strip().strip("`")
+        self._foreign_column_name = self._values["foreign_column_name"].strip().strip("`")
 
-        # figure out what our rules are
-        self._on_delete = self.find_action('DELETE')
-        self._on_update = self.find_action('UPDATE')
-
-        self.has_comma = True if 'ending_comma' in self._values else False
+        self._on_delete = self.find_action("DELETE")
+        self._on_update = self.find_action("UPDATE")
 
     def find_action(self, update_type):
-        # watch for more than one action for this type
-        found = ''
-        for action in ['CASCADE', 'NO ACTION', 'RESTRICT', 'SET DEFAULT', 'SET NULL']:
-            if not ('ON %s %s' % (update_type, action)) in self._values:
+        found = ""
+        for action in ["CASCADE", "NO ACTION", "RESTRICT", "SET DEFAULT", "SET NULL"]:
+            if not ("ON %s %s" % (update_type, action)) in self._values:
                 continue
 
             if found:
-                self._parsing_errors.append('Found contradictory rules in foreign constraint for ON %s' % update_type)
+                self._parsing_errors.append("Found contradictory rules in foreign constraint for ON %s" % update_type)
             else:
                 found = action
 
         # restrict is the default for MySQL if not specified
         if not found:
-            return 'RESTRICT'
+            return "RESTRICT"
 
         return found.upper()
+
+
+class ConstraintForeignBare(ConstraintForeign):
+    # FOREIGN KEY (`col`) REFERENCES `other_table` (`other_col`) [ON DELETE ...] [ON UPDATE ...]
+    # No CONSTRAINT name prefix. A placeholder name is set in process(); CreateParser.process()
+    # overwrites it with '{table}_{col}_{ref}_fk' once the source table name is known.
+    rules = [
+        {"type": "literal", "value": "FOREIGN KEY ("},
+        {"type": "regexp", "name": "column_name", "value": "[^\(\s\)]+"},
+        {"type": "literal", "value": ") REFERENCES"},
+        {"type": "regexp", "name": "foreign_table_name", "value": "[^\(]+"},
+        {"type": "literal", "value": "("},
+        {"type": "regexp", "name": "foreign_column_name", "value": "[^\)]+"},
+        {"type": "literal", "value": ")"},
+        {"type": "literal", "value": "ON DELETE CASCADE", "optional": True},
+        {"type": "literal", "value": "ON DELETE NO ACTION", "optional": True},
+        {"type": "literal", "value": "ON DELETE RESTRICT", "optional": True},
+        {"type": "literal", "value": "ON DELETE SET DEFAULT", "optional": True},
+        {"type": "literal", "value": "ON DELETE SET NULL", "optional": True},
+        {"type": "literal", "value": "ON UPDATE CASCADE", "optional": True},
+        {"type": "literal", "value": "ON UPDATE NO ACTION", "optional": True},
+        {"type": "literal", "value": "ON UPDATE RESTRICT", "optional": True},
+        {"type": "literal", "value": "ON UPDATE SET DEFAULT", "optional": True},
+        {"type": "literal", "value": "ON UPDATE SET NULL", "optional": True},
+        {"type": "literal", "value": ",", "optional": True, "name": "ending_comma"},
+    ]
+
+    def process(self):
+        self._parsing_errors = []
+        self._parsing_warnings = []
+        self._column_name = self._values["column_name"].strip().strip("`")
+        self._foreign_table_name = self._values["foreign_table_name"].strip().strip("`")
+        self._foreign_column_name = self._values["foreign_column_name"].strip().strip("`")
+        # Placeholder — overwritten by CreateParser.process() once the source
+        # table name is available to produce '{table}_{col}_{ref}_fk'.
+        self._name = "%s_%s_fk" % (self._column_name, self._foreign_table_name)
+
+        self._on_delete = self.find_action("DELETE")
+        self._on_update = self.find_action("UPDATE")

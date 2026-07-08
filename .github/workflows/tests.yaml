@@ -1,0 +1,15 @@
+name: Tests
+
+on:
+  pull_request:
+  merge_group:
+
+defaults:
+  run:
+    shell: bash
+
+permissions: {}
+
+jobs:
+  run-tests-and-wait:
+    uses: ./.github/workflows/run-tests.yml # <-- This calls the other file

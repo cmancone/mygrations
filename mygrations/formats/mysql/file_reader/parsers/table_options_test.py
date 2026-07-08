@@ -12,11 +12,11 @@ class TestTableOptions(unittest.TestCase):
         self.assertTrue(parser.matched)
 
         # and we should have some data now
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
         # all we really have is the name and value
-        self.assertEquals('ENGINE', parser.name)
-        self.assertEquals('InnoDB', parser.value)
+        self.assertEqual('ENGINE', parser.name)
+        self.assertEqual('InnoDB', parser.value)
 
     def test_ignore_semicolon(self):
 
@@ -28,11 +28,11 @@ class TestTableOptions(unittest.TestCase):
         self.assertTrue(parser.matched)
 
         # and we should have some data now
-        self.assertEquals(';', returned)
+        self.assertEqual(';', returned)
 
         # all we really have is the name and value
-        self.assertEquals('COLLATE', parser.name)
-        self.assertEquals('utf8_general_ci', parser.value)
+        self.assertEqual('COLLATE', parser.name)
+        self.assertEqual('utf8_general_ci', parser.value)
 
     def test_ignore_spaces(self):
 
@@ -44,11 +44,11 @@ class TestTableOptions(unittest.TestCase):
         self.assertTrue(parser.matched)
 
         # and we should have some data now
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
         # all we really have is the name and value
-        self.assertEquals('COLLATE', parser.name)
-        self.assertEquals('utf8_general_ci', parser.value)
+        self.assertEqual('COLLATE', parser.name)
+        self.assertEqual('utf8_general_ci', parser.value)
 
     def test_ignore_spaces(self):
 
@@ -60,8 +60,8 @@ class TestTableOptions(unittest.TestCase):
         self.assertTrue(parser.matched)
 
         # and we should have some data now
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
         # all we really have is the name and value
-        self.assertEquals('DEFAULT CHARSET', parser.name)
-        self.assertEquals('utf8', parser.value)
+        self.assertEqual('DEFAULT CHARSET', parser.name)
+        self.assertEqual('utf8', parser.value)

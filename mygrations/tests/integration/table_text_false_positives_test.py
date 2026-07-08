@@ -50,7 +50,7 @@ class TableTextFalsePositives(unittest.TestCase):
         """
         )
 
-        self.assertEquals(0, len(from_table.to(to_table)))
+        self.assertEqual(0, len(from_table.to(to_table)))
 
     def test_false_positive_didnt_break_real_positives(self):
         """ Make sure that the above false-positive correction didn't break real-positive detections """
@@ -76,7 +76,7 @@ class TableTextFalsePositives(unittest.TestCase):
         )
 
         ops = [str(val) for val in from_table.to(to_table)]
-        self.assertEquals(
+        self.assertEqual(
             "ALTER TABLE `collate_false_positive` CHANGE `msg` `msg` TEXT NOT NULL COLLATE 'LATIN2_GENERAL_CI';", ops[0]
         )
 

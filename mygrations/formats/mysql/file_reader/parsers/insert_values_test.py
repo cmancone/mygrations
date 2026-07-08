@@ -12,10 +12,10 @@ class TestInsertValues(unittest.TestCase):
         self.assertTrue(parser.matched)
 
         # and we should have some data now
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
         # all we really have is the list of values
-        self.assertEquals(['name', 'bob', 'okay', '1'], parser.values)
+        self.assertEqual(['name', 'bob', 'okay', '1'], parser.values)
         self.assertTrue(parser.has_comma)
 
     def test_optional_comma(self):
@@ -28,10 +28,10 @@ class TestInsertValues(unittest.TestCase):
         self.assertTrue(parser.matched)
 
         # and we should have some data now
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
         # all we really have is the list of values
-        self.assertEquals(['name', 'bob', 'okay', '1'], parser.values)
+        self.assertEqual(['name', 'bob', 'okay', '1'], parser.values)
         self.assertFalse(parser.has_comma)
 
     def test_return(self):
@@ -44,8 +44,8 @@ class TestInsertValues(unittest.TestCase):
         self.assertTrue(parser.matched)
 
         # and we should have some data now
-        self.assertEquals("('name','bob')", returned)
+        self.assertEqual("('name','bob')", returned)
 
         # all we really have is the list of values
-        self.assertEquals(['name', 'bob', 'okay', '1'], parser.values)
+        self.assertEqual(['name', 'bob', 'okay', '1'], parser.values)
         self.assertTrue(parser.has_comma)

@@ -25,15 +25,15 @@ class ReaderTest(unittest.TestCase):
         self.assertTrue(parser.matched)
 
         # and we should have matched everything
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
         # our parser should have a table!
         self.assertTrue('logs' in parser.tables)
         # just check a few details
-        self.assertEquals('logs', parser.tables['logs'].name)
-        self.assertEquals(3, len(parser.tables['logs'].columns))
+        self.assertEqual('logs', parser.tables['logs'].name)
+        self.assertEqual(3, len(parser.tables['logs'].columns))
 
         # and some records!
         self.assertTrue('logs' in parser.rows)
         self.assertTrue('test' in parser.rows)
-        self.assertEquals(['id', 'message', 'traceback'], parser.rows['logs'][0].columns)
+        self.assertEqual(['id', 'message', 'traceback'], parser.rows['logs'][0].columns)

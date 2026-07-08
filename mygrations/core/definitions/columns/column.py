@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import Union, List
 from ..base import Base
+
+
 class Column(Base):
     _auto_increment: bool = None
     _character_set: str = None
@@ -9,18 +11,18 @@ class Column(Base):
     _has_default: bool = False
     _default: Union[str, int] = None
     _length: Union[str, int] = None
-    _name: str = ''
+    _name: str = ""
     _null: bool = None
     _unsigned: bool = None
     _allowed_column_types = []
-    _enum_values: List[str] = None    # enum/set only
+    _enum_values: List[str] = None  # enum/set only
     _parsing_errors: List[str] = None
     _parsing_warnings: List[str] = None
 
     def __init__(
         self,
-        name: str = '',
-        column_type: str = '',
+        name: str = "",
+        column_type: str = "",
         length: Union[str, int] = None,
         null: bool = True,
         has_default: bool = False,
@@ -51,12 +53,12 @@ class Column(Base):
 
     @property
     def name(self) -> str:
-        """ Returns the name of the column. """
+        """Returns the name of the column."""
         return self._name
 
     @property
     def length(self) -> Union[str, int]:
-        """ Returns the length of the column as a string or int.
+        """Returns the length of the column as a string or int.
 
         Some examples of the length for various column definitions:
 
@@ -76,12 +78,12 @@ class Column(Base):
 
     @property
     def null(self) -> bool:
-        """ Returns True/False to denote if the column is allowed to be null """
+        """Returns True/False to denote if the column is allowed to be null"""
         return self._null
 
     @property
     def column_type(self) -> str:
-        """ Returns a string denoting the type of the column.  Always returns in uppercase
+        """Returns a string denoting the type of the column.  Always returns in uppercase
 
         Some examples of the length for various column definitions:
 
@@ -98,12 +100,12 @@ class Column(Base):
 
     @property
     def has_default(self) -> bool:
-        """ Returns True/False to denote if the column has a default value defined """
+        """Returns True/False to denote if the column has a default value defined"""
         return self._has_default
 
     @property
     def default(self) -> Union[str, int]:
-        """ Returns the default value for the column as a string, or None for a default value of null
+        """Returns the default value for the column as a string, or None for a default value of null
 
         Returns None to represent a default value of null.
         """
@@ -111,7 +113,7 @@ class Column(Base):
 
     @property
     def unsigned(self) -> bool:
-        """ Returns True, False, or None to denote the status of the UNSIGNED property
+        """Returns True, False, or None to denote the status of the UNSIGNED property
 
         ==================  ====================
         Return Value        Meaning
@@ -125,7 +127,7 @@ class Column(Base):
 
     @property
     def character_set(self) -> str:
-        """ Returns None or a value to denote the CHARACTER_SET property
+        """Returns None or a value to denote the CHARACTER_SET property
 
         :returns: string, or None
         """
@@ -133,7 +135,7 @@ class Column(Base):
 
     @property
     def collate(self) -> str:
-        """ Returns None or a value to denote the COLLATE property
+        """Returns None or a value to denote the COLLATE property
 
         :returns: string, or None
         """
@@ -141,7 +143,7 @@ class Column(Base):
 
     @property
     def auto_increment(self) -> bool:
-        """ Returns True, False, or None to denote the status of the AUTO_INCREMENT property
+        """Returns True, False, or None to denote the status of the AUTO_INCREMENT property
 
         ==================  ====================
         Return Value        Meaning
@@ -155,35 +157,35 @@ class Column(Base):
 
     @property
     def enum_values(self) -> List[str]:
-        """ Returns the allowed values for the column (enum/set only)"""
+        """Returns the allowed values for the column (enum/set only)"""
         return self._enum_values
 
     @property
     def schema_errors(self) -> List[str]:
-        """ Returns a list of schema errors """
+        """Returns a list of schema errors"""
         if self._schema_errors is None:
             self._check_for_schema_errors_and_warnings()
         return self._schema_errors
 
     @property
     def schema_warnings(self) -> List[str]:
-        """ Returns a list of schema warnings """
+        """Returns a list of schema warnings"""
         if self._schema_errors is None:
             self._check_for_schema_errors_and_warnings()
         return self._schema_warnings
 
     @property
     def parsing_errors(self) -> List[str]:
-        """ Returns a list of parsing errors """
+        """Returns a list of parsing errors"""
         return self._parsing_errors if self._parsing_errors is not None else []
 
     @property
     def parsing_warnings(self) -> List[str]:
-        """ Returns a list of parsing warnings """
+        """Returns a list of parsing warnings"""
         return self._parsing_warnings if self._parsing_warnings is not None else []
 
     def _check_for_schema_errors_and_warnings(self):
-        """ Finds and stores any schema errors/warnings in the appropriate parameters """
+        """Finds and stores any schema errors/warnings in the appropriate parameters"""
         self._schema_errors = []
         self._schema_warnings = []
 
@@ -194,34 +196,34 @@ class Column(Base):
 
         if self.default is None and not self.null and not self.auto_increment:
             self._schema_warnings.append(
-                f'Column {self.name} does not allow null values and has no default: you should set a default to avoid warnings'
+                f"Column {self.name} does not allow null values and has no default: you should set a default to avoid warnings"
             )
 
     def __str__(self) -> str:
-        """ Returns the MySQL command that would create the column
+        """Returns the MySQL command that would create the column
 
         i.e. column_name type(len) default ''
 
         :returns: A partial MySQL command that could be used to generate the column
         """
         parts = []
-        parts.append('`%s`' % self.name)
+        parts.append("`%s`" % self.name)
 
         type_string = self.column_type
         if self.enum_values:
             type_string += "('%s')" % ("', '".join(self.enum_values))
-        elif self.length is not None and self.length != '':
-            type_string += '(%s)' % self.length
+        elif self.length is not None and self.length != "":
+            type_string += "(%s)" % self.length
         parts.append(type_string)
 
         if self.unsigned:
-            parts.append('UNSIGNED')
+            parts.append("UNSIGNED")
 
         if not self.null:
-            parts.append('NOT NULL')
+            parts.append("NOT NULL")
 
         if self.default is not None:
-            if self.default == '':
+            if self.default == "":
                 parts.append("DEFAULT ''")
             elif type(self.default) != str or self.default.isnumeric():
                 parts.append("DEFAULT %s" % self.default)
@@ -229,20 +231,26 @@ class Column(Base):
                 parts.append("DEFAULT '%s'" % self.default)
 
         if self.auto_increment:
-            parts.append('AUTO_INCREMENT')
+            parts.append("AUTO_INCREMENT")
 
-        return ' '.join(parts)
+        return " ".join(parts)
 
     def is_really_the_same_as(self, column: Column) -> bool:
-        """ Takes care of a pesky false-positive when checking columns
+        """Takes care of a pesky false-positive when checking columns
 
         :param column: The column to comprehensively check for a difference with
         :returns: True if the column really is the same, even for apparent differences
         """
         # if any of these attributes change then it really isn't the same
-        for attr in ['name', 'length', 'null', 'column_type', 'unsigned']:
+        for attr in ["name", "length", "null", "column_type"]:
             if getattr(self, attr) != getattr(column, attr):
                 return False
+
+        # unsigned needs a looser comparison: None (not applicable) and False (not unsigned)
+        # are functionally equivalent.  Different parsers may produce different falsy values
+        # for the same column (e.g. TypePlain sets False, TypeText leaves None).
+        if bool(self.unsigned) != bool(column.unsigned):
+            return False
 
         if self._default_none_mismatch(column):
             return False

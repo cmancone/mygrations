@@ -3,6 +3,6 @@
 echo '[pypi]' > ~/.pypirc
 echo 'username = __token__' >> ~/.pypirc
 echo "password = $(akeyless get-secret-value -n /pypi)" >> ~/.pypirc
-python3 -m build
-python3 -m twine upload dist/*
+uv build
+uv publish
 rm ~/.pypirc

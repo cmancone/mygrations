@@ -32,8 +32,8 @@ class RuleChildrenTest(unittest.TestCase):
 
         rule = self.get_rule('test', [TestRule, TestRuleTwo])
         self.assertFalse(rule.parse('okay bob greg'))
-        self.assertEquals('', rule.result)
-        self.assertEquals('okay bob greg', rule.leftovers)
+        self.assertEqual('', rule.result)
+        self.assertEqual('okay bob greg', rule.leftovers)
 
     # we should be able to match any number of children in any order
     # as long as their parsers match, we will match them
@@ -41,9 +41,9 @@ class RuleChildrenTest(unittest.TestCase):
 
         rule = self.get_rule('test', [TestRule, TestRuleTwo])
         self.assertTrue(rule.parse('999 sup bob greg bob greg 1234568 sup hey'))
-        self.assertEquals('hey', rule.leftovers)
+        self.assertEqual('hey', rule.leftovers)
 
-        self.assertEquals(4, len(rule.result))
+        self.assertEqual(4, len(rule.result))
         self.assertTrue(rule.result[0].__class__ == TestRuleTwo)
         self.assertTrue(rule.result[1].__class__ == TestRule)
         self.assertTrue(rule.result[2].__class__ == TestRule)
@@ -57,7 +57,7 @@ class RuleChildrenTest(unittest.TestCase):
 
         self.assertTrue(rule.parse('bob greg'))
         self.assertTrue(rule.result[0].__class__ == TestRule)
-        self.assertEquals('', rule.leftovers)
+        self.assertEqual('', rule.leftovers)
 
     # if a child can't match all required params other
     # children can match
@@ -67,4 +67,4 @@ class RuleChildrenTest(unittest.TestCase):
 
         self.assertTrue(rule.parse('bob'))
         self.assertTrue(rule.result[0].__class__ == TestRuleOverlap)
-        self.assertEquals('', rule.leftovers)
+        self.assertEqual('', rule.leftovers)

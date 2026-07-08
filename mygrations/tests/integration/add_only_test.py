@@ -13,7 +13,7 @@ class AddOnlyTest(unittest.TestCase):
         table2 = "CREATE TABLE `people` (`id` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,\n`first_name` VARCHAR(255) NOT NULL DEFAULT '',\n`last_name` VARCHAR(255) NOT NULL DEFAULT '',\nPRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;"
         tables = [table1, table2]
         mygrate = Mygration(Database(tables))
-        self.assertEquals([], mygrate.errors)
+        self.assertEqual([], mygrate.errors)
         ops = [str(op) for op in mygrate.operations]
 
         self.assertTrue(table1 in ops)

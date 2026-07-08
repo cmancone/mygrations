@@ -15,9 +15,11 @@ from ..mygrations.operations.row_delete import RowDelete
 from ..mygrations.operations.row_insert import RowInsert
 from ..mygrations.operations.row_update import RowUpdate
 from mygrations.core.definitions.table import Table as BaseTable
+
+
 class Table(BaseTable):
     def create(self, nice=False):
-        """ Returns a create table operation that can create this table
+        """Returns a create table operation that can create this table
 
         :param nice: Whether or not to return a nicely formatted CREATE TABLE command
         :type nice: bool
@@ -27,7 +29,7 @@ class Table(BaseTable):
         return CreateTable(self, nice)
 
     def to(self, comparison_table, split_operations=False):
-        """ Compares two tables to eachother and returns a list of operations which can bring the structure of the second in line with the first
+        """Compares two tables to eachother and returns a list of operations which can bring the structure of the second in line with the first
 
         In other words, this pseudo code will make table have the same structure as comparison_table
 
@@ -55,8 +57,9 @@ class Table(BaseTable):
         # start with the columns, obviously
         (added_columns, removed_columns, overlap_columns) = self._differences(self.columns, comparison_table.columns)
         (added_keys, removed_keys, overlap_keys) = self._differences(self.indexes, comparison_table.indexes)
-        (added_constraints, removed_constraints,
-         overlap_constraints) = self._differences(self.constraints, comparison_table.constraints)
+        (added_constraints, removed_constraints, overlap_constraints) = self._differences(
+            self.constraints, comparison_table.constraints
+        )
 
         # keeping in mind the overall algorithm, we're going to separate out all changes into three alter statments
         # these are broken up according to the way that the system has to process them to make sure that foreign
@@ -87,12 +90,40 @@ class Table(BaseTable):
             primary_alter.add_operation(RemoveColumn(self.columns[removed_column]))
 
         # indexes also go in that first alter table
+        # When MySQL auto-creates an index for a FK constraint it uses the
+        # constraint name as the index name.  If the SQL file defines the same
+        # index with a shorter name the diff sees an ADD + DROP pair.  Suppress
+        # these false-positives by matching removed/added indexes that cover the
+        # same columns & type AND where one of the names is a known constraint.
+        all_constraint_names = set(self.constraints.keys()) | set(comparison_table.constraints.keys())
+        matched_added = set()
+        matched_removed = set()
+        for rk in removed_keys:
+            ri = self.indexes[rk]
+            for ak in added_keys:
+                if ak in matched_added:
+                    continue
+                ai = comparison_table.indexes[ak]
+                if ri.columns == ai.columns and ri.index_type == ai.index_type:
+                    if rk in all_constraint_names or ak in all_constraint_names:
+                        matched_added.add(ak)
+                        matched_removed.add(rk)
+                        break
+
         for new_key in added_keys:
+            if new_key in matched_added:
+                continue
             primary_alter.add_operation(AddKey(comparison_table.indexes[new_key]))
         for removed_key in removed_keys:
+            if removed_key in matched_removed:
+                continue
             primary_alter.add_operation(RemoveKey(self.indexes[removed_key]))
         for overlap_key in overlap_keys:
             if str(self.indexes[overlap_key]) == str(comparison_table.indexes[overlap_key]):
+                continue
+            idx_a = self.indexes[overlap_key]
+            idx_b = comparison_table.indexes[overlap_key]
+            if idx_a.columns == idx_b.columns and idx_a.index_type == idx_b.index_type:
                 continue
             primary_alter.add_operation(ChangeKey(comparison_table.indexes[overlap_key]))
 
@@ -119,11 +150,11 @@ class Table(BaseTable):
         if split_operations:
             operations = {}
             if removed_constraints_alter:
-                operations['removed_fks'] = removed_constraints_alter
+                operations["removed_fks"] = removed_constraints_alter
             if primary_alter:
-                operations['kitchen_sink'] = primary_alter
+                operations["kitchen_sink"] = primary_alter
             if constraints:
-                operations['fks'] = constraints
+                operations["fks"] = constraints
         else:
             operations = []
             for operation in constraints:
@@ -136,7 +167,7 @@ class Table(BaseTable):
         return operations
 
     def to_rows(self, from_table=None):
-        """ Compares two tables to eachother and returns a list of operations which can bring the rows of this table in line with the other
+        """Compares two tables to eachother and returns a list of operations which can bring the rows of this table in line with the other
 
         It's important to note (and probably important to think through and change eventually)
         that this method has the opposite meaning of `mygrations.formats.mysql.definitions.table.to()`

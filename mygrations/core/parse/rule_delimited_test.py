@@ -48,22 +48,22 @@ class RuleDelimitedTest(unittest.TestCase):
     def test_can_init_with_name_and_separator(self):
 
         rule = self.get_rule('bob', ',', '', 'asdf')
-        self.assertEquals(rule.name, 'bob')
-        self.assertEquals(rule.separator, ',')
+        self.assertEqual(rule.name, 'bob')
+        self.assertEqual(rule.separator, ',')
 
     def test_parse_without_quote(self):
 
         rule = self.get_rule('bob', ',', '', ')')
         self.assertTrue(rule.parse('1,2,3,4)'))
-        self.assertEquals(['1', '2', '3', '4'], rule.result)
-        self.assertEquals(')', rule.leftovers)
+        self.assertEqual(['1', '2', '3', '4'], rule.result)
+        self.assertEqual(')', rule.leftovers)
 
     def test_parse_optional_quotes(self):
 
         rule = self.get_rule('bob', ',', '`', ')')
         self.assertTrue(rule.parse('asdf,`bob`,huh,`okay`) sup'))
-        self.assertEquals(['asdf', 'bob', 'huh', 'okay'], rule.result)
-        self.assertEquals(') sup', rule.leftovers)
+        self.assertEqual(['asdf', 'bob', 'huh', 'okay'], rule.result)
+        self.assertEqual(') sup', rule.leftovers)
 
     def test_syntax_error_missing_quote(self):
 
@@ -76,13 +76,13 @@ class RuleDelimitedTest(unittest.TestCase):
 
         rule = self.get_rule('bob', ',', '`', ')')
         self.assertTrue(rule.parse('asdf,`bob,`,huh,`okay`) sup'))
-        self.assertEquals(['asdf', 'bob,', 'huh', 'okay'], rule.result)
-        self.assertEquals(') sup', rule.leftovers)
+        self.assertEqual(['asdf', 'bob,', 'huh', 'okay'], rule.result)
+        self.assertEqual(') sup', rule.leftovers)
 
     def test_alternate_characters(self):
 
         rule = self.get_rule('bob', 'X', '<', 'asdf')
 
         self.assertTrue(rule.parse('<hey<X<sup<asdf'))
-        self.assertEquals(['hey', 'sup'], rule.result)
-        self.assertEquals('asdf', rule.leftovers)
+        self.assertEqual(['hey', 'sup'], rule.result)
+        self.assertEqual('asdf', rule.leftovers)

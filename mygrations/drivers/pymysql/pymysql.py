@@ -1,23 +1,26 @@
-import pymysql as pymysql_driver    # alias to avoid confusion
+import pymysql as pymysql_driver  # alias to avoid confusion
 from collections import OrderedDict
+
+
 class PyMySQL(object):
-    """ High level driver for a MySQLdb connection """
+    """High level driver for a MySQLdb connection"""
+
     execute_cursor = None
 
     def __init__(self, credentials=None, connection=None):
-        """ Initialize the PyMySQL connection
+        """Initialize the PyMySQL connection
 
         Accepts either a dictionary with mysql connnection credentials or a PyMySQL connection object.
         """
         if credentials is not None:
             self.connection = pymysql_driver.connect(
-                user=credentials['user'],
-                password=credentials['password'],
-                host=credentials['host'],
-                database=credentials['database'],
+                user=credentials["user"],
+                password=credentials["password"],
+                host=credentials["host"],
+                database=credentials["database"],
                 autocommit=False,
                 connect_timeout=2,
-                cursorclass=pymysql_driver.cursors.DictCursor
+                cursorclass=pymysql_driver.cursors.DictCursor,
             )
         elif connection is not None:
             self.connection = connection
@@ -25,7 +28,7 @@ class PyMySQL(object):
             raise ValueError("Must provide either the database credentials or connection object")
 
     def tables(self):
-        """ Returns the tables in the connected database
+        """Returns the tables in the connected database
 
         :returns: An ordered dict with table definitions by table name
         :rtype: OrderedDict
@@ -36,7 +39,7 @@ class PyMySQL(object):
         # I'm guessing this will be fine for any realistic database
         # size, and avoids issues of having multiple open cursors
         # at the same time.
-        cursor.execute('SHOW TABLES')
+        cursor.execute("SHOW TABLES")
         table_names = []
         for result_data in cursor:
             for table_name in result_data.values():
@@ -44,19 +47,19 @@ class PyMySQL(object):
 
         definitions = OrderedDict()
         for table_name in table_names:
-            cursor.execute('SHOW CREATE TABLE %s' % table_name)
+            cursor.execute("SHOW CREATE TABLE %s" % table_name)
             if not cursor.rowcount:
                 raise ValueError("Failed to execute SHOW CREATE TABLE command on table %s" % table_name)
 
             result_data = cursor.fetchone()
-            definitions[table_name] = result_data['Create Table']
+            definitions[table_name] = result_data["Create Table"]
 
         cursor.close()
 
         return definitions
 
     def rows(self, table_name):
-        """ Returns the rows in the table as a tuple of dicts
+        """Returns the rows in the table as a tuple of dicts
 
         :returns: The rows in the table
         :rtype: (dict)
@@ -66,7 +69,7 @@ class PyMySQL(object):
         # support for memory-preserving iterators.  Given our
         # use case, I think this will be fine.  Can always change later
         cursor = self.connection.cursor()
-        cursor.execute('SELECT * FROM %s' % table_name)
+        cursor.execute("SELECT * FROM %s" % table_name)
         rows = [row for row in cursor]
         cursor.close()
 
@@ -77,7 +80,9 @@ class PyMySQL(object):
             queries = [queries]
 
         cursor = self.connection.cursor()
+
         for query in queries:
             cursor.execute(query)
+
         self.connection.commit()
         cursor.close()

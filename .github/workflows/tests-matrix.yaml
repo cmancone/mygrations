@@ -1,0 +1,90 @@
+# Reusable workflow consumed by tests.yaml; used to share a single matrix across jobs.
+on:
+  workflow_call:
+    inputs:
+      runner:
+        required: true
+        type: string
+      python-version:
+        required: true
+        type: string
+      run-ty:
+        required: true
+        type: boolean
+      run-pytest:
+        required: true
+        type: boolean
+      run-ruff-check:
+        required: true
+        type: boolean
+      run-ruff-format:
+        required: true
+        type: boolean
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  PYTHONWARNDEFAULTENCODING: 'true'
+
+jobs:
+  ty:
+    name: ty
+    runs-on: ${{ inputs.runner }}
+    if: inputs.run-ty
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+      - run: uv run ty check || true
+
+  pytest:
+    name: pytest
+    runs-on: ${{ inputs.runner }}
+    if: inputs.run-pytest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Install uv and set the python version
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ inputs.python-version }}
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+      - name: Flaky Test Script
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 2
+          command: uv run pytest -v --color=yes --cache-clear -s
+      - run: git diff --exit-code --stat HEAD
+
+  ruff-check:
+    name: ruff-check
+    runs-on: ${{ inputs.runner }}
+    if: inputs.run-ruff-check
+    steps:
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: 'check --diff'
+
+  ruff-format:
+    name: ruff-format
+    runs-on: ${{ inputs.runner }}
+    if: inputs.run-ruff-format
+    steps:
+      - uses: astral-sh/ruff-action@v3
+        with:
+          args: 'format --diff'

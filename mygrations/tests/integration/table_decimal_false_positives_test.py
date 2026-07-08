@@ -30,7 +30,7 @@ class TableDecimalFalsePositivesTest(unittest.TestCase):
         """
         )
 
-        self.assertEquals(0, len(from_table.to(to_table)))
+        self.assertEqual(0, len(from_table.to(to_table)))
 
     def test_decimal_false_positives_just_because(self):
         """ This probably isn't a realistic test, but let's go for it while we're here """
@@ -54,7 +54,7 @@ class TableDecimalFalsePositivesTest(unittest.TestCase):
         """
         )
 
-        self.assertEquals(0, len(from_table.to(to_table)))
+        self.assertEqual(0, len(from_table.to(to_table)))
 
     def test_decimal_real_positives(self):
         from_table = CreateParser()
@@ -77,7 +77,7 @@ class TableDecimalFalsePositivesTest(unittest.TestCase):
         """
         )
 
-        self.assertEquals(1, len(from_table.to(to_table)))
+        self.assertEqual(1, len(from_table.to(to_table)))
 
     def test_float_false_positives(self):
         from_table = CreateParser()
@@ -100,4 +100,4 @@ class TableDecimalFalsePositivesTest(unittest.TestCase):
         """
         )
 
-        self.assertEquals(0, len(from_table.to(to_table)))
+        self.assertEqual(0, len(from_table.to(to_table)))

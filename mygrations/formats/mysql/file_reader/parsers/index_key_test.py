@@ -12,13 +12,13 @@ class TestIndexKey(unittest.TestCase):
         self.assertTrue(parser.matched)
 
         # and we should have some data now
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
         # we should have lots of data now
-        self.assertEquals('users_email', parser.name)
-        self.assertEquals(['email'], parser.columns)
+        self.assertEqual('users_email', parser.name)
+        self.assertEqual(['email'], parser.columns)
         self.assertTrue(parser.has_comma)
-        self.assertEquals('KEY `users_email` (`email`)', str(parser))
+        self.assertEqual('KEY `users_email` (`email`)', str(parser))
 
     def test_optional_comma(self):
 
@@ -29,7 +29,7 @@ class TestIndexKey(unittest.TestCase):
         # we should have matched
         self.assertTrue(parser.matched)
         self.assertFalse(parser.has_comma)
-        self.assertEquals('KEY `users_email` (`email`)', str(parser))
+        self.assertEqual('KEY `users_email` (`email`)', str(parser))
 
     def test_optional_quotes(self):
 
@@ -39,8 +39,8 @@ class TestIndexKey(unittest.TestCase):
 
         # we should have matched
         self.assertTrue(parser.matched)
-        self.assertEquals('users_email', parser.name)
-        self.assertEquals('KEY `users_email` (`email`)', str(parser))
+        self.assertEqual('users_email', parser.name)
+        self.assertEqual('KEY `users_email` (`email`)', str(parser))
 
     def test_multiple_columns(self):
 
@@ -52,10 +52,10 @@ class TestIndexKey(unittest.TestCase):
         self.assertTrue(parser.matched)
 
         # and we should have some data now
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
         # we should have lots of data now
-        self.assertEquals('users_email', parser.name)
-        self.assertEquals(['email', 'username', 'password'], parser.columns)
+        self.assertEqual('users_email', parser.name)
+        self.assertEqual(['email', 'username', 'password'], parser.columns)
         self.assertTrue(parser.has_comma)
-        self.assertEquals('KEY `users_email` (`email`,`username`,`password`)', str(parser))
+        self.assertEqual('KEY `users_email` (`email`,`username`,`password`)', str(parser))

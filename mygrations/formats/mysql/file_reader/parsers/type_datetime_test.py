@@ -9,12 +9,12 @@ class TestTypeDateTime(unittest.TestCase):
         returned = parser.parse("name datetime not null default 'YY-MM-DD HH-MM-SS',")
 
         self.assertTrue(parser.matched)
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
-        self.assertEquals('name', parser._name)
-        self.assertEquals('datetime', parser._column_type)
+        self.assertEqual('name', parser._name)
+        self.assertEqual('datetime', parser._column_type)
         self.assertFalse(parser._null)
-        self.assertEquals('YY-MM-DD HH-MM-SS', parser._default)
+        self.assertEqual('YY-MM-DD HH-MM-SS', parser._default)
         self.assertTrue(parser.has_comma)
         self.assertTrue(parser._character_set is None)
         self.assertTrue(parser._collate is None)

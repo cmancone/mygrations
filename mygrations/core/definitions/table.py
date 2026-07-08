@@ -7,12 +7,14 @@ from .columns.column import Column
 from .index import Index
 from .constraint import Constraint
 from ..operations.create_table import CreateTable
+
+
 class Table:
     _columns: Dict[str, Column] = None
     _constraints: Dict[str, Constraint] = None
     _indexes: Dict[str, Constraint] = None
     _indexed_columns = None
-    _name: str = ''
+    _name: str = ""
     _options: List[Option] = None
     _primary: Index = None
     _rows: Dict[int, List[Union[str, int]]] = None
@@ -24,11 +26,11 @@ class Table:
 
     def __init__(
         self,
-        name: str = '',
+        name: str = "",
         columns: List[Column] = None,
         indexes: List[Index] = None,
         constraints: List[Constraint] = None,
-        options: List[Option] = None
+        options: List[Option] = None,
     ):
         self._name = name
         self._options = [*options] if options else []
@@ -64,7 +66,7 @@ class Table:
 
     @property
     def global_errors(self):
-        """ Public getter.  Returns a list of schema errors
+        """Public getter.  Returns a list of schema errors
 
         :returns: A list of schema errors
         :rtype: list
@@ -75,7 +77,7 @@ class Table:
 
     @property
     def global_warnings(self):
-        """ Public getter.  Returns a list of schema warnings
+        """Public getter.  Returns a list of schema warnings
 
         :returns: A list of schema warnings
         :rtype: list
@@ -86,7 +88,7 @@ class Table:
 
     @property
     def schema_errors(self):
-        """ Public getter.  Returns a list of schema errors
+        """Public getter.  Returns a list of schema errors
 
         :returns: A list of schema errors
         :rtype: list
@@ -97,7 +99,7 @@ class Table:
 
     @property
     def schema_warnings(self):
-        """ Public getter.  Returns a list of schema warnings
+        """Public getter.  Returns a list of schema warnings
 
         :returns: A list of schema warnings
         :rtype: list
@@ -108,7 +110,7 @@ class Table:
 
     @property
     def parsing_errors(self):
-        """ Public getter.  Returns a list of schema errors
+        """Public getter.  Returns a list of schema errors
 
         :returns: A list of schema errors
         :rtype: list
@@ -119,7 +121,7 @@ class Table:
 
     @property
     def parsing_warnings(self):
-        """ Public getter.  Returns a list of schema warnings
+        """Public getter.  Returns a list of schema warnings
 
         :returns: A list of schema warnings
         :rtype: list
@@ -130,7 +132,7 @@ class Table:
 
     @property
     def name(self):
-        """ Public getter.  Returns the name of the table.
+        """Public getter.  Returns the name of the table.
 
         :returns: The table name
         :rtype: string
@@ -140,7 +142,7 @@ class Table:
 
     @property
     def options(self):
-        """ Public getter.  Returns a list of table options
+        """Public getter.  Returns a list of table options
 
         :returns: Table options
         :rtype: list
@@ -163,43 +165,31 @@ class Table:
         if not len(self.columns):
             self._schema_errors.append(f"Table '{self.name}' does not have any columns")
 
+        primary_column_names = set()
+        for index in self._indexes.values():
+            if index.is_primary():
+                for col in index.columns:
+                    primary_column_names.add(col if isinstance(col, str) else col.name)
+
         # start with errors from "children" and append the table name for context
         for type_to_check in [self._columns, self._indexes, self._constraints]:
             for to_check in type_to_check.values():
                 for error in to_check.schema_errors:
                     self._schema_errors.append(f"{error} in table '{self.name}'")
                 for warning in to_check.schema_warnings:
+                    if hasattr(to_check, "name") and to_check.name in primary_column_names:
+                        continue
                     self._schema_warnings.append(f"{warning} in table '{self.name}'")
                 for error in to_check.parsing_errors:
                     self._parsing_errors.append(f"{error} in table '{self.name}'")
                 for warning in to_check.parsing_warnings:
-                    self._parsing_warnings.append(f"{error} in table '{self.name}'")
-                if hasattr(to_check, 'global_errors'):
+                    self._parsing_warnings.append(f"{warning} in table '{self.name}'")
+                if hasattr(to_check, "global_errors"):
                     for warning in to_check.global_errors:
-                        self._final_global_errors.append(f"{error} in table '{self.name}'")
-                if hasattr(to_check, 'global_warnings'):
+                        self._final_global_errors.append(f"{warning} in table '{self.name}'")
+                if hasattr(to_check, "global_warnings"):
                     for warning in to_check.global_warnings:
-                        self._final_global_warnings.append(f"{error} in table '{self.name}'")
-
-        # duplicate names.  This shouldn't really be possible anymore because the add_ methods will
-        # throw an exception if we try to add a duplicate, but I'll leave this in just in case.
-        for (name, to_check) in {
-            'columns': self._columns,
-            'constraints': self._constraints,
-            'indexes': self._indexes
-        }.items():
-            if len(to_check) == len(getattr(self, name)):
-                continue
-            label = name.rstrip('es').rstrip('s')
-            found = {}
-            duplicates = {}
-            for item in to_check:
-                if item.name in found:
-                    duplicates[item.name] = True
-                    continue
-                found[item.name] = True
-            for key in duplicates.keys():
-                self._schema_errors.append(f"Duplicate {label} name found in table '{self.name}': '{key}'")
+                        self._final_global_warnings.append(f"{warning} in table '{self.name}'")
 
         # more than one primary key
         primaries = list(filter(lambda index: index.is_primary(), self._indexes.values()))
@@ -235,7 +225,7 @@ class Table:
         # against other tables, not within a single table.
 
     def mark_tracking_rows(self):
-        """ Marks the table as having had its rows read, for bookeeping purposes
+        """Marks the table as having had its rows read, for bookeeping purposes
 
         The reason this is here is because we keep track of whether or not we are "tracking" rows
         for the current table.  This is for bookeeping purposes, largely as a safe-guard attempt
@@ -249,7 +239,7 @@ class Table:
 
     @property
     def tracking_rows(self) -> bool:
-        """ Public getter.  Returns True/False to denote whether or not this table is tracking row records
+        """Public getter.  Returns True/False to denote whether or not this table is tracking row records
 
         To be clear on the distinction: just about any table might have rows.  However,
         that doesn't mean that the mygration system should be syncing rows for that table.
@@ -262,31 +252,31 @@ class Table:
 
     @property
     def columns(self) -> Dict[str, Column]:
-        """ Public getter.  Returns an ordered dictionary of table columns """
+        """Public getter.  Returns an ordered dictionary of table columns"""
         return self._columns
 
     @property
     def indexes(self) -> Dict[str, Index]:
-        """ Public getter.  Returns an ordered dictionary of table indexes """
+        """Public getter.  Returns an ordered dictionary of table indexes"""
         return self._indexes
 
     @property
     def constraints(self) -> Dict[str, Constraint]:
-        """ Public getter.  Returns an ordered dictionary of table constraints """
+        """Public getter.  Returns an ordered dictionary of table constraints"""
         return self._constraints
 
     @property
     def primary(self) -> Index:
-        """ Public getter.  Returns the index object for the primary key """
+        """Public getter.  Returns the index object for the primary key"""
         return self._primary
 
     @property
     def rows(self) -> Dict[int, List[Union[str, int]]]:
-        """ Public getter.  Returns an ordered dictionary with row data by id """
+        """Public getter.  Returns an ordered dictionary with row data by id"""
         return None if self._rows is None else self._rows
 
     def add_rows(self, rows: Rows) -> Union[str, bool]:
-        """ Adds rows to the table
+        """Adds rows to the table
 
         The rows object has some flexibility in terms of columns: it doesn't just
         assume that a value is provided for every column in the table.  Rather,
@@ -318,19 +308,19 @@ class Table:
         # remember that self._columns is an OrderedDict so converting its keys to a list
         # actually preserves the order (which is a requirement for us)
         columns = rows.columns if rows.num_explicit_columns else list(self._columns.keys())
-        if 'id' not in columns:
+        if "id" not in columns:
             self._global_errors.append(
                 "A column named 'id' is required to manage rows in the table, but the id column is missing in the rows for table %s"
-                % (self._name, )
+                % (self._name,)
             )
             return
-        id_index = columns.index('id')
+        id_index = columns.index("id")
 
         for values in rows.raw_rows:
             # rows without explicit columns must be checked for matching columns
             if not rows.num_explicit_columns and len(values) != len(columns):
                 self._global_errors.append(
-                    'Insert values has wrong number of values for table %s and row %s' % (self._name, values)
+                    "Insert values has wrong number of values for table %s and row %s" % (self._name, values)
                 )
                 continue
 
@@ -338,25 +328,25 @@ class Table:
             row_id = str(values[id_index])
             if not row_id:
                 self._global_errors.append(
-                    'Row is missing a value for the id column for table %s and row %s' % (self._name, values)
+                    "Row is missing a value for the id column for table %s and row %s" % (self._name, values)
                 )
                 continue
 
             if row_id in self._rows:
-                self._global_errors.append('Duplicate row id found for table %s and row %s' % (self.name, values))
+                self._global_errors.append("Duplicate row id found for table %s and row %s" % (self.name, values))
                 continue
 
             if not row_id:
-                self._global_errors.append('Invalid row id of %s found for table %s' % (row_id, self.name))
+                self._global_errors.append("Invalid row id of %s found for table %s" % (row_id, self.name))
                 continue
 
             self._rows[row_id] = OrderedDict(zip(columns, values))
-            self._rows[row_id]['id'] = row_id
+            self._rows[row_id]["id"] = row_id
 
         return True
 
     def add_raw_row(self, row: Dict[str, Union[str, int]]) -> Union[str, bool]:
-        """ Adds a row into the table as a dictionary instead of a row object
+        """Adds a row into the table as a dictionary instead of a row object
 
         A bit of repetition here.  This is similar to what happens inside the main
         loop of self.add_rows, but different enough that I'm not trying to combine
@@ -370,11 +360,11 @@ class Table:
         if self._rows is None:
             self._rows = OrderedDict()
 
-        row_id = str(row.get('id'))
+        row_id = str(row.get("id"))
         if not row_id:
             raise ValueError("Cannot manage records without an 'id' column and value")
         if row_id in self._rows:
-            return 'Duplicate row id found for table %s and row %s' % (self._name, row)
+            return "Duplicate row id found for table %s and row %s" % (self._name, row)
 
         # make sure we have a value for every column in the row, and build an OrderedDict
         converted_row = OrderedDict()
@@ -383,12 +373,12 @@ class Table:
                 converted_row[column] = row[column]
             else:
                 converted_row[column] = self._columns[column].default
-        converted_row['id'] = row_id
+        converted_row["id"] = row_id
 
         self._rows[row_id] = converted_row
 
     def column_before(self, column_name: str) -> Union[str, bool]:
-        """ Returns the name of the column that comes before a given row.
+        """Returns the name of the column that comes before a given row.
 
         Returns true if the column is at the beginning of the table
 
@@ -399,8 +389,8 @@ class Table:
 
         if not column_name in columns:
             raise ValueError(
-                "Cannot return column before %s because %s does not exist in table %s" %
-                (column_name, column_name, self.name)
+                "Cannot return column before %s because %s does not exist in table %s"
+                % (column_name, column_name, self.name)
             )
 
         index = columns.index(column_name)
@@ -410,7 +400,7 @@ class Table:
         return columns[index - 1]
 
     def column_is_indexed(self, column: Union[str, Column]) -> bool:
-        """ Returns True/False to denote whether or not the column has a useable index """
+        """Returns True/False to denote whether or not the column has a useable index"""
         if type(column) != str:
             column = column.name
         if column not in self._columns:
@@ -426,7 +416,7 @@ class Table:
         return str(self.create())
 
     def create(self, nice=False):
-        """ Returns a create table operation that can create this table
+        """Returns a create table operation that can create this table
 
         :param nice: Whether or not to return a nicely formatted CREATE TABLE command
         :returns: A create table operation
@@ -437,7 +427,7 @@ class Table:
         return str(self.create(True))
 
     def add_column(self, column: Column, position=False):
-        """ Adds a column to the table
+        """Adds a column to the table
 
         The value of position matches self.position from mygrations.formats.mysql.mygration.operations.add_column
 
@@ -478,7 +468,7 @@ class Table:
         return None
 
     def remove_column(self, column: Union[str, Column]):
-        """ Removes a column from the table """
+        """Removes a column from the table"""
         self._schema_errors = None
         self._schema_warnings = None
         column_name = column if type(column) == str else column.name
@@ -487,7 +477,7 @@ class Table:
         self._columns.pop(column_name, None)
 
     def change_column(self, new_column: Column):
-        """ Changes a column.  This does not currently support renaming columns """
+        """Changes a column.  This does not currently support renaming columns"""
         self._schema_errors = None
         self._schema_warnings = None
         if not new_column.name in self._columns:
@@ -497,12 +487,12 @@ class Table:
         self._columns[new_column.name] = new_column
 
     def add_index(self, index: Index):
-        """ Adds an index to the table """
+        """Adds an index to the table"""
         self._schema_errors = None
         self._schema_warnings = None
         if index.name in self._indexes:
             raise ValueError("Cannot add index %s because index %s already exists" % (index.name, index.name))
-        if index.index_type == 'PRIMARY':
+        if index.index_type == "PRIMARY":
             self._primary = index
         self._indexes[index.name] = index
 
@@ -510,7 +500,7 @@ class Table:
             self._indexed_columns.add(index.columns[0])
 
     def remove_index(self, index: Union[str, Index]):
-        """ Removes an index from the table """
+        """Removes an index from the table"""
         self._schema_errors = None
         self._schema_warnings = None
         index_name = index if type(index) == str else index.name
@@ -523,7 +513,7 @@ class Table:
             self._indexed_columns.discard(indexed_column)
 
     def change_index(self, new_index: Index):
-        """ Changes an index.  This does not currently support renaming """
+        """Changes an index.  This does not currently support renaming"""
         self._schema_errors = None
         self._schema_warnings = None
         if not new_index.name in self._indexes:
@@ -539,7 +529,7 @@ class Table:
             self._indexed_columns.add(new_index.columns[0])
 
     def add_constraint(self, constraint: Constraint):
-        """ Adds a constraint to the table """
+        """Adds a constraint to the table"""
         self._schema_errors = None
         self._schema_warnings = None
         if constraint.name in self._constraints:
@@ -549,7 +539,7 @@ class Table:
         self._constraints[constraint.name] = constraint
 
     def remove_constraint(self, constraint: Union[str, Constraint]):
-        """ Removes an constraint from the table """
+        """Removes an constraint from the table"""
         self._schema_errors = None
         self._schema_warnings = None
         if type(constraint) != str:
@@ -561,18 +551,18 @@ class Table:
         self._constraints.pop(constraint, None)
 
     def change_constraint(self, new_constraint):
-        """ Changes a constraint. This does not currently support renaming. """
+        """Changes a constraint. This does not currently support renaming."""
         self._schema_errors = None
         self._schema_warnings = None
         if not new_constraint.name in self._constraints:
             raise ValueError(
-                "Cannot modify constraint %s because constraint %s does not exist" %
-                (new_constraint.name, new_constraint.name)
+                "Cannot modify constraint %s because constraint %s does not exist"
+                % (new_constraint.name, new_constraint.name)
             )
         self._constraints[new_constraint.name] = new_constraint
 
     def _loose_equal(self, val1: Union[str, int], val2: Union[str, int]) -> bool:
-        """ Performs a looser comparison, as values might have different types depending on whether they came out of a database or file
+        """Performs a looser comparison, as values might have different types depending on whether they came out of a database or file
 
         Returns true if the two values are equal, even if one is a string and the other an int.
         """
@@ -584,7 +574,7 @@ class Table:
         return str(val1) == str(val2)
 
     def to(self, comparison_table, split_operations=False):
-        """ Compares two tables to eachother and returns a list of operations which can bring the structure of the second in line with the first
+        """Compares two tables to eachother and returns a list of operations which can bring the structure of the second in line with the first
 
         In other words, this pseudo code will make table have the same structure as comparison_table
 
@@ -612,7 +602,7 @@ class Table:
         raise NotImplementedError()
 
     def to_rows(self, from_table=None):
-        """ Compares two tables to eachother and returns a list of operations which can bring the rows of this table in line with the other
+        """Compares two tables to eachother and returns a list of operations which can bring the rows of this table in line with the other
 
         It's important to note (and probably important to think through and change eventually)
         that this method has the opposite meaning of `mygrations.formats.mysql.definitions.table.to()`
@@ -637,8 +627,11 @@ class Table:
         :return: (added, removed, overlap)
         """
 
-        return ([key for key in to_list if key not in from_list], [key for key in from_list if key not in to_list],
-                [key for key in from_list if key in to_list])
+        return (
+            [key for key in to_list if key not in from_list],
+            [key for key in from_list if key not in to_list],
+            [key for key in from_list if key in to_list],
+        )
 
     def apply_operation(self, operation):
         """

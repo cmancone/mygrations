@@ -9,13 +9,13 @@ class TestTypeCharacter(unittest.TestCase):
         returned = parser.parse("name varchar(255) not null default 'sup',")
 
         self.assertTrue(parser.matched)
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
-        self.assertEquals('name', parser._name)
-        self.assertEquals('varchar', parser._column_type)
-        self.assertEquals('255', parser._length)
+        self.assertEqual('name', parser._name)
+        self.assertEqual('varchar', parser._column_type)
+        self.assertEqual('255', parser._length)
         self.assertFalse(parser._null)
-        self.assertEquals('sup', parser._default)
+        self.assertEqual('sup', parser._default)
         self.assertTrue(parser.has_comma)
         self.assertTrue(parser._character_set is None)
         self.assertTrue(parser._collate is None)
@@ -27,16 +27,16 @@ class TestTypeCharacter(unittest.TestCase):
         returned = parser.parse("name varchar(255) not null default 'sup' character set 'blah' collate 'boo',")
 
         self.assertTrue(parser.matched)
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
-        self.assertEquals('name', parser._name)
-        self.assertEquals('varchar', parser._column_type)
-        self.assertEquals('255', parser._length)
+        self.assertEqual('name', parser._name)
+        self.assertEqual('varchar', parser._column_type)
+        self.assertEqual('255', parser._length)
         self.assertFalse(parser._null)
-        self.assertEquals('sup', parser._default)
+        self.assertEqual('sup', parser._default)
         self.assertTrue(parser.has_comma)
-        self.assertEquals('blah', parser._character_set)
-        self.assertEquals('boo', parser._collate)
+        self.assertEqual('blah', parser._character_set)
+        self.assertEqual('boo', parser._collate)
 
     def test_optional_default(self):
 
@@ -45,13 +45,13 @@ class TestTypeCharacter(unittest.TestCase):
         returned = parser.parse("name varchar(255)")
 
         self.assertTrue(parser.matched)
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
-        self.assertEquals('name', parser._name)
-        self.assertEquals('varchar', parser._column_type)
-        self.assertEquals('255', parser._length)
+        self.assertEqual('name', parser._name)
+        self.assertEqual('varchar', parser._column_type)
+        self.assertEqual('255', parser._length)
         self.assertTrue(parser._null)
-        self.assertEquals(None, parser._default)
+        self.assertEqual(None, parser._default)
         self.assertFalse(parser.has_comma)
         self.assertTrue(parser._character_set is None)
         self.assertTrue(parser._collate is None)
@@ -63,9 +63,9 @@ class TestTypeCharacter(unittest.TestCase):
         returned = parser.parse("name varchar(255) default ''")
 
         self.assertTrue(parser.matched)
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
-        self.assertEquals('', parser._default)
+        self.assertEqual('', parser._default)
 
     def test_strip_backticks(self):
 
@@ -74,6 +74,6 @@ class TestTypeCharacter(unittest.TestCase):
         returned = parser.parse("`name` varchar(255)")
 
         self.assertTrue(parser.matched)
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
-        self.assertEquals('name', parser._name)
+        self.assertEqual('name', parser._name)

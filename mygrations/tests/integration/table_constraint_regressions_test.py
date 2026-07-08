@@ -40,8 +40,8 @@ class test_table_1215_regressions(unittest.TestCase):
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;"""
         ])
 
-        self.assertEquals(1, len(db.errors))
-        self.assertEquals(
+        self.assertEqual(1, len(db.errors))
+        self.assertEqual(
             'Constraint error for foreign key `vendor_id_pr_external_fk`: missing index. `payment_requests_external`.`vendor_id` does not have an index and therefore cannot be used in a foreign key constraint',
             db.errors[0]
         )

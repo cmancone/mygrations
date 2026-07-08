@@ -1,4 +1,5 @@
 from .constraint_foreign import ConstraintForeign
+from .constraint_foreign import ConstraintForeignBare
 from .index_key import IndexKey
 from .index_primary import IndexPrimary
 from .index_unique import IndexUnique
@@ -13,6 +14,18 @@ from .table_option import TableOption
 from .insert_values import InsertValues
 
 __all__ = [
-    "ConstraintForeign", "IndexKey", "IndexPrimary", "IndexUnique", "TypeCharacter", "TypeDecimal", "TypeDateTime",
-    "TypeEnum", "TypeNumeric", "TypePlain", "TypeText", "TableOption", "InsertValues"
+    "ConstraintForeign",
+    "ConstraintForeignBare",
+    "IndexKey",
+    "IndexPrimary",
+    "IndexUnique",
+    "TypeCharacter",
+    "TypeDecimal",
+    "TypeDateTime",
+    "TypeEnum",
+    "TypeNumeric",
+    "TypePlain",
+    "TypeText",
+    "TableOption",
+    "InsertValues",
 ]

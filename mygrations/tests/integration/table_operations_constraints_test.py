@@ -70,7 +70,7 @@ class TableOperationsConstraintsTest(unittest.TestCase):
             )
         )
 
-        self.assertEquals(
+        self.assertEqual(
             'CONSTRAINT `tasks_account_id_fk` FOREIGN KEY (`account_id`) REFERENCES `task_accounts` (`id`) ON DELETE RESTRICT ON UPDATE SET NULL',
             str(table.constraints['tasks_account_id_fk'])
         )

@@ -15,7 +15,7 @@ class AlterTableTest(unittest.TestCase):
         alter_table.add_operation(AddIndex(id_index))
         alter_table.add_operation(AddIndex(user_id_index))
 
-        self.assertEquals(
+        self.assertEqual(
             "ALTER TABLE `orders` ADD PRIMARY KEY `id` (`id`), ADD KEY `user_id` (`user_id`,`account_id`);",
             str(alter_table)
         )

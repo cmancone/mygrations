@@ -46,11 +46,11 @@ class MygrateRowsSimpleTest(unittest.TestCase):
         database.read_rows('logs')
 
         operations = [str(op) for op in RowMygration(database).operations]
-        self.assertEquals(2, len(operations))
-        self.assertEquals(
+        self.assertEqual(2, len(operations))
+        self.assertEqual(
             "INSERT INTO `logs` (`id`, `message`, `traceback`) VALUES ('1', 'hey', 'never');", operations[0]
         )
-        self.assertEquals(
+        self.assertEqual(
             "INSERT INTO `logs` (`id`, `message`, `traceback`) VALUES ('2', 'sup', 'forever');", operations[1]
         )
 
@@ -88,8 +88,8 @@ class MygrateRowsSimpleTest(unittest.TestCase):
         database_from.read_rows('logs')
 
         operations = [str(op) for op in RowMygration(database, database_from).operations]
-        self.assertEquals(1, len(operations))
-        self.assertEquals("UPDATE `logs` SET `message`='hey', `traceback`='never' WHERE id='1';", operations[0])
+        self.assertEqual(1, len(operations))
+        self.assertEqual("UPDATE `logs` SET `message`='hey', `traceback`='never' WHERE id='1';", operations[0])
 
     def test_delete_rows(self):
 
@@ -115,8 +115,8 @@ class MygrateRowsSimpleTest(unittest.TestCase):
         database_from.read_rows('logs')
 
         operations = [str(op) for op in RowMygration(database, database_from).operations]
-        self.assertEquals(1, len(operations))
-        self.assertEquals("DELETE FROM `logs` WHERE id='1';", operations[0])
+        self.assertEqual(1, len(operations))
+        self.assertEqual("DELETE FROM `logs` WHERE id='1';", operations[0])
 
     def test_all(self):
 
@@ -153,7 +153,7 @@ class MygrateRowsSimpleTest(unittest.TestCase):
 
         operations = [str(op) for op in RowMygration(database, database_from).operations]
         # don't be picky about the order
-        self.assertEquals(3, len(operations))
+        self.assertEqual(3, len(operations))
         self.assertTrue(
             "INSERT INTO `logs` (`id`, `message`, `traceback`) VALUES ('3', 'okay', 'always');" in operations
         )

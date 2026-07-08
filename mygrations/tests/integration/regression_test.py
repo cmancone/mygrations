@@ -24,11 +24,11 @@ INSERT INTO payment_request_types (id,name,slug,order_by) VALUES (1,'Standard','
         self.assertTrue(parser.matched)
 
         # and we should have matched everything
-        self.assertEquals('', returned)
+        self.assertEqual('', returned)
 
         # we should not have any errors
-        self.assertEquals([], parser.schema_errors)
-        self.assertEquals([], parser.parsing_errors)
+        self.assertEqual([], parser.schema_errors)
+        self.assertEqual([], parser.parsing_errors)
 
     def test_employee_contract_list(self):
 
@@ -61,6 +61,6 @@ INSERT INTO `employee_contract_list` (`id`, `account_id`, `name`, `display`, `ta
 (12, 1, 'fed_i9', 'Federal I-9', 'employee_fed_i9s', 'fed_i9_id', 'hr/tax_forms/complete_fed_i9');"""
         )
 
-        self.assertEquals([
+        self.assertEqual([
             'Constraint error for foreign key `employee_contact_list_account_id_ref_accounts_id`: `employee_contract_list`.`account_id` references `accounts`.`id`, but table `accounts` does not exist'
         ], db.errors)

@@ -47,10 +47,10 @@ class DatabaseTest(unittest.TestCase):
         self.assertTrue('logs' in database.tables)
 
         rows = database.tables['logs'].rows
-        self.assertEquals('hi', rows['1']['message'])
-        self.assertEquals('sup', rows['1']['traceback'])
-        self.assertEquals('what', rows['2']['message'])
-        self.assertEquals('kay', rows['2']['traceback'])
+        self.assertEqual('hi', rows['1']['message'])
+        self.assertEqual('sup', rows['1']['traceback'])
+        self.assertEqual('what', rows['2']['message'])
+        self.assertEqual('kay', rows['2']['traceback'])
 
     def test_keeps_errors(self):
 
@@ -66,7 +66,7 @@ class DatabaseTest(unittest.TestCase):
         ]
         database = Database(strings)
 
-        self.assertEquals(1, len(database.errors))
+        self.assertEqual(1, len(database.errors))
         self.assertTrue("Column 'message' of type 'TEXT' cannot have a default in table 'logs'" in database.errors[0])
 
     def test_check_mismatched_default_value_and_column(self):
@@ -176,7 +176,7 @@ INSERT INTO `roles` (`id`,`name`,`description`) VALUES (1,'asdf','more');
         )
 
         self.assertEqual(1, len(database.errors))
-        self.assertEquals(
+        self.assertEqual(
             "Insert error: insert command attempts to set column 'description' for table 'roles' but the column does not exist in the table.",
             database.errors[0]
         )
